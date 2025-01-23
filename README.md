@@ -110,24 +110,36 @@ cd ./frontend
 
 
 
-                            Frequently Used Git Commands
+
+
+
+
+                               Git Instructions
 
 # Push Changes to git
 - git add .
 - git commit -m "commit message"
 - git push origin <branch-name>
+- push your changes often to avoid merge conflicts
 
 
 # Create and Checkout a New Branch
 - git checkout -b <branch-name>
 
 
-# Update your branch with the latest changes from the main branch
+# Update your branch with origin/main
 - git checkout <branch-name>
 - git pull origin main
+- Do this often to keep your branch up-to-date with the latest changes
 
 
-Experiment:  CHANGES TO MAIN BRANCH
+# Create a Pull Request (merging changes from your branch into the main branch)
+- Go to the GitHub repository and click on the "Pull Requests" tab
+- Click on the "New Pull Request" button
+- Select the branch you want to merge into the main branch
+- Add a title and description for the pull request
+- Click on the "Create Pull Request" button
+- The code will be reviewed by the team and merged into the main branch
 
 
 
@@ -136,3 +148,14 @@ Experiment:  CHANGES TO MAIN BRANCH
 
 
 
+
+
+                                    Git Workflow
+
+- Decide what feature, bug, or documentation change you want to work on
+- Create a new branch for the changes you want to make 
+- Commit and push changes to your branch often
+- If the branch takes more than a few days/weeks to finish...
+    - Keep updating your branch with the latest changes from the main branch (i.e merge "origin main" into your branch)
+
+Once you are done with your changes, create a pull request to merge your branch into the main branch
