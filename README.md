@@ -1,138 +1,163 @@
-                            Welcome to the Universal Athletics App!
+# Welcome to the Universal Athletics App!
 
+---
 
+## Start here if you are new to this project! 
+We are excited to have you on board!
 
-- Start here if you are new to this project! We are excited to have you on board!
+---
 
+## Installation and Setup
 
+### Step 1: Install Node.js and npm
+1. Navigate to the following link to install Node.js and npm: [Node.js Download](https://nodejs.org/en/download/)
+2. Choose the appropriate installer for your operating system:
+   - **Windows**: Select the Windows Installer (.msi)
+   - **macOS**: Select the macOS Installer (.pkg)
+3. Run the installer and follow the instructions.
+4. Verify that Node.js and npm are installed by running the following commands in a terminal or command prompt:
+   ```bash
+   node -v   # Should return the Node.js version number
+   npm -v    # Should return the npm version number
+   ```
 
+### Step 2: Install Expo CLI
+1. Open a terminal or command prompt and type the following command to install Expo CLI globally:
+   ```bash
+   npm install -g expo-cli
+   ```
+2. Verify the installation:
+   ```bash
+   expo --version   # Should return the Expo CLI version number
+   ```
 
-                                  Installation and Setup
-    
-# Step 1: Install Node.js and npm
-- Navigate to the following link to install Node.js and npm: https://nodejs.org/en/download/
-- Choose the appropriate installer for your operating system
-      - For Windows, choose the Windows Installer (.msi)
-      - For macOS, choose the macOS Installer (.pkg)
-- Run the installer and follow the instructions
-- Once the installation is complete, open a terminal or command prompt and type the following   command to verify that Node.js and npm are installed correctly: 
-      - node -v (Should return the version number)
+### Step 3: Set up the project directory
+1. Create a new folder for the project.
+2. Navigate to that folder in the terminal or command prompt:
+   ```bash
+   cd <new-folder-name>
+   ```
+3. Clone the remote repository into your local folder:
+   ```bash
+   git clone https://github.com/benjamintowle04/Universal-Athletics-App.git
+   ```
 
-
-
-# Step 2: Install Expo CLI
-- Open a terminal or command prompt and type the following command to install Expo CLI:
-      - npm install -g expo-cli
-      - This will install the latest version of Expo CLI globally on your system
-      - Once the installation is complete, you can verify the installation by running the following command:
-        - expo --version (Should return the version number)
-
-
-
-# Step 3: Set up the project directory
-- Create a new folder for the project
-- Navigate to that new folder in the terminal or command prompt
-    - cd <new-folder-name>
-- Clone the remote repository into your local folder
-    -  git clone https://github.com/benjamintowle04/Universal-Athletics-App.git
-
-
-
-# Step 4: Navigate to the frontend directory
+### Step 4: Navigate to the frontend directory
+```bash
 cd ./frontend
+```
 
+### Step 5: Install the needed dependencies
+1. Run the following commands to install dependencies:
+   ```bash
+   npx expo install firebase
+   npm install @react-navigation/native @react-navigation/native-stack
+   npx expo install react-native-screens react-native-safe-area-context
+   npx expo install expo-font
+   ```
 
+---
 
-# Step 5: Install the needed dependencies
-- npx expo install firebase
-- npm install @react-navigation/native @react-navigation/native-stack
-- npx expo install react-native-screens react-native-safe-area-context
-- npx expo install expo-font
+## Running the App
 
+### Step 1: Install Expo Go on your mobile device
+- Download the **Expo Go** app from the [App Store](https://apps.apple.com/) or [Google Play Store](https://play.google.com/).
 
+### Step 2: Start the development server
+1. Run the following command:
+   ```bash
+   npx expo start
+   ```
+2. A QR code will appear in the terminal or command prompt.
+3. Scan the QR code with the **Expo Go** app on your mobile device.
+4. The app should now be running on your mobile device.
 
+---
 
+## Git and Naming Conventions
 
+### Git Rules
+1. **Branch Categories**:
+   - `feature/<feature-name>`: For new features
+   - `bug/<bug-name>`: For bug fixes
+   - `docs/<documentation-name>`: For documentation changes
+2. **Commit Message Format**:
+   - Example: `feature/user-authentication: Add user authentication functionality`
+3. **Main Branch Protection**:
+   - Never make changes directly to the `main` branch.
+   - Always create a new branch for your changes.
+4. **Pull Requests**:
+   - Once changes are complete, create a pull request to merge your branch into the `main` branch.
 
+### Naming Conventions
+1. **Folders**:
+   - Use lowercase letters with words separated by underscores.
+   - Example: `screens`, `node_modules`
+2. **Files**:
+   - **`.tsx` files**: Capitalize the first letter of each word.
+     - Example: `App.tsx`, `SignUp.tsx`
+   - **`.ts`, `.js`, `.png` files**: Use lowercase letters with words separated by underscores.
+     - Example: `firebase_config.ts`
 
+---
 
+## Frequently Used Git Commands
 
-                                        Running the App
+### Push Changes to Git
+```bash
+git add .
+git commit -m "<commit-message>"
+git push origin <branch-name>
+```
 
-# Step 1: Install Expo Go on your mobile device
-- Download the Expo Go app from the App Store or Google Play Store
+### Create and Checkout a New Branch
+```bash
+git checkout -b <branch-name>
+```
 
+### Update Your Branch with the Latest Changes from `main`
+```bash
+git checkout <branch-name>
+git pull origin main
+```
 
-# Step 2: Start the development server
-- npx expo start
-- This will start the development server and open a QR code in the terminal or command prompt
-- Scan the QR code with the Expo Go app on your mobile device
-- The app should now be running on your mobile device
+### Create a Pull Request
+1. Push your changes to the remote repository:
+   ```bash
+   git push origin <branch-name>
+   ```
+2. Go to the repository on GitHub.
+3. Click the **Pull Requests** tab.
+4. Click **New Pull Request**.
+5. Select your branch as the source and `main` as the target.
+6. Add a title and description for your pull request.
+7. Submit the pull request.
 
+### Delete the Branch After Merging
+1. Once the pull request is merged, delete the branch on GitHub by clicking the **Delete branch** button.
+2. Delete the branch locally:
+   ```bash
+   git branch -d <branch-name>
+   ```
+   If the branch is not fully merged yet, use:
+   ```bash
+   git branch -D <branch-name>
+   ```
 
+---
 
+## Visual Summary of the Git Workflow
 
+```mermaid
+graph TD
+    A[Start a new feature or bug fix] -->|Create a new branch| B[Branch off main]
+    B -->|Make changes| C[Commit changes]
+    C -->|Regularly merge main into branch| I[Update branch with main]
+    I -->|Push changes to remote| D[Push to GitHub]
+    D -->|Open pull request| E[Pull Request Review]
+    E -->|Approve and merge| F[Merge into main]
+    F -->|Delete branch on GitHub| G[Clean up local branch]
+    G -->|Pull latest changes| H[Continue Development]
+```
 
-
-
-
-                                Git and Naming Conventions
-
-
-- # Git rules
-- Branches are categorized by features, bugs, and docs
-   - "feature/<feature-name>" for new features
-   - "bug/<bug-name>" for bug fixes
-   - "docs/<documentation-name>" for documentation changes
-
-- Commit messages should be in the following format:
-    - Example: "feature/user-authentication: Add user authentication functionality"
-
-- Changes should never be made directly to the main branch
-    - Always create a new branch for any changes you make
-
-- Once the changes are complete in a branch, create a pull request to merge the branch into the main branch
-
-
-
-# Naming Conventions 
-- folders
-   - lowercase, words separated by underscores
-   - example: "screens", "node_modules"
-
-- files
-   - .tsx files
-      - Capitalize the first letter of each word
-      - example: "App.tsx", "SignUp.tsx"
-    - .ts, .js, and .png files
-     - lowercase, words separated by underscores'
-     - example: "firebase_config.ts"
-
-
-
-                            Frequently Used Git Commands
-
-# Push Changes to git
-- git add .
-- git commit -m "commit message"
-- git push origin <branch-name>
-
-
-# Create and Checkout a New Branch
-- git checkout -b <branch-name>
-
-
-# Update your branch with the latest changes from the main branch
-- git checkout <branch-name>
-- git pull origin main
-
-
-Experiment:  CHANGES TO MAIN BRANCH
-
-
-
-
-
-
-
-
+---
