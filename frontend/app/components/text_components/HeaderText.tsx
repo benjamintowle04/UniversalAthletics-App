@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { Colors } from '../../themes/Colors';
+import { Colors } from '../../themes/colors/Colors';
 import { useFonts } from 'expo-font';
 
 
