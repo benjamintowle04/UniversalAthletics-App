@@ -121,4 +121,43 @@ git checkout <branch-name>
 git pull origin main
 ```
 
+### Create a Pull Request
+1. Push your changes to the remote repository:
+   ```bash
+   git push origin <branch-name>
+   ```
+2. Go to the repository on GitHub.
+3. Click the **Pull Requests** tab.
+4. Click **New Pull Request**.
+5. Select your branch as the source and `main` as the target.
+6. Add a title and description for your pull request.
+7. Submit the pull request.
+
+### Delete the Branch After Merging
+1. Once the pull request is merged, delete the branch on GitHub by clicking the **Delete branch** button.
+2. Delete the branch locally:
+   ```bash
+   git branch -d <branch-name>
+   ```
+   If the branch is not fully merged yet, use:
+   ```bash
+   git branch -D <branch-name>
+   ```
+
+---
+
+## Visual Summary of the Git Workflow
+
+```mermaid
+graph TD
+    A[Start a new feature or bug fix] -->|Create a new branch| B[Branch off main]
+    B -->|Make changes| C[Commit changes]
+    C -->|Regularly merge main into branch| I[Update branch with main]
+    I -->|Push changes to remote| D[Push to GitHub]
+    D -->|Open pull request| E[Pull Request Review]
+    E -->|Approve and merge| F[Merge into main]
+    F -->|Delete branch on GitHub| G[Clean up local branch]
+    G -->|Pull latest changes| H[Continue Development]
+```
+
 ---
