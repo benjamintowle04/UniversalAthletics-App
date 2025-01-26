@@ -7,6 +7,36 @@ We are excited to have you on board!
 
 ---
 
+
+## Tech Stack
+- # Frontend
+   **React Native**: A framework for building native mobile applications using React.
+- # Backend
+   **Spring Boot**: Java-based framework for building scalable, enterprise-grade applications.
+- # UI Styling
+   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
+- # Routing
+- **Expo**: A set of tools and services for building, deploying, and managing React Native apps.
+- # State Management and Debugging
+ - **Redux**: Controls Data flow across components in the app. Includes devtools for debugging.
+- # Authentication
+- **Firebase**: A cloud-based platform for building and scaling real-time applications.
+- # Database
+- **MySQL**: A popular open-source relational database management system.
+- # API Integration
+  - **Axios**: A promise-based HTTP client for making API requests.
+- # Unitt Testing
+  - **Jest**: A JavaScript testing framework for creating and running tests.
+  - **React Testing Library**: A library for testing React components.
+- # Integration Testing
+  - **Cypress**: A testing framework for end-to-end testing of web applications.
+- # Deployment
+  - **Heroku**: A cloud platform for deploying and managing applications.
+  - **Netlify**: A platform for deploying and hosting static websites and web applications.
+
+
+- 
+
 ## Installation and Setup
 
 ### Step 1: Install Node.js and npm
