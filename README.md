@@ -33,6 +33,10 @@ We are excited to have you on board!
 - # Deployment
   - **Heroku**: A cloud platform for deploying and managing applications.
   - **Netlify**: A platform for deploying and hosting static websites and web applications.
+- # Payment Processing
+   - **Stripe**: A payment processing platform for accepting online payments.
+
+
 
 
 
