@@ -25,7 +25,7 @@ We are excited to have you on board!
 - **MySQL**: A popular open-source relational database management system.
 - # API Integration
   - **Axios**: A promise-based HTTP client for making API requests.
-- # Unitt Testing
+- # Unit Testing
   - **Jest**: A JavaScript testing framework for creating and running tests.
   - **React Testing Library**: A library for testing React components.
 - # Integration Testing
@@ -35,7 +35,6 @@ We are excited to have you on board!
   - **Netlify**: A platform for deploying and hosting static websites and web applications.
 
 
-- 
 
 ## Installation and Setup
 
