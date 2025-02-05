@@ -36,7 +36,7 @@ We are excited to have you on board!
 - # Payment Processing
    - **Stripe**: A payment processing platform for accepting online payments.
 
-
+--
 
 
 
