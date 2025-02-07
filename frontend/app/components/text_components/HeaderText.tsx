@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         letterSpacing: 1.5,
     },
+    
 });
 
 export default HeaderText
