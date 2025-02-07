@@ -1,11 +1,11 @@
 use ua_database;
 
-#DROP TABLE IF EXISTS Member_Info;
-#DROP TABLE IF EXISTS Skill;
-#DROP TABLE IF EXISTS Member_Skill;
+DROP TABLE IF EXISTS Member_Skill;
+DROP TABLE IF EXISTS Member_Info;
+DROP TABLE IF EXISTS Skill;
 
 CREATE TABLE Member_Info(
-    Member_ID INT(4) NOT NULL, 
+    Member_ID INT(4) NOT NULL AUTO_INCREMENT, 
     First_Name NCHAR(20),
     Last_Name NCHAR(20),
     Email NCHAR(20),
@@ -19,7 +19,7 @@ CREATE TABLE Member_Info(
 #INSERT INTO Staff (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location) VALUES ();
 
 CREATE TABLE Skill(
-    Skill_ID INT(4) NOT NULL,  
+    Skill_ID INT(4) NOT NULL AUTO_INCREMENT,  
     Title NCHAR(20) NOT NULL,
     Grade NCHAR(10) NOT NULL, 
     Info NCHAR(50) NOT NULL,
