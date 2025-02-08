@@ -1,20 +1,15 @@
-import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
 import { Button, Image } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { NavigationProp, Router } from "@react-navigation/native";
 import { PrimaryButton } from "../components/button_components/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
 import HeaderText from "../components/text_components/HeaderText";
 import LinkButton from "../components/button_components/LinkButton";
+import { RouterProps } from "../types/RouterProps"; 
 
-interface RouterProps {
-    navigation: NavigationProp<any, any>;
-}
 
 const SignUp = ({navigation}: RouterProps) => {
     const [email, setEmail] = useState("");
@@ -36,10 +31,7 @@ const SignUp = ({navigation}: RouterProps) => {
         }
     };
 
-    const moveToLogin = () => {
-        navigation.navigate("Login");
-        console.log("Moving to Login");
-    };
+
 
 
   return (
@@ -84,7 +76,6 @@ const SignUp = ({navigation}: RouterProps) => {
         ) : (
             <>
             <PrimaryButton title="Create Account" onPress={signUp} />
-            <LinkButton title="Login" onPress={moveToLogin}  />
             </>
         )}
         </KeyboardAvoidingView>

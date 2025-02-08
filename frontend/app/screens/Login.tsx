@@ -6,7 +6,7 @@ import { TextInput } from "react-native";
 import { Button } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { NavigationProp } from "@react-navigation/native";
+import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
 import { Colors } from '../themes/colors/Colors';
 import { PrimaryButton } from "../components/button_components/PrimaryButton";
@@ -14,9 +14,6 @@ import HeaderText from "../components/text_components/HeaderText";
 import LinkButton from "../components/button_components/LinkButton";
 
 
-interface RouterProps {
-    navigation: NavigationProp<any, any>;
-}
 
 const Login = ( { navigation }: RouterProps) => {
     const [email, setEmail] = useState("");
