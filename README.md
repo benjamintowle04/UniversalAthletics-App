@@ -24,7 +24,7 @@ We are excited to have you on board!
 - **Spring Boot**: Java-based framework for building scalable, enterprise-grade applications.
 
 ### UI Styling
-- **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
+- **ReactWind**: Tailwind CSS framework designed for React Native applications 
 
 ### Routing
 - **Expo**: A set of tools and services for building, deploying, and managing React Native apps.

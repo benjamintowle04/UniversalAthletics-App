@@ -4,11 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH } from './firebase_config';
+import { FIREBASE_AUTH } from './firebase_config';  
+import { ReactWindStyles } from './app/themes/styles/global_styles.css';
 import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
 import Home from './app/screens/Home';
 import React from 'react';
+
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
