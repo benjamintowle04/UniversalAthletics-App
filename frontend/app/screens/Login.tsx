@@ -1,15 +1,13 @@
-import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
-import { Button } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
-import HeaderText from "../components/text/HeaderText";
-import LinkButton from "../components/buttons/LinkButton";
+import { HeaderText } from "../components/text/HeaderText";
+
 
 
 
@@ -32,15 +30,16 @@ const Login = ( { navigation }: RouterProps) => {
             setLoading(false);
         }
     };
-    
 
-  return (
-    <View style={styles.container}>
+
+    return (
+      <View style={styles.container}>
         <KeyboardAvoidingView behavior="padding">
-
-        <Image className="w-3 h-1"
+          <Image
             source={require('../images/logo.png')}
-        />
+            className="w-48 h-48 "
+            resizeMode="contain"
+          />
 
         <HeaderText text="Login" />
 
@@ -61,20 +60,24 @@ const Login = ( { navigation }: RouterProps) => {
             onChangeText={(text) => setPassword(text)}>
         </TextInput>
 
-        {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-            <>
-            <PrimaryButton title="Login" onPress={signIn} />
-          
+        {
+          loading ? 
+            (
+              <ActivityIndicator size="large" color="#0000ff" /> 
+            ) 
+            : 
+            (
+              <>
+                <PrimaryButton title="Login" onPress={signIn} />
+              </>
+            )
+        }
 
-            </>
-        )}
+        
         </KeyboardAvoidingView>
 
-
-    </View>
-  );
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({

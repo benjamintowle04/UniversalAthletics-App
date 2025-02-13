@@ -2,23 +2,25 @@ import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View } from 
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
-import { Button, Image } from "react-native";
+import { Image } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
-import HeaderText from "../components/text/HeaderText";
-import LinkButton from "../components/buttons/LinkButton";
-import { RouterProps } from "../types/RouterProps"; 
+import {HeaderText} from "../components/text/HeaderText";
 
 
-const SignUp = ({navigation}: RouterProps) => {
+const SignUp = () => {
     const [email, setEmail] = useState("");
+    const [firstPassword, setFirstPassword] = useState("");
+    const [secondPassword, setSecondPassword] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
 
 
-    const signUp = async () => {
+    const signUp = async (email: string, password: string) => {  
+        console.log("ASYNC Email: " + email);
+        console.log("ASYNC Password: " + password);
         setLoading(true);
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
@@ -31,16 +33,34 @@ const SignUp = ({navigation}: RouterProps) => {
         }
     };
 
+    const handleSignUp = () => {
+      console.log("First Password: " + firstPassword);
+      console.log("Second Password: " + secondPassword);
+
+      if (firstPassword != secondPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+
+      else {
+        setPassword(firstPassword);
+        console.log("Email: " + email);
+        console.log("Password: " + password);
+        signUp(email, password);
+      }
+    }
+
 
 
 
   return (
     <View style={styles.container}>
         <KeyboardAvoidingView behavior="padding">
-        <Image 
+         <Image
             source={require('../images/logo.png')}
-            style={styles.uaLogo}
-        />
+            className="w-48 h-48 "
+            resizeMode="contain"
+          />
         
         <HeaderText text="Sign Up"/>
 
@@ -54,30 +74,35 @@ const SignUp = ({navigation}: RouterProps) => {
         </TextInput>
 
         <TextInput 
-            value={password} 
+            value={firstPassword} 
             style={styles.input} 
             autoCapitalize="none" 
             placeholder="Enter Password"
             secureTextEntry={true}
-            onChangeText={(text) => setPassword(text)}>
+            onChangeText={(text) => setFirstPassword(text)}>
         </TextInput>
 
         <TextInput 
-            value={password} 
+            value={secondPassword} 
             style={styles.input} 
             autoCapitalize="none" 
             placeholder="Confirm Password"
             secureTextEntry={true}
-            onChangeText={(text) => setPassword(text)}>
+            onChangeText={(text) => setSecondPassword(text)}>
         </TextInput>
 
-        {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-            <>
-            <PrimaryButton title="Create Account" onPress={signUp} />
-            </>
-        )}
+         {
+          loading ? 
+            (
+              <ActivityIndicator size="large" color="#0000ff" /> 
+            ) 
+            : 
+            (
+              <>
+                <PrimaryButton title="Create Account" onPress = {handleSignUp}/>
+              </>
+            )
+        }
         </KeyboardAvoidingView>
 
 
