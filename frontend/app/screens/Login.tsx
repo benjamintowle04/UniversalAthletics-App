@@ -7,9 +7,9 @@ import { Button } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
-import { PrimaryButton } from "../components/button_components/PrimaryButton";
-import HeaderText from "../components/text_components/HeaderText";
-import LinkButton from "../components/button_components/LinkButton";
+import { PrimaryButton } from "../components/buttons/PrimaryButton";
+import HeaderText from "../components/text/HeaderText";
+import LinkButton from "../components/buttons/LinkButton";
 
 
 

@@ -8,7 +8,7 @@ interface HeaderTextProps {
     text: string;
 }
 
-const HeaderText = ({ text }: HeaderTextProps) => {
+export const HeaderText = ({ text }: HeaderTextProps) => {
     const [fontsLoaded] = useFonts({
         Gagalin: require('../../themes/fonts/Gagalin-Regular.otf'),
       });
@@ -31,4 +31,3 @@ const styles = StyleSheet.create({
     
 });
 
-export default HeaderText

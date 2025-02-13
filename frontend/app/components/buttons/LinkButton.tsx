@@ -10,7 +10,7 @@ interface ButtonProps {
     onPress: () => void;
 }
 
-const LinkButton = ({ title, onPress }: ButtonProps) => {
+export const LinkButton = ({ title, onPress }: ButtonProps) => {
   return (
    <TouchableOpacity style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -40,4 +40,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LinkButton

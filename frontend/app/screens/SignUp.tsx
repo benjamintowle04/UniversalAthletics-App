@@ -4,10 +4,10 @@ import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
 import { Button, Image } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { PrimaryButton } from "../components/button_components/PrimaryButton";
+import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
-import HeaderText from "../components/text_components/HeaderText";
-import LinkButton from "../components/button_components/LinkButton";
+import HeaderText from "../components/text/HeaderText";
+import LinkButton from "../components/buttons/LinkButton";
 import { RouterProps } from "../types/RouterProps"; 
 
 

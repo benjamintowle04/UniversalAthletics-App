@@ -1,11 +1,14 @@
-import { View, Text, Image } from 'react-native'
-import React from 'react'
-import { RouterProps } from '../types/RouterProps'
-import { PrimaryButton } from '../components/button_components/PrimaryButton'
+import { View, Text, Image } from 'react-native';
+import React from 'react';
+import { RouterProps } from '../types/RouterProps';
+import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import { Colors } from '../themes/colors/Colors';
+import { LinkButton } from '../components/buttons/LinkButton';
+import { HeaderText } from '../components/text/HeaderText';
 import "../../global.css";
 
 
-const EntryPoint = ({navigation} : RouterProps) => {
+const EntryPoint = ({ navigation }: RouterProps) => {
 
   const moveToLogin = () => {
     navigation.navigate("Login");
@@ -17,18 +20,23 @@ const EntryPoint = ({navigation} : RouterProps) => {
     console.log("Moving to Sign Up");
   };
 
-
   return (
-    <View>
-      <View className='flex flex-row justify-center bg-gray-500 p-2'>
-        <Text className='font-bold'>Universal Athletics</Text>
-      </View>
+    <View className="flex-1 justify-center items-center bg-white">
+      <Image
+        source={require('../images/logo.png')}
+        className="w-48 h-48 "
+        resizeMode="contain"
+      />
+      <HeaderText text='Welcome to UA' />
 
-      <Text className=''>Welcome To Universal Athletics!</Text>
-      <PrimaryButton title="Login" onPress={moveToLogin} />
-      <PrimaryButton title="Sign Up" onPress={moveToSignUp} />
+      <View>
+        <PrimaryButton title="Login" onPress={moveToLogin} />
+        <PrimaryButton title="Sign Up" onPress={moveToSignUp} />
+      </View>
     </View>
-  )
-}
+  );
+};
+
+  
 
 export default EntryPoint;
