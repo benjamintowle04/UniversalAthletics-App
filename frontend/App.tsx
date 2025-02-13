@@ -5,9 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
-import { ReactWindStyles } from './app/themes/styles/global_styles.css';
 import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
+import EntryPoint from './app/screens/EntryPoint';
 import Home from './app/screens/Home';
 import React from 'react';
 
@@ -25,6 +25,7 @@ export default function App() {
     });
   }, [user]);
 
+
   function InsideLayout() {
     return (
       <InsideStack.Navigator>
@@ -35,11 +36,12 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="EntryPoint">
         {user ? (
           <Stack.Screen name="Inside" component={InsideLayout} options={{ headerShown: false }} />
         ) : (
           <>
+          <Stack.Screen name="EntryPoint" component={EntryPoint} options={{ headerShown: false }} />
           <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
           <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
           </>
@@ -48,12 +50,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

@@ -5,10 +5,8 @@ import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
 import { Button } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
-import { Colors } from '../themes/colors/Colors';
 import { PrimaryButton } from "../components/button_components/PrimaryButton";
 import HeaderText from "../components/text_components/HeaderText";
 import LinkButton from "../components/button_components/LinkButton";
@@ -34,19 +32,14 @@ const Login = ( { navigation }: RouterProps) => {
             setLoading(false);
         }
     };
-
-    const moveToSignUp = () => {
-        navigation.navigate("SignUp");
-        console.log("Moving to Sign Up");
-    };
+    
 
   return (
     <View style={styles.container}>
         <KeyboardAvoidingView behavior="padding">
 
-        <Image 
+        <Image className="w-3 h-1"
             source={require('../images/logo.png')}
-            style={styles.uaLogo}
         />
 
         <HeaderText text="Login" />
@@ -73,7 +66,6 @@ const Login = ( { navigation }: RouterProps) => {
         ) : (
             <>
             <PrimaryButton title="Login" onPress={signIn} />
-            <LinkButton title="Create New Account" onPress={moveToSignUp} />
           
 
             </>

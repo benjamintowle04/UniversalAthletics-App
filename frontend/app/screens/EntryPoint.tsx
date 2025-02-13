@@ -1,7 +1,8 @@
-import { View, Text } from 'react-native'
+import { View, Text, Image } from 'react-native'
 import React from 'react'
 import { RouterProps } from '../types/RouterProps'
 import { PrimaryButton } from '../components/button_components/PrimaryButton'
+import "../../global.css";
 
 
 const EntryPoint = ({navigation} : RouterProps) => {
@@ -19,7 +20,11 @@ const EntryPoint = ({navigation} : RouterProps) => {
 
   return (
     <View>
-      <Text>Welcome To Universal Athletics!</Text>
+      <View className='flex flex-row justify-center bg-gray-500 p-2'>
+        <Text className='font-bold'>Universal Athletics</Text>
+      </View>
+
+      <Text className=''>Welcome To Universal Athletics!</Text>
       <PrimaryButton title="Login" onPress={moveToLogin} />
       <PrimaryButton title="Sign Up" onPress={moveToSignUp} />
     </View>
