@@ -7,38 +7,56 @@ import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
 import EntryPoint from './app/screens/EntryPoint';
 import Home from './app/screens/Home';
+import UserLocation from './app/screens/UserLocation';
 import React from 'react';
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState<User | null >(null);
+  const [newUser, setNewUser] = useState(false);
 
   const preLoginHeaderOptions = {
     headerShown: true,
     title: '',
     headerBackTitle: 'Back'
   }
-
   useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (user) => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       console.log('User', user);
       setUser(user);
+      if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
+        setNewUser(true);
+      } else {
+        setNewUser(true);  //Change to false later
+      }
     });
-  }, [user]);
+
+    return () => unsubscribe();
+  }, []);
+  
 
 
   function PostLoginLayout() {
-    return (
-      <PostLoginStack.Navigator initialRouteName='Home'>
-        <PostLoginStack.Screen name="Home" component={Home} />
-      </PostLoginStack.Navigator>
-    );
+    if (newUser) {
+      return (
+        <PostLoginStack.Navigator initialRouteName='UserLocation'>
+          <PostLoginStack.Screen name="UserLocation" component={UserLocation} />
+        </PostLoginStack.Navigator>
+      );
+    }
+    else {
+      return (
+        <PostLoginStack.Navigator initialRouteName='Home'>
+          <PostLoginStack.Screen name="Home" component={Home} />
+        </PostLoginStack.Navigator>
+      );
+    }
   }
 
   function PreLoginLayout() {
     return (
-      <PreLoginStack.Navigator initialRouteName='EntryPoint'>
+      <PreLoginStack.Navigator initialRouteName='Home'>
         <PreLoginStack.Screen 
           name="EntryPoint" 
           component={EntryPoint} 
@@ -60,11 +78,14 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {user ? (
+      {/* {user ? (   //Uncomment to test authentication
         <PostLoginLayout />
       ) : (
         <PreLoginLayout/>
-      )}
+      )} */}
+      <PostLoginLayout />
+
+
     </NavigationContainer>
   );
 }
