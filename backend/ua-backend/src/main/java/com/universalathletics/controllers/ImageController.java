@@ -1,6 +1,6 @@
 package com.universalathletics.controllers;
 
-import com.universalathletics.models.Image;
+import com.universalathletics.entities.Image;
 import com.universalathletics.repositories.ImageRepository;
 import com.universalathletics.services.GoogleCloudStorageService;
 import org.springframework.beans.factory.annotation.Autowired;

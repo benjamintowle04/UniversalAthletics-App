@@ -1,11 +1,12 @@
-package com.universalathletics.models.dao;
+package com.universalathletics.entities.dao;
 
 
-import com.universalathletics.models.MemberInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import com.universalathletics.entities.MemberInfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

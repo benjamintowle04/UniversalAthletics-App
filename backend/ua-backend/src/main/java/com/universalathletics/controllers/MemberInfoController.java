@@ -1,6 +1,6 @@
 package com.universalathletics.controllers;
 
-import com.universalathletics.models.MemberInfo;
+import com.universalathletics.entities.MemberInfo;
 import com.universalathletics.services.MemberInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

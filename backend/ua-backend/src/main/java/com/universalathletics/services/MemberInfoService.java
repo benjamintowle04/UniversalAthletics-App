@@ -1,10 +1,11 @@
 package com.universalathletics.services;
 
 
-import com.universalathletics.models.dao.MemberInfoDao;
-import com.universalathletics.models.MemberInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.universalathletics.entities.MemberInfo;
+import com.universalathletics.entities.dao.MemberInfoDao;
 
 import java.util.List;
 
