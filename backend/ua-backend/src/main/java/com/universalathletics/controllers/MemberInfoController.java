@@ -4,6 +4,8 @@ package com.universalathletics.controllers;
 import com.universalathletics.entities.MemberInfoEntity;
 import com.universalathletics.services.MemberInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/members")
+@CrossOrigin(origins = "*")
 public class MemberInfoController {
 
     /**
@@ -29,29 +32,30 @@ public class MemberInfoController {
     @Autowired
     private MemberInfoService memberInfoService;
 
-
-// ------------------------- Create Member Endpoint --------------------------//
+    // ------------------------- Create Member Endpoint --------------------------//
     /**
-     * Creates a new member in the system.(POST)
+     * Creates a new member in the system.
      *
      * @param memberInfo The member information to be saved
-     * @return MemberInfoEntity The created member with generated ID
+     * @return ResponseEntity<MemberInfoEntity> with status 201 (CREATED) and the
+     *         created member
      */
     @PostMapping
-    public MemberInfoEntity createMember(@RequestBody MemberInfoEntity memberInfo) {
-        return memberInfoService.saveMember(memberInfo);
+    public ResponseEntity<MemberInfoEntity> createMember(@RequestBody MemberInfoEntity memberInfo) {
+        MemberInfoEntity createdMember = memberInfoService.saveMember(memberInfo);
+        return new ResponseEntity<>(createdMember, HttpStatus.CREATED);
     }
-
 
 // -------------------------- Get All Members Endpoint -----------------------//
     /**
-     * Retrieves all members from the system.(GET)
+     * Retrieves all members from the system.
      *
-     * @return List<MemberInfoEntity> containing all member records
+     * @return ResponseEntity<List<MemberInfoEntity>> with status 200 (OK) and list
+     *         of all members
      */
     @GetMapping
-    public List<MemberInfoEntity> getAllMembers() {
-        return memberInfoService.findAllMembers();
+    public ResponseEntity<List<MemberInfoEntity>> getAllMembers() {
+        List<MemberInfoEntity> members = memberInfoService.findAllMembers();
+        return new ResponseEntity<>(members, HttpStatus.OK);
     }
-
 }

@@ -8,15 +8,16 @@ import lombok.AllArgsConstructor;
 
 //--------------------- MemberInfo Entity Class ------------------------------//
 /**
- * Entity class representing member information in the Universal Athletics system.
+ * Entity class representing member information in the Universal Athletics
+ * system.
  * This class maps to the 'member_info' table in the database and contains
  * personal and contact information for each member.
  *
  */
 
 @Entity
+@Table(name = "Member_Info")
 @Data
-@Table(name = "member_info")
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberInfoEntity {
@@ -26,51 +27,51 @@ public class MemberInfoEntity {
            * Auto-generated using database identity strategy.
            */
           @Id
-          @Column(name = "member_id")
           @GeneratedValue(strategy = GenerationType.IDENTITY)
-          private int memberId;
+          @Column(name = "Member_ID")
+          private Integer id;
 
           /**
            * Member's first name.
            */
-          @Column(name = "first_name")
+          @Column(name = "First_Name")
           private String firstName;
 
           /**
            * Member's last name.
            */
-          @Column(name = "last_name")
+          @Column(name = "Last_Name")
           private String lastName;
 
           /**
            * Member's email address.
            * Used for communication and account identification.
            */
-          @Column(name = "email")
+          @Column(name = "Email")
           private String email;
 
           /**
            * Member's contact phone number.
            */
-          @Column(name = "phone")
+          @Column(name = "Phone")
           private String phone;
 
           /**
            * Member's biographical information.
            * Contains a brief description or background of the member.
            */
-          @Column(name = "biography")
+          @Column(name = "Biography")
           private String biography;
 
           /**
            * URL or path to member's profile picture.
            */
-          @Column(name = "profile_pic")
+          @Column(name = "Profile_Pic")
           private String profilePic;
 
           /**
            * Member's geographical location or address.
            */
-          @Column(name = "location")
+          @Column(name = "Location")
           private String location;
 }
