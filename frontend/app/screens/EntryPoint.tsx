@@ -1,9 +1,7 @@
-import { View, Text, Image } from 'react-native';
+import { View, Image } from 'react-native';
 import React from 'react';
 import { RouterProps } from '../types/RouterProps';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { Colors } from '../themes/colors/Colors';
-import { LinkButton } from '../components/buttons/LinkButton';
 import { HeaderText } from '../components/text/HeaderText';
 import "../../global.css";
 

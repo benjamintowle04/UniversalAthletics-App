@@ -1,17 +1,20 @@
-import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
-import { TextInput } from "react-native";
+import { TextInput, ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View, Alert } from "react-native";
 import { Image } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword} from "firebase/auth";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
-import {HeaderText} from "../components/text/HeaderText";
+import { HeaderText } from "../components/text/HeaderText";
+// import { GoogleSignin } from '@react-native-google-signin/google-signin';
+// import * as Google from "expo-auth-session/providers/google";
+// import "../../GoogleSignInConfig";
 
 const SignUp = () => {
     const [email, setEmail] = useState("");
     const [firstPassword, setFirstPassword] = useState("");
     const [secondPassword, setSecondPassword] = useState("");
+    
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
 
@@ -54,6 +57,24 @@ const SignUp = () => {
 
         signUp(email, firstPassword);
     };
+
+    // const signInWithGoogle = async () => {
+    //     try {
+    //         await GoogleSignin.hasPlayServices();
+    //         const userInfo = await GoogleSignin.signIn();
+    //         const idToken = userInfo.idToken;
+    //         if (idToken) {
+    //             const googleCredential = GoogleAuthProvider.credential(idToken);
+    //             const response = await signInWithCredential(auth, googleCredential);
+    //             console.log(response);
+    //         } else {
+    //             Alert.alert("Google Sign-In failed", "No ID token found");
+    //         }
+    //     } catch (error: any) {
+    //         console.log(error);
+    //         Alert.alert("Google Sign-In failed", error.message);
+    //     }
+    // };
 
     return (
         <View style={styles.container}>

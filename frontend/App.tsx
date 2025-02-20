@@ -7,8 +7,16 @@ import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
 import EntryPoint from './app/screens/EntryPoint';
 import Home from './app/screens/Home';
-import UserLocation from './app/screens/UserLocation';
+import GenInfo from './app/screens/GenInfo';
+import EnterSkills from './app/screens/EnterSkills';
 import React from 'react';
+import { UserProvider } from './app/contexts/UserContext';
+
+//TODO: 
+// 1. Enable Google Sign In
+// 2. Finish New User Screen Flow
+
+
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
 
@@ -21,6 +29,7 @@ export default function App() {
     title: '',
     headerBackTitle: 'Back'
   }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       console.log('User', user);
@@ -40,8 +49,18 @@ export default function App() {
   function PostLoginLayout() {
     if (newUser) {
       return (
-        <PostLoginStack.Navigator initialRouteName='UserLocation'>
-          <PostLoginStack.Screen name="UserLocation" component={UserLocation} />
+        <PostLoginStack.Navigator initialRouteName='GenInfo'>
+          <PostLoginStack.Screen 
+            name="GenInfo" 
+            component={GenInfo} 
+            options={{ headerShown: false }}
+          />
+
+          <PostLoginStack.Screen 
+            name="EnterSkills" 
+            component={EnterSkills} 
+            options={{ headerShown: false }}
+          />
         </PostLoginStack.Navigator>
       );
     }
@@ -56,7 +75,7 @@ export default function App() {
 
   function PreLoginLayout() {
     return (
-      <PreLoginStack.Navigator initialRouteName='Home'>
+      <PreLoginStack.Navigator initialRouteName='EntryPoint'>
         <PreLoginStack.Screen 
           name="EntryPoint" 
           component={EntryPoint} 
@@ -77,15 +96,15 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      {/* {user ? (   //Uncomment to test authentication
+    <UserProvider>
+      <NavigationContainer>
+        {/* {user ? (   //Uncomment to test authentication
+          <PostLoginLayout />
+        ) : (
+          <PreLoginLayout/>
+        )} */}
         <PostLoginLayout />
-      ) : (
-        <PreLoginLayout/>
-      )} */}
-      <PostLoginLayout />
-
-
-    </NavigationContainer>
+      </NavigationContainer>
+    </UserProvider>
   );
 }
