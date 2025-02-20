@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, TouchableOpacity, View } from "react-native";
-import { PlusCircleIcon } from "lucide-react-native";
+import { PencilIcon } from "lucide-react-native";
 
 // Reusable Profile Picture Component
 interface ProfilePictureProps {
@@ -20,7 +20,7 @@ export const ProfilePictureContainer: React.FC<ProfilePictureProps> = ({ imageUr
       onPress={onPickImage}
       className="absolute bottom-0 right-0 bg-blue-500 p-2 rounded-full border-2 border-white"
     >
-      <PlusCircleIcon size={24} color="white" />
+      <PencilIcon size={24} color="white" />
     </TouchableOpacity>
   </View>
 );

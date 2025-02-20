@@ -22,12 +22,6 @@ const GenInfo = ({ navigation }: RouterProps) => {
         return null; 
     }
 
-    const moveToEnterSkills = () => {
-        //handleSave();   Uncomment this line before pushing
-        navigation.navigate("EnterSkills");
-        console.log("Moving to Enter Skills");
-    } 
-
     const { userData, setUserData } = userContext;
 
     useEffect(() => {
@@ -51,6 +45,12 @@ const GenInfo = ({ navigation }: RouterProps) => {
         requestLocationPermission();
     }, []);
 
+    const moveToEnterSkills = () => {
+        //handleSave();   Uncomment this line before pushing
+        navigation.navigate("EnterSkills");
+        console.log("Moving to Enter Skills");
+    } 
+
     // const handleSave = () => {
     //     setUserData({ ...userData, firstName, lastName, phoneNumber, bio, location});
     // };
@@ -58,7 +58,9 @@ const GenInfo = ({ navigation }: RouterProps) => {
     return (
         <View className="flex-1 justify-center items-center p-4 bg-white">
             <LogoImageContainer />
-            <HeaderText text="Tell Us About Yourself"/>
+            <View className="w-full">
+                <HeaderText text="Tell Us About Yourself" />
+            </View>
             <TextInput
                 value={firstName}
                 className="h-10 border border-gray-400 mb-3 px-2 w-4/5"

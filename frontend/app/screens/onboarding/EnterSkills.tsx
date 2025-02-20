@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { SkillInputButton } from '../../components/buttons/SkillInputButton';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -9,11 +9,16 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { RouterProps } from '../../types/RouterProps';
 import '../../../global.css';
 import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
+import { UserContext } from '../../contexts/UserContext';
+
+
 
 
 const EnterSkills = ({ navigation }: RouterProps) => {
+    const userContext = useContext(UserContext);
 
-    //Will need to be refactored later once skills are in the database
+
+    //Will need to be refactored when skills can be pulled from the database
     const [checked, setChecked] = useState<{ [key: string]: boolean }>({
         basketball: false,
         soccer: false,
@@ -64,7 +69,7 @@ const EnterSkills = ({ navigation }: RouterProps) => {
     } 
 
     return (
-        <ScrollView className="mt-12 flex-1 bg-white p-4">
+        <ScrollView className="flex-1 bg-white p-4">
             <View className="items-center">
                 <LogoImageContainer />
                 <HeaderText text="What Are You Interested In?" />
@@ -79,7 +84,7 @@ const EnterSkills = ({ navigation }: RouterProps) => {
                                 ) : (
                                     <Icon name={skillIcon[key]} size={24} color="black" />
                                 )
-                                }
+                            }
                             checked={checked[key]}
                             onChange={() => onSkillSelected(key)}
                         />
