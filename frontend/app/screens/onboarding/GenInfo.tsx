@@ -1,11 +1,12 @@
 import { View, Text, Alert, TextInput, Image } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { UserContext } from '../../contexts/UserContext';
 import * as Location from 'expo-location';
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import "../../global.css";
-import { HeaderText } from '../components/text/HeaderText';
-import { RouterProps } from '../types/RouterProps';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import "../../../global.css";
+import { HeaderText } from '../../components/text/HeaderText';
+import { RouterProps } from '../../types/RouterProps';
+import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
 
 
 const GenInfo = ({ navigation }: RouterProps) => {
@@ -56,11 +57,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     return (
         <View className="flex-1 justify-center items-center p-4 bg-white">
-            <Image
-                source={require('../images/logo.png')}
-                className="w-48 h-48 mb-6"
-                resizeMode="contain"
-            />
+            <LogoImageContainer />
             <HeaderText text="Tell Us About Yourself"/>
             <TextInput
                 value={firstName}

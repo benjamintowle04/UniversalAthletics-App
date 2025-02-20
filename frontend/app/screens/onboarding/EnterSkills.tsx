@@ -1,14 +1,17 @@
 import React from 'react';
 import { View, Text, Image, ScrollView } from 'react-native';
 import { useState } from 'react';
-import { SkillInputButton } from '../components/buttons/SkillInputButton';
+import { SkillInputButton } from '../../components/buttons/SkillInputButton';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
-import { HeaderText } from '../components/text/HeaderText';
-import '../../global.css';
+import { HeaderText } from '../../components/text/HeaderText';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { RouterProps } from '../../types/RouterProps';
+import '../../../global.css';
+import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
 
 
-const EnterSkills = () => {
+const EnterSkills = ({ navigation }: RouterProps) => {
 
     //Will need to be refactored later once skills are in the database
     const [checked, setChecked] = useState<{ [key: string]: boolean }>({
@@ -55,14 +58,15 @@ const EnterSkills = () => {
         setChecked({ ...checked, [skill]: !checked[skill] });
     }
 
+    const moveToUploadProfilePicture = () => {
+        navigation.navigate("UploadProfilePicture");
+        console.log("Moving to Upload Profile Picture");
+    } 
+
     return (
         <ScrollView className="mt-12 flex-1 bg-white p-4">
             <View className="items-center">
-                <Image
-                    source={require('../images/logo.png')}
-                    className="w-32 h-32"
-                    resizeMode="contain"
-                />
+                <LogoImageContainer />
                 <HeaderText text="What Are You Interested In?" />
             </View>
             <View className="mt-6 flex-row flex-wrap justify-between ml-2 mr-2">
@@ -81,6 +85,11 @@ const EnterSkills = () => {
                         />
                     </View>
                 ))}
+            </View>
+            <View className='mt-6 flex-1 items-center justify-center'>
+                <View className="mx-auto w-50">
+                    <PrimaryButton title="Continue" onPress={moveToUploadProfilePicture} />
+                </View>
             </View>
         </ScrollView>
     );

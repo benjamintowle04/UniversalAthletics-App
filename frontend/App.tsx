@@ -7,10 +7,12 @@ import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
 import EntryPoint from './app/screens/EntryPoint';
 import Home from './app/screens/Home';
-import GenInfo from './app/screens/GenInfo';
-import EnterSkills from './app/screens/EnterSkills';
+import GenInfo from './app/screens/onboarding/GenInfo';
+import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
+import UploadProfilePicture from './app/screens/onboarding/UploadProfilePicture';
+import { Upload } from 'lucide-react-native';
 
 //TODO: 
 // 1. Enable Google Sign In
@@ -24,7 +26,7 @@ export default function App() {
   const [user, setUser] = useState<User | null >(null);
   const [newUser, setNewUser] = useState(false);
 
-  const preLoginHeaderOptions = {
+  const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
     headerBackTitle: 'Back'
@@ -37,7 +39,7 @@ export default function App() {
       if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
         setNewUser(true);
       } else {
-        setNewUser(true);  //Change to false later
+        setNewUser(true);  
       }
     });
 
@@ -53,13 +55,19 @@ export default function App() {
           <PostLoginStack.Screen 
             name="GenInfo" 
             component={GenInfo} 
-            options={{ headerShown: false }}
+            options={backButtonOnlyHeader}
           />
 
           <PostLoginStack.Screen 
             name="EnterSkills" 
             component={EnterSkills} 
-            options={{ headerShown: false }}
+            options={backButtonOnlyHeader}
+          />
+
+          <PostLoginStack.Screen 
+            name="UploadProfilePicture" 
+            component={UploadProfilePicture} 
+            options={backButtonOnlyHeader}
           />
         </PostLoginStack.Navigator>
       );
@@ -84,12 +92,12 @@ export default function App() {
         <PreLoginStack.Screen 
           name="Login" 
           component={Login}
-          options={preLoginHeaderOptions}
+          options={backButtonOnlyHeader}
         />
         <PreLoginStack.Screen 
           name="SignUp" 
           component={SignUp} 
-          options={preLoginHeaderOptions}
+          options={backButtonOnlyHeader}
         />
       </PreLoginStack.Navigator>
     );

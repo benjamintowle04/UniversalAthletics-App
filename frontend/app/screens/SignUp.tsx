@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword} from "firebase/auth";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
 import { HeaderText } from "../components/text/HeaderText";
+import { LogoImageContainer } from "../components/image_holders/LogoImageContainer";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 // import * as Google from "expo-auth-session/providers/google";
 // import "../../GoogleSignInConfig";
@@ -79,11 +80,7 @@ const SignUp = () => {
     return (
         <View style={styles.container}>
             <KeyboardAvoidingView behavior="padding">
-                <Image
-                    source={require('../images/logo.png')}
-                    className="w-48 h-48 "
-                    resizeMode="contain"
-                />
+                <LogoImageContainer />
                 <HeaderText text="Sign Up"/>
                 <TextInput 
                     value={email} 

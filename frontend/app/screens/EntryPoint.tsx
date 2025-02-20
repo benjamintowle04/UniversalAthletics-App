@@ -4,6 +4,7 @@ import { RouterProps } from '../types/RouterProps';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { HeaderText } from '../components/text/HeaderText';
 import "../../global.css";
+import { LogoImageContainer } from '../components/image_holders/LogoImageContainer';
 
 
 const EntryPoint = ({ navigation }: RouterProps) => {
@@ -20,11 +21,7 @@ const EntryPoint = ({ navigation }: RouterProps) => {
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
-      <Image
-        source={require('../images/logo.png')}
-        className="w-48 h-48 "
-        resizeMode="contain"
-      />
+      <LogoImageContainer />
       <HeaderText text='Welcome to UA' />
 
       <View>
