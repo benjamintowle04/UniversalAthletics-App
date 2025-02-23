@@ -7,23 +7,26 @@ import "../../../global.css";
 import { HeaderText } from '../../components/text/HeaderText';
 import { RouterProps } from '../../types/RouterProps';
 import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
-
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const GenInfo = ({ navigation }: RouterProps) => {
-    const [location, setLocation] = useState<string | null>(null);
-    const [firstName, setFirstName] = useState<string>('');
-    const [lastName, setLastName] = useState<string>('');
-    const [phoneNumber, setPhoneNumber] = useState<string>('');
-    const [bio, setBio] = useState<string>('');
     const userContext = useContext(UserContext);
-
     if (!userContext) {
-        Alert.alert('Error loading User Data');
-        return null; 
+        Alert.alert("Error Fetching User Context");
+        return null;
     }
 
     const { userData, setUserData } = userContext;
 
+    const [firstName, setFirstName] = useState<string>(userData.firstName || '');
+    const [lastName, setLastName] = useState<string>(userData.lastName || '');
+    const [bio, setBio] = useState<string>(userData.bio || '');
+    const [location, setLocation] = useState<string | null>(userData.location || null);
+
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [bioError, setBioError] = useState<string | null>(null);
+
+    
     useEffect(() => {
         const requestLocationPermission = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -31,67 +34,129 @@ const GenInfo = ({ navigation }: RouterProps) => {
                 Alert.alert('Permission to access location was denied');
                 setLocation("");
                 setUserData({ ...userData, location: ""});
-                console.log("Location permission denied");
             } else {
                 let location = await Location.getCurrentPositionAsync({});
                 let locationString = `Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}`;
                 setLocation(locationString);
                 setUserData({ ...userData, location: locationString});
-                console.log("Location permission granted");
-                console.log("Location string:", locationString);
-                console.log("Updated userData:", { ...userData, location: locationString });
             }
         };
         requestLocationPermission();
     }, []);
 
-    const moveToEnterSkills = () => {
-        //handleSave();   Uncomment this line before pushing
-        navigation.navigate("EnterSkills");
-        console.log("Moving to Enter Skills");
-    } 
 
-    // const handleSave = () => {
-    //     setUserData({ ...userData, firstName, lastName, phoneNumber, bio, location});
-    // };
+    // Function to format phone number as (XXX) XXX-XXXX
+    const formatPhoneNumber = (input: string) => {
+        const digits = input.replace(/\D/g, ""); // Remove non-numeric characters
+        let formatted = "";
+
+        if (digits.length > 0) {
+            formatted = `(${digits.slice(0, 3)}`;
+        }
+        if (digits.length >= 4) {
+            formatted += `) ${digits.slice(3, 6)}`;
+        }
+        if (digits.length >= 7) {
+            formatted += `-${digits.slice(6, 10)}`;
+        }
+
+        return formatted;
+    };
+    //Need to set the hook after the function is declared
+    const [phoneNumber, setPhoneNumber] = useState<string>(formatPhoneNumber(userData.phoneNumber || ''));
+
+
+    // Function to handle phone number input
+    const handlePhoneNumberChange = (text: string) => {
+        const formatted = formatPhoneNumber(text);
+        setPhoneNumber(formatted);
+
+        const onlyNumbers = text.replace(/\D/g, ""); // Extract only digits
+        if (onlyNumbers.length < 10) {
+            setPhoneError("Phone number must be at least 10 digits.");
+        } else {
+            setPhoneError(null);
+        }
+    };
+
+    const validateBio = (text: string) => {
+        const words = text.trim().split(/\s+/);
+        if (words.length > 200) {
+            setBioError("Bio cannot exceed 200 words.");
+        } else {
+            setBio(text);
+            setBioError(null);
+        }
+    };
+
+    const handleSave = () => {
+        if (phoneError || bioError) {
+            Alert.alert("Please fix the errors before proceeding.");
+            return;
+        }
+        try {
+            setUserData({ ...userData, firstName, lastName, phoneNumber, bio, location });
+        } catch (error) {
+            Alert.alert("Error Saving User Data");
+        }
+    };
+
+    const moveToEnterSkills = () => {
+        handleSave();
+        if (!phoneError && !bioError) {
+            navigation.navigate("EnterSkills");
+        }
+    };
 
     return (
+        <KeyboardAwareScrollView className="bg-white" enableOnAndroid={true} extraScrollHeight={80} extraHeight={120}>
+
         <View className="flex-1 justify-center items-center p-4 bg-white">
-            <LogoImageContainer />
-            <View className="w-full">
-                <HeaderText text="Tell Us About Yourself" />
-            </View>
-            <TextInput
-                value={firstName}
-                className="h-10 border border-gray-400 mb-3 px-2 w-4/5"
-                placeholder="First Name"
-                onChangeText={(text) => setFirstName(text)}
-            />
-            <TextInput
-                value={lastName}
-                className="h-10 border border-gray-400 mb-3 px-2 w-4/5"
-                placeholder="Last Name"
-                onChangeText={(text) => setLastName(text)}
-            />
-            <TextInput
-                value={phoneNumber}
-                className="h-10 border border-gray-400 mb-3 px-2 w-4/5"
-                placeholder="Phone Number"
-                keyboardType="phone-pad"
-                onChangeText={(text) => setPhoneNumber(text)}
-            />
-            <TextInput
-                value={bio}
-                className="h-24 border border-gray-400 mb-3 px-2 w-4/5"
-                placeholder="Tell us about yourself"
-                multiline={true}
-                numberOfLines={4}
-                onChangeText={(text) => setBio(text)}
-            />
-            <View>
-                <PrimaryButton title="Continue" onPress={moveToEnterSkills} />
-            </View>
+                <LogoImageContainer />
+                <View className="w-full">
+                    <HeaderText text="Tell Us About Yourself" />
+                </View>
+                <TextInput 
+                    value={firstName}
+                    className="h-10 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
+                    placeholder="First Name"
+                    onChangeText={setFirstName}
+                    returnKeyType="done"
+                />
+                <TextInput
+                    value={lastName}
+                    className="h-10 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
+                    placeholder="Last Name"
+                    onChangeText={setLastName}
+                    returnKeyType="done"
+                />
+                <TextInput
+                    value={phoneNumber}
+                    className="h-10 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
+                    placeholder="Phone Number"
+                    keyboardType="phone-pad"
+                    onChangeText={handlePhoneNumberChange}
+                    returnKeyType="done"
+                    maxLength={14} // Prevents exceeding (XXX) XXX-XXXX format
+                />
+                {phoneError && <Text className="text-red-500">{phoneError}</Text>}
+
+                <TextInput
+                    value={bio}
+                    className="h-24 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
+                    placeholder="Bio"
+                    multiline={true}
+                    numberOfLines={4}
+                    onChangeText={validateBio}
+                    returnKeyType="done"
+                />
+                {bioError && <Text className="text-red-500">{bioError}</Text>}
+
+                <View>
+                    <PrimaryButton title="Continue" onPress={moveToEnterSkills} />
+                </View>
         </View>
+        </KeyboardAwareScrollView>
     );
 };
 

@@ -9,8 +9,6 @@ import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { HeaderText } from "../components/text/HeaderText";
 
 
-
-
 const Login = ( { navigation }: RouterProps) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -48,7 +46,8 @@ const Login = ( { navigation }: RouterProps) => {
             style={styles.input} 
             autoCapitalize="none" 
             placeholder="Enter Email"
-            onChangeText={(text) => setEmail(text)}>
+            onChangeText={(text) => setEmail(text)}
+            returnKeyType="done">
         </TextInput>
 
         <TextInput 
@@ -57,7 +56,8 @@ const Login = ( { navigation }: RouterProps) => {
             autoCapitalize="none" 
             placeholder="Enter Password"
             secureTextEntry={true}
-            onChangeText={(text) => setPassword(text)}>
+            onChangeText={(text) => setPassword(text)}
+            returnKeyType="done">
         </TextInput>
 
         {

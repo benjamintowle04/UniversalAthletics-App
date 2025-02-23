@@ -11,7 +11,7 @@ import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
-import UploadProfilePicture from './app/screens/onboarding/UploadProfilePicture';
+import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
 
 //TODO: 
@@ -39,7 +39,7 @@ export default function App() {
       if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
         setNewUser(true);
       } else {
-        setNewUser(true);  
+        setNewUser(false);  
       }
     });
 
@@ -67,6 +67,12 @@ export default function App() {
           <PostLoginStack.Screen 
             name="UploadProfilePicture" 
             component={UploadProfilePicture} 
+            options={backButtonOnlyHeader}
+          />
+
+          <PostLoginStack.Screen 
+            name="Home" 
+            component={Home} 
             options={backButtonOnlyHeader}
           />
         </PostLoginStack.Navigator>
@@ -106,11 +112,11 @@ export default function App() {
   return (
     <UserProvider>
       <NavigationContainer>
-        {/* {user ? (   //Uncomment to test authentication
+        {user ? (   //Uncomment to test authentication
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )} */}
+        )}
         <PostLoginLayout />
       </NavigationContainer>
     </UserProvider>

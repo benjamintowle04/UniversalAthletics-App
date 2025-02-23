@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput, ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View, Alert } from "react-native";
-import { Image } from "react-native";
 import { createUserWithEmailAndPassword} from "firebase/auth";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { Colors } from "../themes/colors/Colors";
 import { HeaderText } from "../components/text/HeaderText";
 import { LogoImageContainer } from "../components/image_holders/LogoImageContainer";
+import { UserContext } from "../contexts/UserContext";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 // import * as Google from "expo-auth-session/providers/google";
 // import "../../GoogleSignInConfig";
@@ -15,8 +15,13 @@ const SignUp = () => {
     const [email, setEmail] = useState("");
     const [firstPassword, setFirstPassword] = useState("");
     const [secondPassword, setSecondPassword] = useState("");
-    
     const [loading, setLoading] = useState(false);
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        Alert.alert("Error Fetching User Data")
+        return;
+    }
+    const { userData, setUserData } = userContext;
     const auth = FIREBASE_AUTH;
 
     const signUp = async (email: string, password: string) => {  
@@ -87,7 +92,8 @@ const SignUp = () => {
                     style={styles.input} 
                     autoCapitalize="none" 
                     placeholder="Enter Email"
-                    onChangeText={(text) => setEmail(text)}>
+                    onChangeText={(text) => setEmail(text)}
+                    returnKeyType="done">
                 </TextInput>
                 <TextInput 
                     value={firstPassword} 
@@ -95,7 +101,8 @@ const SignUp = () => {
                     autoCapitalize="none" 
                     placeholder="Enter Password"
                     secureTextEntry={true}
-                    onChangeText={(text) => setFirstPassword(text)}>
+                    onChangeText={(text) => setFirstPassword(text)}
+                    returnKeyType="done">
                 </TextInput> 
                 <TextInput 
                     value={secondPassword} 
@@ -103,7 +110,8 @@ const SignUp = () => {
                     autoCapitalize="none" 
                     placeholder="Confirm Password"
                     secureTextEntry={true}
-                    onChangeText={(text) => setSecondPassword(text)}>
+                    onChangeText={(text) => setSecondPassword(text)}
+                    returnKeyType="done">
                 </TextInput>
                 {
                     loading ? 
