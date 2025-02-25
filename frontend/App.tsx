@@ -1,57 +1,122 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH } from './firebase_config';
+import { FIREBASE_AUTH } from './firebase_config';  
 import Login from './app/screens/Login';
 import SignUp from './app/screens/SignUp';
+import EntryPoint from './app/screens/EntryPoint';
 import Home from './app/screens/Home';
+import GenInfo from './app/screens/onboarding/GenInfo';
+import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
+import { UserProvider } from './app/contexts/UserContext';
+import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
+import { Upload } from 'lucide-react-native';
 
-const Stack = createNativeStackNavigator();
-const InsideStack = createNativeStackNavigator();
+//TODO: 
+// 1. Get Google Sign-In to Work 
+
+
+const PreLoginStack = createNativeStackNavigator();
+const PostLoginStack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState<User | null >(null);
+  const [newUser, setNewUser] = useState(false);
+
+  const backButtonOnlyHeader = {
+    headerShown: true,
+    title: '',
+    headerBackTitle: 'Back'
+  }
 
   useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (user) => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       console.log('User', user);
       setUser(user);
+      if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
+        setNewUser(true);
+      } else {
+        setNewUser(false);  
+      }
     });
-  }, [user]);
 
-  function InsideLayout() {
+    return () => unsubscribe();
+  }, []);
+  
+
+
+  function PostLoginLayout() {
+    if (newUser) {
+      return (
+        <PostLoginStack.Navigator initialRouteName='GenInfo'>
+          <PostLoginStack.Screen 
+            name="GenInfo" 
+            component={GenInfo} 
+            options={backButtonOnlyHeader}
+          />
+
+          <PostLoginStack.Screen 
+            name="EnterSkills" 
+            component={EnterSkills} 
+            options={backButtonOnlyHeader}
+          />
+
+          <PostLoginStack.Screen 
+            name="UploadProfilePicture" 
+            component={UploadProfilePicture} 
+            options={backButtonOnlyHeader}
+          />
+
+          <PostLoginStack.Screen 
+            name="Home" 
+            component={Home} 
+            options={backButtonOnlyHeader}
+          />
+        </PostLoginStack.Navigator>
+      );
+    }
+    else {
+      return (
+        <PostLoginStack.Navigator initialRouteName='Home'>
+          <PostLoginStack.Screen name="Home" component={Home} />
+        </PostLoginStack.Navigator>
+      );
+    }
+  }
+
+  function PreLoginLayout() {
     return (
-      <InsideStack.Navigator>
-        <InsideStack.Screen name="Home" component={Home} />
-      </InsideStack.Navigator>
+      <PreLoginStack.Navigator initialRouteName='EntryPoint'>
+        <PreLoginStack.Screen 
+          name="EntryPoint" 
+          component={EntryPoint} 
+          options={{ headerShown: false }}
+        />
+        <PreLoginStack.Screen 
+          name="Login" 
+          component={Login}
+          options={backButtonOnlyHeader}
+        />
+        <PreLoginStack.Screen 
+          name="SignUp" 
+          component={SignUp} 
+          options={backButtonOnlyHeader}
+        />
+      </PreLoginStack.Navigator>
     );
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        {user ? (
-          <Stack.Screen name="Inside" component={InsideLayout} options={{ headerShown: false }} />
+    <UserProvider>
+      <NavigationContainer>
+        {user ? (   //Uncomment to test authentication
+          <PostLoginLayout />
         ) : (
-          <>
-          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-          <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
-          </>
+          <PreLoginLayout/>
         )}
-      </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+    </UserProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

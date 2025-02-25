@@ -1,22 +1,14 @@
-import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
 import { TextInput } from "react-native";
-import { Button } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { NavigationProp } from "@react-navigation/native";
+import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
-import { Colors } from '../themes/colors/Colors';
-import { PrimaryButton } from "../components/button_components/PrimaryButton";
-import HeaderText from "../components/text_components/HeaderText";
-import LinkButton from "../components/button_components/LinkButton";
+import { PrimaryButton } from "../components/buttons/PrimaryButton";
+import { HeaderText } from "../components/text/HeaderText";
+import "../../global.css"
 
-
-interface RouterProps {
-    navigation: NavigationProp<any, any>;
-}
 
 const Login = ( { navigation }: RouterProps) => {
     const [email, setEmail] = useState("");
@@ -38,19 +30,15 @@ const Login = ( { navigation }: RouterProps) => {
         }
     };
 
-    const moveToSignUp = () => {
-        navigation.navigate("SignUp");
-        console.log("Moving to Sign Up");
-    };
 
-  return (
-    <View style={styles.container}>
+    return (
+      <View style={styles.container}>
         <KeyboardAvoidingView behavior="padding">
-
-        <Image 
+          <Image
             source={require('../images/logo.png')}
-            style={styles.uaLogo}
-        />
+            className="w-48 h-48 "
+            resizeMode="contain"
+          />
 
         <HeaderText text="Login" />
 
@@ -59,7 +47,10 @@ const Login = ( { navigation }: RouterProps) => {
             style={styles.input} 
             autoCapitalize="none" 
             placeholder="Enter Email"
-            onChangeText={(text) => setEmail(text)}>
+            onChangeText={(text) => setEmail(text)}
+            returnKeyType="done"
+            className="rounded-md">
+            
         </TextInput>
 
         <TextInput 
@@ -68,24 +59,29 @@ const Login = ( { navigation }: RouterProps) => {
             autoCapitalize="none" 
             placeholder="Enter Password"
             secureTextEntry={true}
-            onChangeText={(text) => setPassword(text)}>
+            onChangeText={(text) => setPassword(text)}
+            returnKeyType="done"
+            className="rounded-md">
         </TextInput>
 
-        {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-            <>
-            <PrimaryButton title="Login" onPress={signIn} />
-            <LinkButton title="Create New Account" onPress={moveToSignUp} />
-          
+        {
+          loading ? 
+            (
+              <ActivityIndicator size="large" color="#0000ff" /> 
+            ) 
+            : 
+            (
+              <>
+                <PrimaryButton title="Login" onPress={signIn} />
+              </>
+            )
+        }
 
-            </>
-        )}
+        
         </KeyboardAvoidingView>
 
-
-    </View>
-  );
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({

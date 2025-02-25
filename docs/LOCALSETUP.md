@@ -67,7 +67,29 @@ Ensure you have the following installed on your system:
    ```
    This should display the Node.js and npm version numbers.
 
-### 5. Install Maven
+
+### 5. Clone the Repository
+1. Open a terminal or command prompt.
+2. Run the following commands to clone the repository and navigate to the project directory:
+   ```sh
+   git clone https://github.com/your-repo/Universal-Athletics-App.git
+   cd Universal-Athletics-App
+   ```
+
+
+
+### 6. Install Expo CLI
+1. Open a terminal or command prompt and type the following command to install Expo CLI globally:
+   ```bash
+   npm install -g expo-cli
+   ```
+2. Verify the installation:
+   ```bash
+   expo --version   # Should return the Expo CLI version number
+   ```
+
+
+### 7. Install Maven
 1. Download Maven from the official website: [maven.apache.org](https://maven.apache.org/download.cgi).
 2. Extract the downloaded archive to a directory of your choice.
 3. Add the `bin` directory of the extracted Maven directory to the `PATH` environment variable.
@@ -90,23 +112,8 @@ Ensure you have the following installed on your system:
     ```
     This should display the Maven version number.
 
-### 6. Install Expo CLI
-1. Open a terminal or command prompt and type the following command to install Expo CLI globally:
-   ```bash
-   npm install -g expo-cli
-   ```
-2. Verify the installation:
-   ```bash
-   expo --version   # Should return the Expo CLI version number
-   ```
+### TODO: Include instructions for tailwind installation
 
-### 7. Clone the Repository
-1. Open a terminal or command prompt.
-2. Run the following commands to clone the repository and navigate to the project directory:
-   ```sh
-   git clone https://github.com/your-repo/Universal-Athletics-App.git
-   cd Universal-Athletics-App
-   ```
 
 ### 8. Backend Setup (Spring Boot with Maven)
 1. Navigate to the backend directory:
