@@ -15,8 +15,7 @@ import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
 
 //TODO: 
-// 1. Figure out how to read userData context values
-// 2. Get Google Sign-In to Work 
+// 1. Get Google Sign-In to Work 
 
 
 const PreLoginStack = createNativeStackNavigator();
@@ -117,7 +116,6 @@ export default function App() {
         ) : (
           <PreLoginLayout/>
         )}
-        <PostLoginLayout />
       </NavigationContainer>
     </UserProvider>
   );

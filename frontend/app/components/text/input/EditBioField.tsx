@@ -18,7 +18,7 @@ export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange }) =
   };
 
   return (
-    <View className="flex-row items-center border border-gray-300 rounded-md px-1 py-0.5 w-2/3 h-24 bg-white">
+    <View className="flex-rows border border-gray-300 rounded-md px-1 py-0.5 w-2/3 h-24 bg-white">
       {isEditing ? (
         <TextInput
           value={text}

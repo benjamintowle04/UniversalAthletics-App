@@ -7,26 +7,26 @@ import { Colors } from "../themes/colors/Colors";
 import { HeaderText } from "../components/text/HeaderText";
 import { LogoImageContainer } from "../components/image_holders/LogoImageContainer";
 import { UserContext } from "../contexts/UserContext";
-// import { GoogleSignin } from '@react-native-google-signin/google-signin';
-// import * as Google from "expo-auth-session/providers/google";
-// import "../../GoogleSignInConfig";
+import "../../global.css"
+
 
 const SignUp = () => {
     const [email, setEmail] = useState("");
     const [firstPassword, setFirstPassword] = useState("");
     const [secondPassword, setSecondPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const auth = FIREBASE_AUTH;
+
+
     const userContext = useContext(UserContext);
     if (!userContext) {
         Alert.alert("Error Fetching User Data")
         return;
     }
     const { userData, setUserData } = userContext;
-    const auth = FIREBASE_AUTH;
+
 
     const signUp = async (email: string, password: string) => {  
-        console.log("ASYNC Email: " + email);
-        console.log("ASYNC Password: " + password);
         setLoading(true);
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
@@ -48,9 +48,6 @@ const SignUp = () => {
     };
 
     const handleSignUp = () => {
-        console.log("First Password: " + firstPassword);
-        console.log("Second Password: " + secondPassword);
-
         if (firstPassword !== secondPassword) {
             alert("Passwords do not match");
             return;
@@ -60,32 +57,16 @@ const SignUp = () => {
             alert("Password must be at least 6 characters long, contain at least one letter, one number, and one special character.");
             return;
         }
-
+        setUserData({...userData, email: email})
         signUp(email, firstPassword);
     };
-
-    // const signInWithGoogle = async () => {
-    //     try {
-    //         await GoogleSignin.hasPlayServices();
-    //         const userInfo = await GoogleSignin.signIn();
-    //         const idToken = userInfo.idToken;
-    //         if (idToken) {
-    //             const googleCredential = GoogleAuthProvider.credential(idToken);
-    //             const response = await signInWithCredential(auth, googleCredential);
-    //             console.log(response);
-    //         } else {
-    //             Alert.alert("Google Sign-In failed", "No ID token found");
-    //         }
-    //     } catch (error: any) {
-    //         console.log(error);
-    //         Alert.alert("Google Sign-In failed", error.message);
-    //     }
-    // };
 
     return (
         <View style={styles.container}>
             <KeyboardAvoidingView behavior="padding">
-                <LogoImageContainer />
+                <View className="items-center">
+                    <LogoImageContainer />
+                </View>
                 <HeaderText text="Sign Up"/>
                 <TextInput 
                     value={email} 
@@ -93,7 +74,8 @@ const SignUp = () => {
                     autoCapitalize="none" 
                     placeholder="Enter Email"
                     onChangeText={(text) => setEmail(text)}
-                    returnKeyType="done">
+                    returnKeyType="done"
+                    className="rounded-md">
                 </TextInput>
                 <TextInput 
                     value={firstPassword} 
@@ -101,8 +83,12 @@ const SignUp = () => {
                     autoCapitalize="none" 
                     placeholder="Enter Password"
                     secureTextEntry={true}
+                    textContentType="oneTimeCode"                    
+                    autoComplete="off"  
                     onChangeText={(text) => setFirstPassword(text)}
-                    returnKeyType="done">
+                    returnKeyType="done"
+                    autoCorrect={false}
+                    className="rounded-md">
                 </TextInput> 
                 <TextInput 
                     value={secondPassword} 
@@ -110,8 +96,12 @@ const SignUp = () => {
                     autoCapitalize="none" 
                     placeholder="Confirm Password"
                     secureTextEntry={true}
+                    textContentType="oneTimeCode"                    
+                    autoComplete="off"    
                     onChangeText={(text) => setSecondPassword(text)}
-                    returnKeyType="done">
+                    returnKeyType="done"
+                    autoCorrect={false}
+                    className="rounded-md">
                 </TextInput>
                 {
                     loading ? 

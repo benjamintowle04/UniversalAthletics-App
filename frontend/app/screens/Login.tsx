@@ -7,6 +7,7 @@ import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { HeaderText } from "../components/text/HeaderText";
+import "../../global.css"
 
 
 const Login = ( { navigation }: RouterProps) => {
@@ -47,7 +48,9 @@ const Login = ( { navigation }: RouterProps) => {
             autoCapitalize="none" 
             placeholder="Enter Email"
             onChangeText={(text) => setEmail(text)}
-            returnKeyType="done">
+            returnKeyType="done"
+            className="rounded-md">
+            
         </TextInput>
 
         <TextInput 
@@ -57,7 +60,8 @@ const Login = ( { navigation }: RouterProps) => {
             placeholder="Enter Password"
             secureTextEntry={true}
             onChangeText={(text) => setPassword(text)}
-            returnKeyType="done">
+            returnKeyType="done"
+            className="rounded-md">
         </TextInput>
 
         {

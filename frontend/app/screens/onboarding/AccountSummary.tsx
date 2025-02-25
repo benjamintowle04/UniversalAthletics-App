@@ -48,8 +48,13 @@ const AccountSummary = ({ navigation }: RouterProps) => {
   };
 
   const handleButtonPress = () => {
-    navigation.navigate("Home");
+    if (!userData.firstName || !userData.lastName || !userData.email || !userData.phoneNumber) {
+      Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
+      return;
+    }
     //Post the data
+    navigation.navigate("Home");
+    
   };
 
   return (
@@ -98,10 +103,10 @@ const AccountSummary = ({ navigation }: RouterProps) => {
             <EditBioField value={userData.bio} onChange={(text) => handleFieldChange("bio", text)} />
           </View>
         </View>
-        <View>
-          <PrimaryButton title="Get Started" onPress={handleButtonPress} />
-        </View>
       </KeyboardAwareScrollView>
+      <View>
+          <PrimaryButton title="Get Started" onPress={handleButtonPress} />
+      </View>
     </View>
   );
 };

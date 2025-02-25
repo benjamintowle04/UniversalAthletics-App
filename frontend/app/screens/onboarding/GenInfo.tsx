@@ -90,6 +90,11 @@ const GenInfo = ({ navigation }: RouterProps) => {
     };
 
     const handleSave = () => {
+        if (!userData.firstName || !userData.lastName || !userData.phoneNumber) {
+            Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
+            return;
+          }
+
         if (phoneError || bioError) {
             Alert.alert("Please fix the errors before proceeding.");
             return;
