@@ -1,6 +1,6 @@
 package com.universalathletics.controllers;
 
-import com.universalathletics.models.Image;
+import com.universalathletics.entities.ImageEntity;
 import com.universalathletics.repositories.ImageRepository;
 import com.universalathletics.services.GoogleCloudStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +22,10 @@ public class ImageController {
 
     @PostMapping("/upload")
     public String uploadImage(@RequestParam("file") MultipartFile file,
-                              @RequestParam("folder") String folder) throws IOException {
+                            @RequestParam("folder") String folder) throws IOException {
         String imageUrl = storageService.uploadFile(file, folder);
 
-        Image image = new Image();
+        ImageEntity image = new ImageEntity();
         image.setImageUrl(imageUrl);
         imageRepository.save(image);
 
@@ -33,7 +33,7 @@ public class ImageController {
     }
 
     @GetMapping
-    public List<Image> getAllImages() {
+    public List<ImageEntity> getAllImages() {
         return imageRepository.findAll();
     }
 }

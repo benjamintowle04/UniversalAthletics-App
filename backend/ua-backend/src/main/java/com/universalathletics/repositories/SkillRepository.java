@@ -3,19 +3,19 @@ package com.universalathletics.repositories;
 //------------------------------- imports ------------------------------------//
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.universalathletics.entities.ImageEntity;
+import com.universalathletics.entities.SkillEntity;
 
-//--------------------- Image Repository Interface -------------------------//
+//--------------------- Skill Repository Interface -------------------------//
 /**
- * Repository interface for managing ImageEntity persistence operations.
+ * Repository interface for managing SkillEntity persistence operations.
  * Extends JpaRepository to provide standard CRUD operations and additional
- * query methods for image management.
+ * query methods for skill management.
  *
- * This repository handles all database interactions for stored images,
- * including creating, reading, updating, and deleting image records.
+ * This repository handles all database interactions for athletic skills,
+ * including creating, reading, updating, and deleting skill records.
  */
 @Repository
-public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
+public interface SkillRepository extends JpaRepository<SkillEntity, Integer> {
           // Inherits standard CRUD operations from JpaRepository
           // Additional custom query methods can be added here as needed
 }
