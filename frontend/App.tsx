@@ -14,8 +14,7 @@ import { UserProvider } from './app/contexts/UserContext';
 import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
 
-//TODO: 
-// 1. Get Google Sign-In to Work 
+
 
 
 const PreLoginStack = createNativeStackNavigator();

@@ -4,6 +4,8 @@ DROP TABLE IF EXISTS Member_Skill;
 DROP TABLE IF EXISTS Member_Info;
 DROP TABLE IF EXISTS Skill;
 
+
+
 CREATE TABLE Member_Info(
     Member_ID INT(4) NOT NULL AUTO_INCREMENT, 
     First_Name NCHAR(20),
@@ -13,20 +15,40 @@ CREATE TABLE Member_Info(
     Biography NCHAR(200),
     Profile_Pic NCHAR(50),
     Location NCHAR(50),
+    Firebase_ID NCHAR(30),
     PRIMARY KEY (Member_ID)
 );
 
-#INSERT INTO Staff (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location) VALUES ();
+#INSERT INTO Staff (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location, Firebase_ID) VALUES ();
 
 CREATE TABLE Skill(
     Skill_ID INT(4) NOT NULL AUTO_INCREMENT,  
     Title NCHAR(20) NOT NULL,
-    Grade NCHAR(10) NOT NULL, 
-    Info NCHAR(50) NOT NULL,
     PRIMARY KEY (Skill_ID)
 );
 
-#INSERT INTO Skill (Skill_ID, Title, Grade, Info) VALUES ();
+INSERT INTO Skill (Title) VALUES 
+    ('basketball'),
+    ('soccer'),
+    ('tennis'),
+    ('swimming'),
+    ('golf'),
+    ('running'),
+    ('biking'),
+    ('yoga'),
+    ('weightlifting'),
+    ('dance'),
+    ('boxing'),
+    ('football'),
+    ('baseball'),
+    ('volleyball'),
+    ('track_running'),
+    ('track_throwing'),
+    ('ultimate_frisbee'),
+    ('disc_golf'),
+    ('wrestling'),
+    ('spikeball'),
+    ('pickleball');
 
 CREATE TABLE Member_Skill(
     Member_ID INT(4) NOT NULL,
