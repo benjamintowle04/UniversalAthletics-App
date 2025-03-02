@@ -1,10 +1,12 @@
 package com.universalathletics.entities;
 
+
 //------------------------------- imports ------------------------------------//
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.util.List;
 
 //--------------------- MemberInfo Entity Class ------------------------------//
 /**
@@ -67,11 +69,46 @@ public class MemberInfoEntity {
            * URL or path to member's profile picture.
            */
           @Column(name = "Profile_Pic")
-          private String profilePic;
+          private String profilePic;    
 
           /**
            * Member's geographical location or address.
            */
           @Column(name = "Location")
           private String location;
+
+           /**
+           * Member's unique authentication token.
+           */
+          @Column(name = "Firebase_ID")
+          private String firebaseID;
+
+
+          // Define the junction table for many-to-many relationship with Skills
+          @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+          @JoinTable(
+                    name = "Member_Skill",
+                    joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"),
+                    inverseJoinColumns = @JoinColumn(name = "SKill_ID", referencedColumnName = "Skill_ID")
+          )
+          private List<SkillEntity> skill;
+
+
+          /**
+           * Getter used by MemberInfoService to get the attached skills of a certain member
+           * @return skill, the instance list of skills for MemberInfo
+           */
+          public List<SkillEntity> getSkills() {
+            return this.skill;
+          }
+
+          /**
+           * Setter used by MemberInfoService to save a set of skills to a member
+           * @param skill
+           */
+          public void setSkills(List<SkillEntity> skill) {
+            this.skill = skill;
+          } 
+
+
 }

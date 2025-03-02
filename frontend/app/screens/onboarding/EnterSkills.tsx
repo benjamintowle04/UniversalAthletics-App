@@ -16,6 +16,7 @@ import { UserContext } from '../../contexts/UserContext';
 
 const EnterSkills = ({ navigation }: RouterProps) => {
     const userContext = useContext(UserContext);
+    const [userSkills, setUserSkills] = useState([]);
 
 
     //Will need to be refactored when skills can be pulled from the database
@@ -34,30 +35,14 @@ const EnterSkills = ({ navigation }: RouterProps) => {
         football: false,
         baseball: false,
         volleyball: false,
-        track: false,
-        frisbee: false,
-      });
-
-      const [skillIcon, setSkillIcon] = useState<{ [key: string]: string }>({
-        basketball: "basketball-sharp",
-        soccer: "football-sharp",
-        tennis: "tennisball-sharp",
-        swimming: "water-sharp",
-        golf: "golf-sharp",
-        running: "fitness-sharp",
-        biking: "bicycle-sharp",
-        yoga: "fitness-sharp",
-        weightlifting: "barbell-sharp",
-        dance: "musical-notes-sharp",
-        casualGames: "game-controller-sharp",
-        boxing: "boxing-glove",
-        football: "american-football-sharp",
-        baseball: "baseball-sharp",
-        volleyball: "volleyball",
-        track: "fitness-sharp",
-        frisbee: "disc-sharp",
-      });
-
+        track_running: false,
+        track_throwing: false,
+        ultimate_frisbee: false,
+        disc_golf: false,
+        wrestling: false,
+        spikeball: false, 
+        pickleball: false,
+    });
 
     const onSkillSelected = (skill: string) => {
         setChecked({ ...checked, [skill]: !checked[skill] });
@@ -79,12 +64,6 @@ const EnterSkills = ({ navigation }: RouterProps) => {
                     <View key={key} className="mb-4">
                         <SkillInputButton
                             skill={key}
-                            icon={(key === "boxing" || key === "volleyball") ? (
-                                    <MaterialIcon name={skillIcon[key]} size={24} color="black" />
-                                ) : (
-                                    <Icon name={skillIcon[key]} size={24} color="black" />
-                                )
-                            }
                             checked={checked[key]}
                             onChange={() => onSkillSelected(key)}
                         />

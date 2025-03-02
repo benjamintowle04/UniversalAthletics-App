@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.util.List;
 
 //-------------------------- Skill Entity Class ------------------------------//
 /**
@@ -16,7 +17,7 @@ import lombok.AllArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "skills")
+@Table(name = "skill")
 @NoArgsConstructor
 @AllArgsConstructor
 public class SkillEntity {
@@ -28,7 +29,7 @@ public class SkillEntity {
           @Id
           @Column(name = "skill_id")
           @GeneratedValue(strategy = GenerationType.IDENTITY)
-          private int skillId;
+          private int skill_id;
 
           /**
            * Title or name of the skill.
@@ -36,15 +37,8 @@ public class SkillEntity {
           @Column(name = "title")
           private String title;
 
-          /**
-           * Grade or level of the skill.
-           */
-          @Column(name = "grade")
-          private String grade;
 
-          /**
-           * Additional information or description about the skill.
-           */
-          @Column(name = "info")
-          private String info;
+          // Define the junction table for many-to-many relationship with Members
+          @ManyToMany(mappedBy = "skill", fetch = FetchType.LAZY)
+          private List<MemberInfoEntity> members;
 }
