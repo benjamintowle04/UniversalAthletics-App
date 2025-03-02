@@ -3,9 +3,16 @@ package com.universalathletics.services;
 //------------------------------- imports ------------------------------------//
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.universalathletics.entities.MemberInfoEntity;
+import com.universalathletics.entities.SkillEntity;
 import com.universalathletics.repositories.MemberInfoRepository;
+import com.universalathletics.repositories.SkillRepository;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import jakarta.persistence.EntityNotFoundException;
 
 //--------------------- MemberInfo Service Class -----------------------------//
@@ -31,6 +38,13 @@ public class MemberInfoService {
     @Autowired
     private MemberInfoRepository memberInfoRepository;
 
+    /**
+     * Autowired instance of SkillRepository for database operations.
+     */
+    @Autowired  
+    private SkillRepository skillRepository;
+
+
 // -------------------------------- Create Member ----------------------------//
     /**
      * Creates or updates a member in the database.(POST)
@@ -43,8 +57,32 @@ public class MemberInfoService {
         if (memberInfo == null) {
             throw new IllegalArgumentException("Member information cannot be null");
         }
+
+        // List to hold valid skills for the member
+        List<SkillEntity> validSkills = new ArrayList<>();
+
+        // Ensure skills are managed before saving member
+        if (memberInfo.getSkills() != null) {
+            for (SkillEntity skill : memberInfo.getSkills()) {
+                // Check if the skill exists in the repository
+                Optional<SkillEntity> existingSkill = skillRepository.findById(skill.getSkill_id());
+
+                if (existingSkill.isPresent()) {
+                    // If the skill exists, add it to the validSkills list
+                    validSkills.add(existingSkill.get());
+                } else {
+                    // If the skill does not exist, throw an exception
+                    throw new EntityNotFoundException("Skill not found with id: " + skill.getSkill_id());
+                }
+            }
+            // Set the valid skills to the member
+            memberInfo.setSkills(validSkills);
+        }
+
         return memberInfoRepository.save(memberInfo);
     }
+
+
 
 // -------------------------------- Get Member By ID -------------------------//
     /**

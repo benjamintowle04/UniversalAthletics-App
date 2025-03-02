@@ -17,7 +17,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "skills")
+@Table(name = "skill")
 @NoArgsConstructor
 @AllArgsConstructor
 public class SkillEntity {
@@ -29,7 +29,7 @@ public class SkillEntity {
           @Id
           @Column(name = "skill_id")
           @GeneratedValue(strategy = GenerationType.IDENTITY)
-          private int skillId;
+          private int skill_id;
 
           /**
            * Title or name of the skill.

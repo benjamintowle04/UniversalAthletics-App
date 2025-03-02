@@ -3,6 +3,7 @@ use ua_database;
 DROP TABLE IF EXISTS Member_Skill;
 DROP TABLE IF EXISTS Member_Info;
 DROP TABLE IF EXISTS Skill;
+DROP TABLE IF EXISTS Skills;
 
 
 
@@ -22,12 +23,12 @@ CREATE TABLE Member_Info(
 #INSERT INTO Staff (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location, Firebase_ID) VALUES ();
 
 CREATE TABLE Skill(
-    Skill_ID INT(4) NOT NULL AUTO_INCREMENT,  
-    Title NCHAR(20) NOT NULL,
+    skill_id INT(4) NOT NULL AUTO_INCREMENT,  
+    title NCHAR(20) NOT NULL,
     PRIMARY KEY (Skill_ID)
 );
 
-INSERT INTO Skill (Title) VALUES 
+INSERT INTO Skill (title) VALUES 
     ('basketball'),
     ('soccer'),
     ('tennis'),
