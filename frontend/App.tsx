@@ -11,7 +11,7 @@ import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
-import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
+import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
 
 
@@ -49,12 +49,12 @@ export default function App() {
   function PostLoginLayout() {
     if (newUser) {
       return (
-        <PostLoginStack.Navigator initialRouteName='GenInfo'>
-          <PostLoginStack.Screen 
+        <PostLoginStack.Navigator initialRouteName='EnterSkills'>
+          {/* <PostLoginStack.Screen 
             name="GenInfo" 
             component={GenInfo} 
             options={backButtonOnlyHeader}
-          />
+          /> */}
 
           <PostLoginStack.Screen 
             name="EnterSkills" 
@@ -62,9 +62,9 @@ export default function App() {
             options={backButtonOnlyHeader}
           />
 
-          <PostLoginStack.Screen 
-            name="UploadProfilePicture" 
-            component={UploadProfilePicture} 
+          {/* <PostLoginStack.Screen 
+            name="AccountSummary" 
+            component={AccountSummary} 
             options={backButtonOnlyHeader}
           />
 
@@ -72,7 +72,7 @@ export default function App() {
             name="Home" 
             component={Home} 
             options={backButtonOnlyHeader}
-          />
+          /> */}
         </PostLoginStack.Navigator>
       );
     }
@@ -110,11 +110,12 @@ export default function App() {
   return (
     <UserProvider>
       <NavigationContainer>
-        {user ? (   //Uncomment to test authentication
+      <PostLoginLayout />
+        {/* {user ? (   //Uncomment to test authentication
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )}
+        )} */}
       </NavigationContainer>
     </UserProvider>
   );
