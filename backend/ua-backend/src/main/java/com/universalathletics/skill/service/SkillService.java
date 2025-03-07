@@ -1,8 +1,8 @@
-package com.universalathletics.services;
+package com.universalathletics.skill.service;
 
-//-------------------------------- Imports -----------------------------------//
-import com.universalathletics.entities.SkillEntity;
-import com.universalathletics.repositories.SkillRepository;
+import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.skill.repository.SkillRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.universalathletics.entities;
+package com.universalathletics.memberInfo.entity;
 
 
 //------------------------------- imports ------------------------------------//
@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
+
+import com.universalathletics.skill.entity.SkillEntity;
 
 //--------------------- MemberInfo Entity Class ------------------------------//
 /**
@@ -69,7 +71,7 @@ public class MemberInfoEntity {
            * URL or path to member's profile picture.
            */
           @Column(name = "Profile_Pic")
-          private String profilePic;    
+          private String profilePic;
 
           /**
            * Member's geographical location or address.

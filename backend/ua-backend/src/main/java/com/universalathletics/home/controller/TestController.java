@@ -1,4 +1,4 @@
-package com.universalathletics.controllers;
+package com.universalathletics.home.controller;
 
 //-------------------------------- Imports -----------------------------------//
 import org.springframework.web.bind.annotation.GetMapping;

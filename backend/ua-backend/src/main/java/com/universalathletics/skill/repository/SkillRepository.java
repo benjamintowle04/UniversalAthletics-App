@@ -1,9 +1,10 @@
-package com.universalathletics.repositories;
+package com.universalathletics.skill.repository;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.universalathletics.entities.SkillEntity;
+
+import com.universalathletics.skill.entity.SkillEntity;
 
 //--------------------- Skill Repository Interface -------------------------//
 /**

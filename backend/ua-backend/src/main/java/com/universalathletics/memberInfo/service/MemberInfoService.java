@@ -1,13 +1,13 @@
-package com.universalathletics.services;
+package com.universalathletics.memberInfo.service;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.universalathletics.entities.MemberInfoEntity;
-import com.universalathletics.entities.SkillEntity;
-import com.universalathletics.repositories.MemberInfoRepository;
-import com.universalathletics.repositories.SkillRepository;
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
+import com.universalathletics.memberInfo.repository.MemberInfoRepository;
+import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.skill.repository.SkillRepository;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.universalathletics.entities;
+package com.universalathletics.skill.entity;
 
 //------------------------------- imports ------------------------------------//
 import jakarta.persistence.*;
@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
+
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 
 //-------------------------- Skill Entity Class ------------------------------//
 /**
