@@ -36,7 +36,7 @@ public class OnboardingController {
           public ResponseEntity<?> completeOnboarding(
                               @RequestParam("memberInfoJson") String memberInfoJson,
                               @RequestParam("skillsJson") String skillsJson,
-                              @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture) {
+                              @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) {
                     try {
                               // Create a tool that knows how to convert between JSON and Java objects
                               ObjectMapper objectMapper = new ObjectMapper();
@@ -54,11 +54,11 @@ public class OnboardingController {
                                                                       SkillEntity.class));
 
                               // 2. Handle the profile picture upload
-                              if (profilePicture != null && !profilePicture.isEmpty()) {
+                              if (profilePic != null && !profilePic.isEmpty()) {
                                         // Upload the file and get back the URL
                                         // This calls the Google Cloud Storage service to upload the file to the
                                         // "profiles" folder
-                                        String imageUrl = googleCloudStorageService.uploadFile(profilePicture,
+                                        String imageUrl = googleCloudStorageService.uploadFile(profilePic,
                                                             "profiles");
 
                                         // Set the URL on the member's profile
