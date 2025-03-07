@@ -1,6 +1,8 @@
 package com.universalathletics.onboarding.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
 import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.memberInfo.service.MemberInfoService;
@@ -31,14 +33,16 @@ public class OnboardingController {
           private GoogleCloudStorageService googleCloudStorageService;
 
           @PostMapping
-          public ResponseEntity<MemberInfoEntity> completeOnboarding(
+          public ResponseEntity<?> completeOnboarding(
                               @RequestParam("memberInfoJson") String memberInfoJson,
                               @RequestParam("skillsJson") String skillsJson,
                               @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture) {
                     try {
-
                               // Create a tool that knows how to convert between JSON and Java objects
                               ObjectMapper objectMapper = new ObjectMapper();
+
+                              // Configure ObjectMapper to handle circular references
+                              objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
                               // Convert the memberInfoJson string into a MemberInfoEntity object
                               MemberInfoEntity memberInfo = objectMapper.readValue(memberInfoJson,
@@ -52,25 +56,35 @@ public class OnboardingController {
                               // 2. Handle the profile picture upload
                               if (profilePicture != null && !profilePicture.isEmpty()) {
                                         // Upload the file and get back the URL
+                                        // This calls the Google Cloud Storage service to upload the file to the
+                                        // "profiles" folder
                                         String imageUrl = googleCloudStorageService.uploadFile(profilePicture,
                                                             "profiles");
 
                                         // Set the URL on the member's profile
+                                        // This URL will be stored in the Profile_Pic column in the database
                                         memberInfo.setProfilePic(imageUrl);
                               }
 
                               // Add the skills to the member
+                              // This uses the custom setSkills method in MemberInfoEntity
                               memberInfo.setSkills(skills);
 
                               // Save the member to the database
+                              // This will also save the skills relationship due to the cascade setting
                               MemberInfoEntity savedMember = memberInfoService.saveMember(memberInfo);
 
-                              //  Return a successful response with the saved member
+                              // Return a successful response with the saved member
                               return new ResponseEntity<>(savedMember, HttpStatus.CREATED);
-                    } catch (Exception e) {
-                              // 6. Handle any errors
+                    } catch (JsonProcessingException e) {
+                              // Handle JSON parsing errors specifically
                               e.printStackTrace();
-                              return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                              return new ResponseEntity<String>("Error parsing JSON: " + e.getMessage(),
+                                                  HttpStatus.BAD_REQUEST);
+                    } catch (Exception e) {
+                              // Handle other errors
+                              e.printStackTrace();
+                              return new ResponseEntity<MemberInfoEntity>(HttpStatus.INTERNAL_SERVER_ERROR);
                     }
           }
 
