@@ -91,32 +91,33 @@ public class MemberInfoEntity {
   private String firebaseID;
 
   // Define the junction table for many-to-many relationship with Skills
-  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-  @JoinTable(name = "Member_Skill", joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"), inverseJoinColumns = @JoinColumn(name = "SKill_ID", referencedColumnName = "Skill_ID"))
+  @ManyToMany
+  (fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+  @JoinTable(name = "Member_Skill",
+  joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"),
+  inverseJoinColumns = @JoinColumn(name = "SKill_ID", referencedColumnName = "Skill_ID"))
 
-  // This annotation prevents infinite recursion during JSON
-  // serialization/deserialization
-  // It tells Jackson to ignore the "members" property in SkillEntity when
-  // serializing/deserializing
+
+  // SkillEntity
   @JsonIgnoreProperties("members")
-  private List<SkillEntity> skill;
+  private List<SkillEntity> skills; // Renamed from skill to skills to match getter/setter
 
   /**
    * Getter used by MemberInfoService to get the attached skills of a certain
    * member
-   * 
+   *
    * @return skill, the instance list of skills for MemberInfo
    */
   public List<SkillEntity> getSkills() {
-    return this.skill;
+    return this.skills; // Updated to use the renamed field
   }
 
   /**
    * Setter used by MemberInfoService to save a set of skills to a member
-   * 
+   *
    * @param skill
    */
-  public void setSkills(List<SkillEntity> skill) {
-    this.skill = skill;
+  public void setSkills(List<SkillEntity> skills) {
+    this.skills = skills; // Updated to use the renamed field
   }
 }

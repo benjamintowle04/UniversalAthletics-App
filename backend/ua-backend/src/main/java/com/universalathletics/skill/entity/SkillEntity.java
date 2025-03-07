@@ -42,11 +42,11 @@ public class SkillEntity {
           private String title;
 
           // Define the junction table for many-to-many relationship with Members
-          @ManyToMany(mappedBy = "skill", fetch = FetchType.LAZY)
+          @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
           // This annotation prevents infinite recursion during JSON
           // serialization/deserialization
-          // It tells Jackson to ignore the "skill" property in MemberInfoEntity when
+          // It tells Jackson to ignore the "skills" property in MemberInfoEntity when
           // serializing/deserializing
-          @JsonIgnoreProperties("skill")
+          @JsonIgnoreProperties("skills")
           private List<MemberInfoEntity> members;
 }
