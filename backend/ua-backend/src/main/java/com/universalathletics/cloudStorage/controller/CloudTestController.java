@@ -1,4 +1,4 @@
-package com.universalathletics.controllers;
+package com.universalathletics.cloudStorage.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
