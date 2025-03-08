@@ -11,7 +11,7 @@ import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
-import UploadProfilePicture from './app/screens/onboarding/AccountSummary';
+import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
 
 
@@ -63,8 +63,8 @@ export default function App() {
           />
 
           <PostLoginStack.Screen 
-            name="UploadProfilePicture" 
-            component={UploadProfilePicture} 
+            name="AccountSummary" 
+            component={AccountSummary} 
             options={backButtonOnlyHeader}
           />
 
@@ -110,11 +110,12 @@ export default function App() {
   return (
     <UserProvider>
       <NavigationContainer>
-        {user ? (   //Uncomment to test authentication
+      <PostLoginLayout />
+        {/* {user ? (   //Uncomment to test authentication
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )}
+        )} */}
       </NavigationContainer>
     </UserProvider>
   );
