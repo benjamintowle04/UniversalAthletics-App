@@ -90,25 +90,26 @@ const GenInfo = ({ navigation }: RouterProps) => {
     };
 
     const handleSave = () => {
-        if (!userData.firstName || !userData.lastName || !userData.phoneNumber) {
+        if (!firstName || !lastName || !phoneNumber) {
             Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
-            return;
+            return false;
           }
-
+          
         if (phoneError || bioError) {
             Alert.alert("Please fix the errors before proceeding.");
-            return;
+            return false;
         }
         try {
             setUserData({ ...userData, firstName, lastName, phoneNumber, bio, location });
+            return true;
         } catch (error) {
             Alert.alert("Error Saving User Data");
         }
     };
 
     const moveToEnterSkills = () => {
-        handleSave();
-        if (!phoneError && !bioError) {
+        if (handleSave() && !phoneError && !bioError) {
+            console.log("User Data Saved: ", userData)
             navigation.navigate("EnterSkills");
         }
     };

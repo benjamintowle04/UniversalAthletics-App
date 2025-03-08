@@ -49,12 +49,12 @@ export default function App() {
   function PostLoginLayout() {
     if (newUser) {
       return (
-        <PostLoginStack.Navigator initialRouteName='EnterSkills'>
-          {/* <PostLoginStack.Screen 
+        <PostLoginStack.Navigator initialRouteName='GenInfo'>
+          <PostLoginStack.Screen 
             name="GenInfo" 
             component={GenInfo} 
             options={backButtonOnlyHeader}
-          /> */}
+          />
 
           <PostLoginStack.Screen 
             name="EnterSkills" 
@@ -62,7 +62,7 @@ export default function App() {
             options={backButtonOnlyHeader}
           />
 
-          {/* <PostLoginStack.Screen 
+          <PostLoginStack.Screen 
             name="AccountSummary" 
             component={AccountSummary} 
             options={backButtonOnlyHeader}
@@ -72,7 +72,7 @@ export default function App() {
             name="Home" 
             component={Home} 
             options={backButtonOnlyHeader}
-          /> */}
+          />
         </PostLoginStack.Navigator>
       );
     }
