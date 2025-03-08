@@ -1,11 +1,12 @@
-package com.universalathletics.repositories;
+package com.universalathletics.memberInfo.repository;
 
 import java.lang.reflect.Member;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.universalathletics.entities.MemberInfoEntity;
+
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 
 //--------------------- MemberInfo Repository Interface ---------------------//
 /**

@@ -1,12 +1,13 @@
-package com.universalathletics.controllers;
+package com.universalathletics.memberInfo.controller;
 
-//-------------------------------- Imports -----------------------------------//
-import com.universalathletics.entities.MemberInfoEntity;
-import com.universalathletics.services.MemberInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
+import com.universalathletics.memberInfo.service.MemberInfoService;
+
 import java.util.List;
 
 //------------------------ MemberInfo Controller Class ----------------------//

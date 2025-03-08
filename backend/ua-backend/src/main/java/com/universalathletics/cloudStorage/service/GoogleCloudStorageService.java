@@ -1,4 +1,4 @@
-package com.universalathletics.services;
+package com.universalathletics.cloudStorage.service;
 
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;

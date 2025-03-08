@@ -1,9 +1,10 @@
-package com.universalathletics.controllers;
+package com.universalathletics.skill.controller;
 
-import com.universalathletics.entities.MemberInfoEntity;
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
+
 //-------------------------------- Imports -----------------------------------//
-import com.universalathletics.entities.SkillEntity;
-import com.universalathletics.services.SkillService;
+import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.skill.service.SkillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.universalathletics.entities;
+package com.universalathletics.skill.entity;
 
 //------------------------------- imports ------------------------------------//
 import jakarta.persistence.*;
@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
+// Replace JsonBackReference with JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 //-------------------------- Skill Entity Class ------------------------------//
 /**
@@ -39,9 +41,12 @@ public class SkillEntity {
           @Column(name = "title")
           private String title;
 
-
           // Define the junction table for many-to-many relationship with Members
-          @ManyToMany(mappedBy = "skill", fetch = FetchType.LAZY)
-          @JsonIgnore
+          @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
+          // This annotation prevents infinite recursion during JSON
+          // serialization/deserialization
+          // It tells Jackson to ignore the "skills" property in MemberInfoEntity when
+          // serializing/deserializing
+          @JsonIgnoreProperties("skills")
           private List<MemberInfoEntity> members;
 }

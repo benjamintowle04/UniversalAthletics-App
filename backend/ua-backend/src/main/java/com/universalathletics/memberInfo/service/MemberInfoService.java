@@ -1,13 +1,13 @@
-package com.universalathletics.services;
+package com.universalathletics.memberInfo.service;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.universalathletics.entities.MemberInfoEntity;
-import com.universalathletics.entities.SkillEntity;
-import com.universalathletics.repositories.MemberInfoRepository;
-import com.universalathletics.repositories.SkillRepository;
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;
+import com.universalathletics.memberInfo.repository.MemberInfoRepository;
+import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.skill.repository.SkillRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +41,10 @@ public class MemberInfoService {
     /**
      * Autowired instance of SkillRepository for database operations.
      */
-    @Autowired  
+    @Autowired
     private SkillRepository skillRepository;
 
-
-// -------------------------------- Create Member ----------------------------//
+    // -------------------------------- Create Member ----------------------------//
     /**
      * Creates or updates a member in the database.(POST)
      * 
@@ -82,9 +81,7 @@ public class MemberInfoService {
         return memberInfoRepository.save(memberInfo);
     }
 
-
-
-// -------------------------------- Get Member By ID -------------------------//
+    // -------------------------------- Get Member By ID -------------------------//
     /**
      * Retrieves a member by their ID.(GET)
      *
@@ -97,7 +94,8 @@ public class MemberInfoService {
                 .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + id));
     }
 
-//--------------------------------- Get All Members --------------------------//
+    // --------------------------------- Get All Members
+    // --------------------------//
     /**
      * Retrieves all members from the database.(GET)
      *
@@ -107,7 +105,8 @@ public class MemberInfoService {
         return memberInfoRepository.findAll();
     }
 
-//--------------------------------- Delete Member ----------------------------//
+    // --------------------------------- Delete Member
+    // ----------------------------//
     /**
      * Deletes a member from the database.(DELETE)
      * 
