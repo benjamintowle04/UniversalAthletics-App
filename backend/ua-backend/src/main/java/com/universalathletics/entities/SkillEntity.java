@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 //-------------------------- Skill Entity Class ------------------------------//
 /**
  * Entity class representing skills in the Universal Athletics system.
@@ -40,5 +42,6 @@ public class SkillEntity {
 
           // Define the junction table for many-to-many relationship with Members
           @ManyToMany(mappedBy = "skill", fetch = FetchType.LAZY)
+          @JsonIgnore
           private List<MemberInfoEntity> members;
 }

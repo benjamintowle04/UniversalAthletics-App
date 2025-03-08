@@ -3,6 +3,9 @@ package com.universalathletics.services;
 //-------------------------------- Imports -----------------------------------//
 import com.universalathletics.entities.SkillEntity;
 import com.universalathletics.repositories.SkillRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +30,8 @@ public class SkillService {
           @Autowired
           private SkillRepository skillRepository;
 
-          // -------------------------------- Create Skill
-          // ------------------------------//
+          // -------------------------------- Create Skill ------------------------------//
+         
           /**
            * Creates or updates a skill in the database.(POST)
            * 
@@ -36,10 +39,19 @@ public class SkillService {
            * @return SkillEntity The saved skill object with generated ID
            * @throws IllegalArgumentException if skill is null
            */
-          public SkillEntity saveSkill(SkillEntity skill) {
+            public SkillEntity saveSkill(SkillEntity skill) {
                     if (skill == null) {
-                              throw new IllegalArgumentException("Skill information cannot be null");
+                                throw new IllegalArgumentException("Skill information cannot be null");
                     }
                     return skillRepository.save(skill);
-          }
+            }
+
+          // -------------------------------- Get All Skills ------------------------------//
+            /**
+             * Retrieves all skills from the database.  
+             * @return List<SkillEntity> A list of all skills in the database
+            */
+            public List<SkillEntity> getAllSkills() {
+                return skillRepository.findAll();
+            }
 }
