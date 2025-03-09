@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
 import Login from './app/screens/Login';
@@ -13,27 +13,47 @@ import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Upload } from 'lucide-react-native';
-
-
+import { UserContext } from "./app/contexts/UserContext";
 
 
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
 
 export default function App() {
+  /**
+   * These are state variables that are used to determine the user's authentication status.
+   */
   const [user, setUser] = useState<User | null >(null);
   const [newUser, setNewUser] = useState(false);
 
+  /**
+   * This is a context that is used to pass user data between screens.
+   */
+  const userContext = useContext(UserContext);
+      if (!userContext) {
+          return;
+      }
+  const { userData, setUserData } = userContext;
+
+  /*
+  * This is the standard header for screens that need a back button.
+  */
   const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
     headerBackTitle: 'Back'
   }
 
+  /**
+   * 
+   * This UseEffect hook is used to listen for changes in the user's authentication status. 
+   *  Will react for users that log in and out of the app.
+   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       console.log('User', user);
       setUser(user);
+
       if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
         setNewUser(true);
       } else {
@@ -45,7 +65,11 @@ export default function App() {
   }, []);
   
 
-
+/**
+ * Extraction of the layout after the user is logged in.
+ * @returns The apps onboarding screen flow if the user is new. Otherwise, it will return the main home layout
+ * 
+ */
   function PostLoginLayout() {
     if (newUser) {
       return (
@@ -85,6 +109,10 @@ export default function App() {
     }
   }
 
+  /**
+   * Extraction of the layout before the user is logged in.
+   * @returns The pre-login screen flow for navigation between login and signup.
+   */
   function PreLoginLayout() {
     return (
       <PreLoginStack.Navigator initialRouteName='EntryPoint'>
@@ -107,15 +135,18 @@ export default function App() {
     );
   }
 
+  /**
+   * Root logic to determine which layout to render based on the user's authentication status.
+   */
   return (
     <UserProvider>
       <NavigationContainer>
       <PostLoginLayout />
-        {/* {user ? (   //Uncomment to test authentication
+        {user ? (   
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )} */}
+        )}
       </NavigationContainer>
     </UserProvider>
   );
