@@ -34,7 +34,8 @@ const SignUp = () => {
 
             setUserData({
                 ...userData,
-                firebase_id: response.user.uid
+                email: response.user.email,
+                firebaseID: response.user.uid
             });
             console.log("User data after sign up:", userData);
         } catch (error: any) {
@@ -63,7 +64,6 @@ const SignUp = () => {
             alert("Password must be at least 6 characters long, contain at least one letter, one number, and one special character.");
             return;
         }
-        setUserData({...userData, email: email})
         signUp(email, firstPassword);
     };
 

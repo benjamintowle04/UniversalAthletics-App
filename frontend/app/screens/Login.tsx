@@ -32,7 +32,7 @@ const Login = ( { navigation }: RouterProps) => {
             console.log(response);
             setUserData({
               ...userData,
-              firebase_id: response.user.uid
+              firebaseID: response.user.uid
             });
 
             console.log("User data after login:", userData);

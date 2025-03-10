@@ -14,6 +14,7 @@ import { SmallText } from "../../components/text/SmallText";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { RouterProps } from "../../types/RouterProps";
 import { EditBioField } from "../../components/text/input/EditBioField";
+import { postUserOnboarding } from "../../../controllers/OnboardingController";
 
 const AccountSummary = ({ navigation }: RouterProps) => {
   const userContext = useContext(UserContext);
@@ -33,7 +34,7 @@ const AccountSummary = ({ navigation }: RouterProps) => {
       aspect: [1, 1],
       quality: 1,
     });
-
+  
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
       setUserData({ ...userData, profilePicture: result.assets[0].uri });
@@ -47,17 +48,23 @@ const AccountSummary = ({ navigation }: RouterProps) => {
     });
   };
 
-  const handleButtonPress = () => {
-    if (!userData.firstName || !userData.lastName || !userData.email || !userData.phoneNumber) {
+  const handleButtonPress = async () => {
+    if (!userData.firstName || !userData.lastName || !userData.email || !userData.phone) {
       Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
       return;
     }
 
-    console.log("User Data at the end of onboarding:", userData);
-
-    //Post the data
-    navigation.navigate("Home");
-    
+    if (!imageUri) {
+      
+    }
+  
+    try {
+      const response = await postUserOnboarding(userData, imageUri);
+      console.log("User Data at the end of onboarding:", response);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+    }
   };
 
   return (
@@ -96,14 +103,14 @@ const AccountSummary = ({ navigation }: RouterProps) => {
             <View className="pr-1">
               <SmallText text="Phone" />
             </View>
-            <EditPhoneField value={userData.phoneNumber} onChange={(text) => handleFieldChange("phoneNumber", text)} />
+            <EditPhoneField value={userData.phone} onChange={(text) => handleFieldChange("phone", text)} />
           </View>
 
           <View className="flex-row items-start">
             <View className="pr-1">
               <SmallText text="Bio" />
             </View>
-            <EditBioField value={userData.bio} onChange={(text) => handleFieldChange("bio", text)} />
+            <EditBioField value={userData.biography} onChange={(text) => handleFieldChange("biography", text)} />
           </View>
         </View>
       </KeyboardAwareScrollView>
