@@ -26,15 +26,7 @@ export default function App() {
   const [user, setUser] = useState<User | null >(null);
   const [newUser, setNewUser] = useState(false);
 
-  /**
-   * This is a context that is used to pass user data between screens.
-   */
-  const userContext = useContext(UserContext);
-      if (!userContext) {
-          return;
-      }
-  const { userData, setUserData } = userContext;
-
+  
   /*
   * This is the standard header for screens that need a back button.
   */
@@ -141,7 +133,6 @@ export default function App() {
   return (
     <UserProvider>
       <NavigationContainer>
-      <PostLoginLayout />
         {user ? (   
           <PostLoginLayout />
         ) : (

@@ -52,6 +52,9 @@ const AccountSummary = ({ navigation }: RouterProps) => {
       Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
       return;
     }
+
+    console.log("User Data at the end of onboarding:", userData);
+
     //Post the data
     navigation.navigate("Home");
     

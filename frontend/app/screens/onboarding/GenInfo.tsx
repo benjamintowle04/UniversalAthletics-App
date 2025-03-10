@@ -29,6 +29,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
     
     useEffect(() => {
         const requestLocationPermission = async () => {
+            console.log("requesting location permission. User Data: ", userData);
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('Permission to access location was denied');
@@ -40,6 +41,8 @@ const GenInfo = ({ navigation }: RouterProps) => {
                 setLocation(locationString);
                 setUserData({ ...userData, location: locationString});
             }
+
+            console.log("Requested location permission. User Data: ", userData);
         };
         requestLocationPermission();
     }, []);
@@ -47,7 +50,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     // Function to format phone number as (XXX) XXX-XXXX
     const formatPhoneNumber = (input: string) => {
-        const digits = input.replace(/\D/g, ""); // Remove non-numeric characters
+        const digits = input.replace(/\D/g, ""); 
         let formatted = "";
 
         if (digits.length > 0) {
@@ -109,7 +112,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     const moveToEnterSkills = () => {
         if (handleSave() && !phoneError && !bioError) {
-            console.log("User Data Saved: ", userData)
+            console.log("User Data Saved in GenInfo: ", userData)
             navigation.navigate("EnterSkills");
         }
     };

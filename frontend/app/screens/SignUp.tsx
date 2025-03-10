@@ -31,6 +31,12 @@ const SignUp = () => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
             console.log(response);
+
+            setUserData({
+                ...userData,
+                firebase_id: response.user.uid
+            });
+            console.log("User data after sign up:", userData);
         } catch (error: any) {
             console.log(error);
             alert("Sign up failed: " + error.message);
