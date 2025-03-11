@@ -87,7 +87,7 @@ export default function App() {
           <PostLoginStack.Screen 
             name="Home" 
             component={Home} 
-            options={backButtonOnlyHeader}
+            options={{headerShown: false}}
           />
         </PostLoginStack.Navigator>
       );

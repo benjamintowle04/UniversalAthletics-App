@@ -1,6 +1,7 @@
 import { ApiRoutes } from "../utils/APIRoutes";
 
 export const postUserOnboarding = async (userData: any, imageUri: string | null) => {
+ 
   try {
     const url = ApiRoutes.POST_USER_ONBOARDING;
     console.log("Starting onboarding request to:", url);
