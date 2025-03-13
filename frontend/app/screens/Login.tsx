@@ -1,12 +1,13 @@
 import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FIREBASE_AUTH } from "../../firebase_config";
-import { TextInput } from "react-native";
+import { TextInput, Alert } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { RouterProps } from "../types/RouterProps";
 import { Image } from "react-native";
 import { PrimaryButton } from "../components/buttons/PrimaryButton";
 import { HeaderText } from "../components/text/HeaderText";
+import { UserContext } from "../contexts/UserContext";
 import "../../global.css"
 
 
@@ -16,11 +17,26 @@ const Login = ( { navigation }: RouterProps) => {
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
 
+    const userContext = useContext(UserContext);
+        if (!userContext) {
+            Alert.alert("Error Fetching User Context");
+            return null;
+        }
+    
+      const { userData, setUserData } = userContext;
+
     const signIn = async () => {
         setLoading(true);
         try {
             const response = await signInWithEmailAndPassword(auth, email, password);
             console.log(response);
+            setUserData({
+              ...userData,
+              firebaseID: response.user.uid
+            });
+
+            console.log("User data after login:", userData);
+
         
         } catch (error: any) {
             console.log(error);

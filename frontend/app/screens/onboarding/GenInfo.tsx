@@ -20,7 +20,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     const [firstName, setFirstName] = useState<string>(userData.firstName || '');
     const [lastName, setLastName] = useState<string>(userData.lastName || '');
-    const [bio, setBio] = useState<string>(userData.bio || '');
+    const [biography, setBiography] = useState<string>(userData.biography || '');
     const [location, setLocation] = useState<string | null>(userData.location || null);
 
     const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -29,6 +29,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
     
     useEffect(() => {
         const requestLocationPermission = async () => {
+            console.log("requesting location permission. User Data: ", userData);
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('Permission to access location was denied');
@@ -40,6 +41,8 @@ const GenInfo = ({ navigation }: RouterProps) => {
                 setLocation(locationString);
                 setUserData({ ...userData, location: locationString});
             }
+
+            console.log("Requested location permission. User Data: ", userData);
         };
         requestLocationPermission();
     }, []);
@@ -47,7 +50,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     // Function to format phone number as (XXX) XXX-XXXX
     const formatPhoneNumber = (input: string) => {
-        const digits = input.replace(/\D/g, ""); // Remove non-numeric characters
+        const digits = input.replace(/\D/g, ""); 
         let formatted = "";
 
         if (digits.length > 0) {
@@ -62,14 +65,15 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
         return formatted;
     };
+
     //Need to set the hook after the function is declared
-    const [phoneNumber, setPhoneNumber] = useState<string>(formatPhoneNumber(userData.phoneNumber || ''));
+    const [phone, setPhone] = useState<string>(formatPhoneNumber(userData.phoneNumber || ''));
 
 
     // Function to handle phone number input
     const handlePhoneNumberChange = (text: string) => {
         const formatted = formatPhoneNumber(text);
-        setPhoneNumber(formatted);
+        setPhone(formatted);
 
         const onlyNumbers = text.replace(/\D/g, ""); // Extract only digits
         if (onlyNumbers.length < 10) {
@@ -84,13 +88,13 @@ const GenInfo = ({ navigation }: RouterProps) => {
         if (words.length > 200) {
             setBioError("Bio cannot exceed 200 words.");
         } else {
-            setBio(text);
+            setBiography(text);
             setBioError(null);
         }
     };
 
     const handleSave = () => {
-        if (!firstName || !lastName || !phoneNumber) {
+        if (!firstName || !lastName || !phone) {
             Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
             return false;
           }
@@ -100,7 +104,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
             return false;
         }
         try {
-            setUserData({ ...userData, firstName, lastName, phoneNumber, bio, location });
+            setUserData({ ...userData, firstName, lastName, phone, biography, location });
             return true;
         } catch (error) {
             Alert.alert("Error Saving User Data");
@@ -109,7 +113,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     const moveToEnterSkills = () => {
         if (handleSave() && !phoneError && !bioError) {
-            console.log("User Data Saved: ", userData)
+            console.log("User Data Saved in GenInfo: ", userData)
             navigation.navigate("EnterSkills");
         }
     };
@@ -137,7 +141,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
                     returnKeyType="done"
                 />
                 <TextInput
-                    value={phoneNumber}
+                    value={phone}
                     className="h-10 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
                     placeholder="Phone Number"
                     keyboardType="phone-pad"
@@ -148,7 +152,7 @@ const GenInfo = ({ navigation }: RouterProps) => {
                 {phoneError && <Text className="text-red-500">{phoneError}</Text>}
 
                 <TextInput
-                    value={bio}
+                    value={biography}
                     className="h-24 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"
                     placeholder="Bio"
                     multiline={true}

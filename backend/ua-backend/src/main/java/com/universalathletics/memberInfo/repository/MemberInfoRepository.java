@@ -1,6 +1,7 @@
 package com.universalathletics.memberInfo.repository;
 
 import java.lang.reflect.Member;
+import java.util.Optional;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,9 @@ import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 public interface MemberInfoRepository extends JpaRepository<MemberInfoEntity, Integer> {
           // Inherits standard CRUD operations from JpaRepository
           // Additional custom query methods can be added here as needed
-}
+
+          /**
+           * Find a member by their firebaseID
+           */
+          Optional<MemberInfoEntity> findByFirebaseID(String firebaseID);
+        }

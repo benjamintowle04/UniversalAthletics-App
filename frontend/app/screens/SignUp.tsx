@@ -31,6 +31,13 @@ const SignUp = () => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
             console.log(response);
+
+            setUserData({
+                ...userData,
+                email: response.user.email,
+                firebaseID: response.user.uid
+            });
+            console.log("User data after sign up:", userData);
         } catch (error: any) {
             console.log(error);
             alert("Sign up failed: " + error.message);
@@ -57,7 +64,6 @@ const SignUp = () => {
             alert("Password must be at least 6 characters long, contain at least one letter, one number, and one special character.");
             return;
         }
-        setUserData({...userData, email: email})
         signUp(email, firstPassword);
     };
 

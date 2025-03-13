@@ -31,6 +31,7 @@ const EnterSkills = ({ navigation }: RouterProps) => {
 
     useEffect(() => {
         const loadSkills = async () => {
+            console.log("Loading Skills. User Data: ", userData);
             const skillsData = await fetchSkills();
             console.log(skillsData);
             if (!skillsData) {
@@ -53,6 +54,7 @@ const EnterSkills = ({ navigation }: RouterProps) => {
             setCheckedSkills(checkedSkillsArray);
             setSkills(skillsArray);
             console.log(checkedSkills)
+            console.log("Loaded Skills. User Data: ", userData);
         };
         loadSkills();
     }, []);

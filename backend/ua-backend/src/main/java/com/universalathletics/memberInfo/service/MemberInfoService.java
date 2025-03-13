@@ -105,6 +105,21 @@ public class MemberInfoService {
         return memberInfoRepository.findAll();
     }
 
+    // --------------------------------- Get Member By Firebase Id
+    // ----------------------------//
+    /**
+     * Retrieves a member by their Firebase ID.(GET)
+     *  
+     * @param firebaseId The Firebase ID of the member to find
+     * @return MemberInfoEntity if found
+     * @throws EntityNotFoundException if member not found
+     */
+    public MemberInfoEntity findMemberByFirebaseId(String firebaseId) {
+        return memberInfoRepository.findByFirebaseID(firebaseId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with firebaseId: " + firebaseId));
+    }
+
+
     // --------------------------------- Delete Member
     // ----------------------------//
     /**

@@ -5,9 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
+
 import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.memberInfo.service.MemberInfoService;
 
+import java.io.IOException;
 import java.util.List;
 
 //------------------------ MemberInfo Controller Class ----------------------//
@@ -32,6 +35,13 @@ public class MemberInfoController {
      */
     @Autowired
     private MemberInfoService memberInfoService;
+
+    /**
+     * Need to use for getting the image from the cloud storage
+     */
+    @Autowired
+    private GoogleCloudStorageService storageService;
+
 
     // ------------------------- Create Member Endpoint --------------------------//
     /**
@@ -59,4 +69,24 @@ public class MemberInfoController {
         List<MemberInfoEntity> members = memberInfoService.findAllMembers();
         return new ResponseEntity<>(members, HttpStatus.OK);
     }
+
+    // -------------------------- Get Member by FirebaseID Endpoint -----------------------//
+    /**
+     * Retrieves a member by their FirebaseID.
+     * 
+     **/
+    @GetMapping("/{firebaseId}")
+    public ResponseEntity<MemberInfoEntity> getMemberByFirebaseId(@PathVariable String firebaseId) throws IOException {
+        MemberInfoEntity member = memberInfoService.findMemberByFirebaseId(firebaseId);
+        if (member != null) {
+            // Get fresh signed URL for the profile picture
+            if (member.getProfilePic() != null) {
+                String signedUrl = storageService.getSignedFileUrl(member.getProfilePic());
+                member.setProfilePic(signedUrl);
+            }
+            return new ResponseEntity<>(member, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
 }
