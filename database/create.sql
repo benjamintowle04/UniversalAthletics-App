@@ -12,10 +12,10 @@ CREATE TABLE Member_Info(
     First_Name NCHAR(20),
     Last_Name NCHAR(20),
     Email NCHAR(20),
-    Phone NCHAR(9) NOT NULL,
+    Phone NCHAR(15) NOT NULL,
     Biography NCHAR(200),
     Profile_Pic NCHAR(250),
-    Location NCHAR(50),
+    Location NCHAR(250),
     Firebase_ID NCHAR(30),
     PRIMARY KEY (Member_ID)
 );

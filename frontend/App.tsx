@@ -12,9 +12,6 @@ import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
-import { Upload } from 'lucide-react-native';
-import { UserContext } from "./app/contexts/UserContext";
-
 
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
@@ -55,6 +52,8 @@ export default function App() {
 
     return () => unsubscribe();
   }, []);
+
+  
   
 
 /**

@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Springboot configurations
+**/application.properties
+
