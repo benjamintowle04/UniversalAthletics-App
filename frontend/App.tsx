@@ -59,12 +59,13 @@ export default function App() {
 /**
  * Extraction of the layout after the user is logged in.
  * @returns The apps onboarding screen flow if the user is new. Otherwise, it will return the main home layout
- * 
+ * For this branch, initial route name is home to ensure we skip the onboarding screens.
+ * Be sure to reset the initial route name to 'GenInfo' before merging to main. 
  */
   function PostLoginLayout() {
     if (newUser) {
       return (
-        <PostLoginStack.Navigator initialRouteName='GenInfo'>
+        <PostLoginStack.Navigator initialRouteName='Home'>
           <PostLoginStack.Screen 
             name="GenInfo" 
             component={GenInfo} 
@@ -128,15 +129,17 @@ export default function App() {
 
   /**
    * Root logic to determine which layout to render based on the user's authentication status.
+   * Actual logic is commented out for now. In this branch, we just want to have the postloginlayout with home as the initial route
    */
   return (
     <UserProvider>
       <NavigationContainer>
-        {user ? (   
+        <PostLoginLayout />
+        {/* {user ? (   
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )}
+        )} */}
       </NavigationContainer>
     </UserProvider>
   );

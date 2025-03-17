@@ -27,6 +27,7 @@ public class GoogleCloudStorageService {
 
     @Value("${gcp.credentials.path}")
     private String credentialsPath;
+    
 
     private Storage storage;
 
@@ -40,11 +41,29 @@ public class GoogleCloudStorageService {
     }
 
     public String getSignedFileUrl(String fileName) throws IOException {
+
+        // Make sure fileName doesn't already contain the bucket URL
+        if (fileName.startsWith("https://storage.googleapis.com/")) {
+            // Extract just the object name from the URL
+            String bucketUrlPrefix = "https://storage.googleapis.com/" + bucketName + "/";
+            if (fileName.startsWith(bucketUrlPrefix)) {
+                fileName = fileName.substring(bucketUrlPrefix.length());
+            } else {
+                // This is a more complex URL, try to extract just the filename
+                int lastSlashIndex = fileName.lastIndexOf('/');
+                if (lastSlashIndex != -1) {
+                    fileName = fileName.substring(lastSlashIndex + 1);
+                }
+            }
+        }
+        
+        // Otherwise, we just get the signed URL as normal
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fileName).build();
         URL signedUrl = storage.signUrl(blobInfo, 24, TimeUnit.HOURS, Storage.SignUrlOption.signWith(
             ServiceAccountCredentials.fromStream(new FileInputStream(credentialsPath))));
         return signedUrl.toString();
     }
+    
 
     public String uploadFile(MultipartFile file, String folder) throws IOException {
         String fileName = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();

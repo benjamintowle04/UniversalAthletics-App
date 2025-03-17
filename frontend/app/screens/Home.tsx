@@ -1,14 +1,16 @@
-import { View, Text, Button, Image, Alert} from 'react-native'
-import React, {useContext, useEffect} from 'react'
+import { View, Text, Button, Image, Alert, ActivityIndicator } from 'react-native'
+import React, {useContext, useEffect, useState} from 'react'
 import { FIREBASE_AUTH } from '../../firebase_config';
 import { RouterProps } from '../types/RouterProps';
 import { UserContext } from '../contexts/UserContext';
 import { getMemberByFirebaseId } from '../../controllers/MemberInfoController';
-
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const Home = ({ navigation }: RouterProps) => {    
   const auth = FIREBASE_AUTH;
   const userContext = useContext(UserContext);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   if (!userContext) {
     Alert.alert("Error loading User Data");
@@ -16,44 +18,82 @@ const Home = ({ navigation }: RouterProps) => {
   }
   const { userData, setUserData } = userContext;
 
+   //Add automatic sign in
+   useEffect(() => {
+    const autoSignIn = async () => {
+      try {
+        await signInWithEmailAndPassword(auth, 'test@gmail.com', 'Test123!');
+        console.log('Auto sign-in successful');
+      } catch (error) {
+        console.error('Auto sign-in failed:', error);
+      }
+    };
+    
+    autoSignIn();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log("Fetching user data by firebase ID:", userData.firebaseID);
-        const memberData = await getMemberByFirebaseId(userData.firebaseID);
+        console.log("Fetching user data by firebase ID:", auth.currentUser?.uid);
+        const memberData = await getMemberByFirebaseId(auth.currentUser?.uid || "");
+        console.log("Profile picture URL received:", memberData.profilePic);
         setUserData(memberData);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
     };
 
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
-    console.log("Current userData:", userData);
-    console.log("Image source:", { uri: userData.profilePic });
-  }, [userData.profilePic]);
-
-
-  console.log("Profile picture URL:", userData.profilePic);
-
+    if (auth.currentUser) {
+      fetchUserData();
+    }
+  }, [auth.currentUser]);
 
   return (
-    <View>
-      <Text>{userData.firstName}</Text>
-      <Text>{userData.lastName}</Text>
-      <Text>{userData.email}</Text>
-      <Text>{userData.phone}</Text>
-      <Text>{userData.biography}</Text>
-
-      <Image
-        source={{ uri: userData.profilePic }}
-        style={{ width: 300, height: 300 }} // Set explicit dimensions
-        resizeMode="cover"
-        defaultSource={require('../images/logo.png')}
-      />  
+    <View style={{ padding: 20 }}>
+      <Text>First Name: {userData.firstName}</Text>
+      <Text>Last Name: {userData.lastName}</Text>
+      <Text>Email: {userData.email}</Text>
+      <Text>Phone: {userData.phone}</Text>
+      <Text>Bio: {userData.biography}</Text>
+      
+      {userData.profilePic ? (
+        <>
+          <Text>Profile Picture URL: {userData.profilePic}</Text>
+          {imageLoading && <ActivityIndicator size="large" color="#0000ff" />}
+          <Image
+            source={{ uri: userData.profilePic }}
+            style={{ 
+              width: 300, 
+              height: 300, 
+              marginTop: 10,
+              display: imageError ? 'none' : 'flex'
+            }}
+            resizeMode="cover"
+            onLoadStart={() => setImageLoading(true)}
+            onLoadEnd={() => setImageLoading(false)}
+            onError={(e) => {
+              console.error("Image loading error:", e.nativeEvent.error);
+              setImageError(true);
+              setImageLoading(false);
+              Alert.alert("Error", "Failed to load profile image");
+            }}
+          />
+          {imageError && (
+            <Image
+              source={require('../images/logo.png')}
+              style={{ width: 300, height: 300, marginTop: 10 }}
+              resizeMode="cover"
+            />
+          )}
+        </>
+      ) : (
+        <Image
+          source={require('../images/logo.png')}
+          style={{ width: 300, height: 300, marginTop: 10 }}
+          resizeMode="cover"
+        />
+      )}
     </View>
   )
 }
