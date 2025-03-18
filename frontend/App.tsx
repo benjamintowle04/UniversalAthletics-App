@@ -16,6 +16,7 @@ import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from 'react-native';
 import UserSettings from './app/screens/UserSettings';
+import MyCoaches from './app/screens/MyCoaches';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -40,9 +41,12 @@ function MainTabNavigator() {
             iconName = focused ? 'fitness' : 'fitness-outline';
           } else if (route.name === 'Merch') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'MyCoaches') {
+            iconName = focused ? 'people-outline' : 'people-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'settings' : 'settings-outline';
-          }
+          } 
+          
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -68,11 +72,20 @@ function MainTabNavigator() {
         component={MerchScreen} 
         options={{ title: 'Merch' }}
       />
+
+      <Tab.Screen 
+        name="MyCoaches"
+        component={MyCoaches}
+        options={{ title: 'My Coaches'}}
+      />
+
       <Tab.Screen 
         name="Profile" 
         component={UserSettings} 
         options={{ title: 'Settings' }}
       />
+
+      
     </Tab.Navigator>
   );
 }

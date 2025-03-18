@@ -31,6 +31,14 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
         <Ionicons name="person" size={24} className="text-gray-700" />
         <Text className="text-xs mt-1 text-gray-600">Merch</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity 
+        className="flex-1 items-center justify-center"
+        onPress={() => navigation.navigate('MyCoaches')}
+      >
+        <Ionicons name="people-outline" size={24} className="text-gray-700" />
+        <Text className="text-xs mt-1 text-gray-600">My Coaches</Text>
+      </TouchableOpacity>
       
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
