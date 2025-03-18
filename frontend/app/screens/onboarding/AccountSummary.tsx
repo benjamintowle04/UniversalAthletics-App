@@ -53,10 +53,6 @@ const AccountSummary = ({ navigation }: RouterProps) => {
       Alert.alert("Missing Information", "Please fill out all required fields before proceeding.");
       return;
     }
-
-    if (!imageUri) {
-      
-    }
   
     try {
       const response = await postUserOnboarding(userData, imageUri);

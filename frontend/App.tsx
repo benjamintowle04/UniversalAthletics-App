@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useState, useEffect, useContext } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
 import Login from './app/screens/Login';
@@ -12,32 +13,80 @@ import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
+import { Ionicons } from '@expo/vector-icons';
+import { Text } from 'react-native';
+import UserSettings from './app/screens/UserSettings';
+
+// Create placeholder screens for the tab navigator
+const ScheduleScreen = () => <Text>Schedule Screen</Text>;
+const MerchScreen = () => <Text>Merch Screen</Text>;
 
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Main tab navigator that will have the bottom navigation bar
+function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          // Use explicit type for iconName with specific Ionicons names
+          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+
+          if (route.name === 'HomeTab') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'ScheduleMonthView') {
+            iconName = focused ? 'fitness' : 'fitness-outline';
+          } else if (route.name === 'Merch') {
+            iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'settings' : 'settings-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'blue',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen 
+        name="HomeTab" 
+        component={Home} 
+        options={{ 
+          headerShown: true,
+          title: 'Home'
+        }}
+      />
+      <Tab.Screen 
+        name="ScheduleMonthView" 
+        component={ScheduleScreen} 
+        options={{ title: 'Schedule' }}
+      />
+      <Tab.Screen 
+        name="Merch" 
+        component={MerchScreen} 
+        options={{ title: 'Merch' }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={UserSettings} 
+        options={{ title: 'Settings' }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function App() {
-  /**
-   * These are state variables that are used to determine the user's authentication status.
-   */
   const [user, setUser] = useState<User | null >(null);
   const [newUser, setNewUser] = useState(false);
-
   
-  /*
-  * This is the standard header for screens that need a back button.
-  */
   const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
     headerBackTitle: 'Back'
   }
 
-  /**
-   * 
-   * This UseEffect hook is used to listen for changes in the user's authentication status. 
-   *  Will react for users that log in and out of the app.
-   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       console.log('User', user);
@@ -53,19 +102,10 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  
-  
-
-/**
- * Extraction of the layout after the user is logged in.
- * @returns The apps onboarding screen flow if the user is new. Otherwise, it will return the main home layout
- * For this branch, initial route name is home to ensure we skip the onboarding screens.
- * Be sure to reset the initial route name to 'GenInfo' before merging to main. 
- */
   function PostLoginLayout() {
     if (newUser) {
       return (
-        <PostLoginStack.Navigator initialRouteName='Home'>
+        <PostLoginStack.Navigator initialRouteName='GenInfo'>
           <PostLoginStack.Screen 
             name="GenInfo" 
             component={GenInfo} 
@@ -86,25 +126,17 @@ export default function App() {
 
           <PostLoginStack.Screen 
             name="Home" 
-            component={Home} 
+            component={MainTabNavigator} 
             options={{headerShown: false}}
           />
         </PostLoginStack.Navigator>
       );
     }
     else {
-      return (
-        <PostLoginStack.Navigator initialRouteName='Home'>
-          <PostLoginStack.Screen name="Home" component={Home} />
-        </PostLoginStack.Navigator>
-      );
+      return <MainTabNavigator />;
     }
   }
 
-  /**
-   * Extraction of the layout before the user is logged in.
-   * @returns The pre-login screen flow for navigation between login and signup.
-   */
   function PreLoginLayout() {
     return (
       <PreLoginStack.Navigator initialRouteName='EntryPoint'>
@@ -127,10 +159,6 @@ export default function App() {
     );
   }
 
-  /**
-   * Root logic to determine which layout to render based on the user's authentication status.
-   * Actual logic is commented out for now. In this branch, we just want to have the postloginlayout with home as the initial route
-   */
   return (
     <UserProvider>
       <NavigationContainer>
