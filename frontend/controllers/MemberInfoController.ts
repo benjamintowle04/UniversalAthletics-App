@@ -27,3 +27,26 @@ export const getMemberByFirebaseId = async (firebaseId: string) => {
     throw new Error("Failed to fetch member data");
   }
 };
+
+export const getAllMembers = async () => {
+  try {
+    const url = `${ApiRoutes.MEMBERS}`;
+    console.log("Fetching all members from:", url);
+    const response = await fetch(url);
+    console.log("Response status:", response.status);
+    if (!response.ok) {
+      console.log("Response not OK. Status:", response.status);
+      throw new Error("Failed to fetch members");
+    }
+
+    const data = await response.json();
+    console.log("Fetched members:", data);
+    return data;
+
+  }
+
+  catch (error) {
+    console.error("Error fetching members:", error);
+    throw new Error("Failed to fetch members");
+  }
+};

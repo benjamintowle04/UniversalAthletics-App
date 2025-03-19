@@ -13,7 +13,7 @@ import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
 import { UserProvider } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Text } from 'react-native';
 import UserSettings from './app/screens/UserSettings';
 import MyCoaches from './app/screens/MyCoaches';
@@ -38,9 +38,9 @@ function MainTabNavigator() {
           if (route.name === 'HomeTab') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'ScheduleMonthView') {
-            iconName = focused ? 'fitness' : 'fitness-outline';
+            iconName = focused ? 'calendar-number' : 'calendar-number-outline';
           } else if (route.name === 'Merch') {
-            iconName = focused ? 'person' : 'person-outline';
+            iconName = focused ? 'cart' : 'cart-outline';
           } else if (route.name === 'MyCoaches') {
             iconName = focused ? 'people-outline' : 'people-outline';
           } else if (route.name === 'Profile') {
