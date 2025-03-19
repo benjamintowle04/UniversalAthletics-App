@@ -65,9 +65,19 @@ public class MemberInfoController {
      *         of all members
      */
     @GetMapping
-    public ResponseEntity<List<MemberInfoEntity>> getAllMembers() {
-        List<MemberInfoEntity> members = memberInfoService.findAllMembers();
-        return new ResponseEntity<>(members, HttpStatus.OK);
+    public ResponseEntity<List<MemberInfoEntity>> getAllMembers() throws IOException {
+        try {
+            List<MemberInfoEntity> members = memberInfoService.findAllMembers();
+            for (MemberInfoEntity member : members) {
+                if (member.getProfilePic() != null) {
+                    String signedUrl = storageService.getSignedFileUrl(member.getProfilePic());
+                    member.setProfilePic(signedUrl);
+                }
+            }
+            return new ResponseEntity<>(members, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } 
     }
 
     // -------------------------- Get Member by FirebaseID Endpoint -----------------------//

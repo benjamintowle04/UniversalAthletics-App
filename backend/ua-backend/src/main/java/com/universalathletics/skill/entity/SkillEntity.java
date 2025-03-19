@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 // Replace JsonBackReference with JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 //-------------------------- Skill Entity Class ------------------------------//
 /**
@@ -47,6 +47,6 @@ public class SkillEntity {
           // serialization/deserialization
           // It tells Jackson to ignore the "skills" property in MemberInfoEntity when
           // serializing/deserializing
-          @JsonIgnoreProperties("skills")
+          @JsonIgnore
           private List<MemberInfoEntity> members;
 }
