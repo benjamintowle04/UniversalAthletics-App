@@ -12,7 +12,9 @@ import org.springframework.context.annotation.ComponentScan;
 		"com.universalathletics.skill.model",
 		"com.universalathletics.storage.model",
 		"com.universalathletics.memberInfo.entity", // This seems to be where your entity is now
-		"com.universalathletics.skill.entity"
+		"com.universalathletics.skill.entity",
+		"com.universalathletics.coach.entity",
+		"com.universalathletics.coach.model",
 })
 @ComponentScan(basePackages = "com.universalathletics")
 public class UaBackendApplication {

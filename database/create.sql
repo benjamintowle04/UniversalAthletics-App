@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS Member_Skill;
 DROP TABLE IF EXISTS Member_Info;
+DROP TABLE IF EXISTS Coach_Skill;
 DROP TABLE IF EXISTS Skill;
 DROP TABLE IF EXISTS Skills;
 DROP TABLE IF EXISTS Coach_Job_Title;
@@ -152,8 +153,8 @@ CREATE TABLE Coach_Skill(
     Coach_ID INT(4) NOT NULL,
     Skill_ID INT(4) NOT NULL,
     PRIMARY KEY (Coach_ID, Skill_ID),
-    CONSTRAINT fk_M_Member FOREIGN KEY (Coach_ID) REFERENCES Coach(Coach_ID) ON DELETE CASCADE,
-    CONSTRAINT fk_M_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
+    CONSTRAINT fk_CS_Coach FOREIGN KEY (Coach_ID) REFERENCES Coach(Coach_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_CS_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
 );
 
 # Insert test user's skills
@@ -166,4 +167,14 @@ INSERT INTO Member_Skill (Member_ID, Skill_ID) VALUES
     (1, 6),
     (1, 7),
     (1, 8);
+
+INSERT INTO Coach_Skill (Coach_ID, Skill_ID) VALUES
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (1, 11),
+    (1, 10),
+    (2, 1),
+    (2, 2),
+    (2, 3);
 
