@@ -148,6 +148,14 @@ CREATE TABLE Member_Skill(
     CONSTRAINT fk_M_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
 );
 
+CREATE TABLE Coach_Skill(
+    Coach_ID INT(4) NOT NULL,
+    Skill_ID INT(4) NOT NULL,
+    PRIMARY KEY (Coach_ID, Skill_ID),
+    CONSTRAINT fk_M_Member FOREIGN KEY (Coach_ID) REFERENCES Coach(Coach_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_M_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
+);
+
 # Insert test user's skills
 INSERT INTO Member_Skill (Member_ID, Skill_ID) VALUES 
     (1, 1),
@@ -158,3 +166,4 @@ INSERT INTO Member_Skill (Member_ID, Skill_ID) VALUES
     (1, 6),
     (1, 7),
     (1, 8);
+
