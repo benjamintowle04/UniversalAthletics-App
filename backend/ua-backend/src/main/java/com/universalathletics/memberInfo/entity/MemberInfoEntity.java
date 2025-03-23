@@ -10,6 +10,7 @@ import java.util.List;
 // It prevents infinite recursion when converting to JSON
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.coach.entity.CoachEntity;
 
 //--------------------- MemberInfo Entity Class ------------------------------//
 /**
@@ -90,18 +91,26 @@ public class MemberInfoEntity {
   @Column(name = "Firebase_ID")
   private String firebaseID;
 
+
   // Define the junction table for many-to-many relationship with Skills
   @ManyToMany
   (fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
   @JoinTable(name = "Member_Skill",
-  joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"),
-  inverseJoinColumns = @JoinColumn(name = "SKill_ID", referencedColumnName = "Skill_ID"))
-
-
-  // SkillEntity
+    joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"),
+    inverseJoinColumns = @JoinColumn(name = "Skill_ID", referencedColumnName = "Skill_ID"))
   @JsonIgnoreProperties("members")
   private List<SkillEntity> skills; // Renamed from skill to skills to match getter/setter
 
+
+  // Define the junction table for many-to-many relationship with Skills
+  @ManyToMany
+  (fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+  @JoinTable(name = "Member_Coach",
+  joinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"),
+  inverseJoinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"))
+  @JsonIgnoreProperties("members")
+  private List<CoachEntity> coaches; // Renamed from skill to skills to match getter/setter
+  
   /**
    * Getter used by MemberInfoService to get the attached skills of a certain
    * member
@@ -120,4 +129,12 @@ public class MemberInfoEntity {
   public void setSkills(List<SkillEntity> skills) {
     this.skills = skills; // Updated to use the renamed field
   }
+
+  /**
+   * Getter used by MemberInfoService to get the attached coaches of a certain member
+   **/
+  public List<CoachEntity> getCoaches() {
+    return this.coaches; 
+  }
+
 }

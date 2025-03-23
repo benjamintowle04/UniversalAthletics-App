@@ -43,6 +43,7 @@ public class CoachService {
      */
     @Autowired
     private SkillRepository skillRepository;
+    
 
     // -------------------------------- Create Coach ----------------------------//
     /**
@@ -94,7 +95,7 @@ public class CoachService {
                 .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + id));
     }
 
-    // --------------------------------- Get All Coachs
+    // --------------------------------- Get All Coaches
     // --------------------------//
     /**
      * Retrieves all coachs from the database.(GET)

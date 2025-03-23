@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 // This import is crucial for handling the JSON serialization of bidirectional relationships
 // It prevents infinite recursion when converting to JSON
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.universalathletics.skill.entity.SkillEntity;
+import com.universalathletics.memberInfo.entity.MemberInfoEntity;;
+
 
 //--------------------- Coach Entity Class ------------------------------//
 /**
@@ -116,13 +118,19 @@ public class CoachEntity {
   @ManyToMany
   (fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
   @JoinTable(name = "Coach_Skill",
-  joinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"),
-  inverseJoinColumns = @JoinColumn(name = "Skill_ID", referencedColumnName = "Skill_ID"))
-
-
-  // SkillEntity
-  @JsonIgnoreProperties("coaches")
+    joinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"),
+    inverseJoinColumns = @JoinColumn(name = "Skill_ID", referencedColumnName = "Skill_ID"))
+  @JsonIgnore
   private List<SkillEntity> skills; // Renamed from skill to skills to match getter/setter
+
+
+  // Define the junction table for many-to-many relationship with Members
+  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+  @JoinTable(name = "Member_Coach",
+    joinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"),
+    inverseJoinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"))
+  @JsonIgnore
+  private List<MemberInfoEntity> members;
 
   /**
    * Constructor for Coach Entity
@@ -163,6 +171,8 @@ public class CoachEntity {
     this.skills = skills; // Updated to use the renamed field
   }
 
+
+
   // -------- Getters --------- //
   public Integer getId() {
     return id;
@@ -199,6 +209,9 @@ public class CoachEntity {
   }
   public String getFirebaseID() {
     return firebaseID;
+  }
+  public List<MemberInfoEntity> getMembers() {
+    return members;
   }
 
 

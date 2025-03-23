@@ -4,6 +4,7 @@ package com.universalathletics.memberInfo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.universalathletics.coach.entity.CoachEntity;
 import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.memberInfo.repository.MemberInfoRepository;
 import com.universalathletics.skill.entity.SkillEntity;
@@ -119,6 +120,24 @@ public class MemberInfoService {
                 .orElseThrow(() -> new EntityNotFoundException("Member not found with firebaseId: " + firebaseId));
     }
 
+
+    /**
+     * Retrieves all coaches associated with a specific member.
+     * 
+     * @param memberId The unique identifier of the member
+     * @return List of CoachEntity objects associated with the member, or empty list if none found
+     * @throws EntityNotFoundException if the member with the given ID doesn't exist
+     */
+    public List<CoachEntity> getMemberCoaches(Integer id) {
+        MemberInfoEntity member = memberInfoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + id));
+        
+        // The coaches are already loaded via the @ManyToMany relationship
+        // Just return the list from the entity
+        return member.getCoaches();
+    }
+
+    
 
     // --------------------------------- Delete Member
     // ----------------------------//

@@ -5,10 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.google.rpc.context.AttributeContext.Response;
 import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
-
+import com.universalathletics.coach.entity.CoachEntity;
 import com.universalathletics.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.memberInfo.service.MemberInfoService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.io.IOException;
 import java.util.List;
@@ -97,6 +100,24 @@ public class MemberInfoController {
             return new ResponseEntity<>(member, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Endpoint to retrieve all coaches associated with a specific member.
+     * 
+    * @param memberId The unique identifier of the member
+    * @return ResponseEntity containing a list of coaches or appropriate error response
+    */
+    @GetMapping("/{memberId}/coaches")
+    public ResponseEntity<List<CoachEntity>> getMemberCoaches(@PathVariable Integer memberId) {
+        try {
+            List<CoachEntity> coaches = memberInfoService.getMemberCoaches(memberId);
+            return ResponseEntity.ok(coaches);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }
