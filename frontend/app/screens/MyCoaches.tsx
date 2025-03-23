@@ -5,6 +5,7 @@ import { getIconsFromSkills } from '../../utils/IconLibrary'
 import { Ionicons } from '@expo/vector-icons'
 import { UserContext } from '../contexts/UserContext'
 import { getAllCoaches } from '../../controllers/CoachController'
+import { getMembersCoaches } from '../../controllers/MemberInfoController'
 
 const MyCoaches = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,7 +33,7 @@ const MyCoaches = () => {
     const fetchData = async () => {
       try {
         //Change to get coaches instead once they are in the database
-        const coaches = await getAllCoaches(userData.location, userData.skills);
+        const coaches = await getMembersCoaches(userData.id);
         setCoaches(coaches);
       } catch (error) {
         console.error('Error fetching members:', error);

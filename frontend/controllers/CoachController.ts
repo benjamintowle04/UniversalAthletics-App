@@ -31,3 +31,4 @@ export const getAllCoaches = async (location: string, skills: Skill[]) => {
     throw new Error("Failed to fetch coaches");
   }
 };
+

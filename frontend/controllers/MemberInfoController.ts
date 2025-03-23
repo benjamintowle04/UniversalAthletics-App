@@ -50,3 +50,23 @@ export const getAllMembers = async () => {
     throw new Error("Failed to fetch members");
   }
 };
+
+
+export const getMembersCoaches = async (id: number) => {
+  try {
+    const url = `${ApiRoutes.MEMBERS}/${id}/coaches`;
+    console.log("Fetching coaches for member with ID:", id);
+    const response = await fetch(url);
+    console.log("Response status:", response.status);
+    if (!response.ok) {
+      console.log("Response not OK. Status:", response.status);
+      throw new Error("Failed to fetch coaches");
+    }
+    const data = await response.json();
+    console.log("Fetched coaches:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching coaches:", error);
+    throw new Error("Failed to fetch coaches");
+  }
+};
