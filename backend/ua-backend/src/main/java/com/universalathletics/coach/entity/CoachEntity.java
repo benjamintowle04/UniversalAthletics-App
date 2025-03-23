@@ -125,6 +125,26 @@ public class CoachEntity {
   private List<SkillEntity> skills; // Renamed from skill to skills to match getter/setter
 
   /**
+   * Constructor for Coach Entity
+   * 
+   */
+  public CoachEntity(String firstName, String lastName, String email, String phone, String biography1, 
+                      String biography2, String profilePic, String bioPic1, String bioPic2, String location, String firebaseID) {
+    
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.biography1 = biography1;
+    this.biography2 = biography2;
+    this.profilePic = profilePic;
+    this.bioPic1 = bioPic1;
+    this.bioPic2 = bioPic2;
+    this.location = location;
+    this.firebaseID = firebaseID;
+  }
+
+  /**
    * Getter used by CoachService to get the attached skills of a certain
    * member
    *
@@ -142,4 +162,47 @@ public class CoachEntity {
   public void setSkills(List<SkillEntity> skills) {
     this.skills = skills; // Updated to use the renamed field
   }
+
+  // -------- Getters --------- //
+  public Integer getId() {
+    return id;
+  }
+  public String getFirstName() {
+    return firstName;
+  }
+  public String getLastName() {
+    return lastName;
+  }
+  public String getEmail() {
+    return email;
+  }
+  public String getPhone() {
+    return phone;
+  }
+  public String getBiography1() {
+    return biography1;
+  }
+  public String getBiography2() {
+    return biography2;
+  }
+  public String getProfilePic() {
+    return profilePic;
+  }
+  public String getBioPic1() {
+    return bioPic1;
+  }
+  public String getBioPic2() {
+    return bioPic2;
+  }
+  public String getLocation() {
+    return location;
+  }
+  public String getFirebaseID() {
+    return firebaseID;
+  }
+
+
+  
+
+
 }

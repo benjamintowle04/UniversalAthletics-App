@@ -4,7 +4,7 @@ import { CoachCard } from '../components/card_view/CoachCard'
 import { getIconsFromSkills } from '../../utils/IconLibrary'
 import { Ionicons } from '@expo/vector-icons'
 import { UserContext } from '../contexts/UserContext'
-import { getAllMembers } from '../../controllers/MemberInfoController'
+import { getAllCoaches } from '../../controllers/CoachController'
 
 const MyCoaches = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,7 +32,7 @@ const MyCoaches = () => {
     const fetchData = async () => {
       try {
         //Change to get coaches instead once they are in the database
-        const coaches = await getAllMembers();
+        const coaches = await getAllCoaches(userData.location, userData.skills);
         setCoaches(coaches);
       } catch (error) {
         console.error('Error fetching members:', error);

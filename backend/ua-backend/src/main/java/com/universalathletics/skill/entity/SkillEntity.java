@@ -49,4 +49,12 @@ public class SkillEntity {
           // serializing/deserializing
           @JsonIgnore
           private List<MemberInfoEntity> members;
+
+          public int getSkill_id() {
+            return this.skill_id;
+          }
+
+          public String getTitleitle() {
+            return this.title;
+          }
 }
