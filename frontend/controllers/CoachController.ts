@@ -32,3 +32,15 @@ export const getAllCoaches = async (location: string, skills: Skill[]) => {
   }
 };
 
+export const getCoachByFirebaseId = async (firebaseId: string) => {
+  try {
+    console.log("Fetching coach with firebase ID:", firebaseId);
+    const response = await axios.get(`${ApiRoutes.COACHES}/${firebaseId}`);
+    console.log("Fetched coach:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching coach:", error);
+    throw new Error("Failed to fetch coach");
+  }
+}
+

@@ -7,14 +7,11 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EntityScan(basePackages = {
-		"com.universalathletics.entities", // Keep this for backward compatibility
-		"com.universalathletics.member.model",
-		"com.universalathletics.skill.model",
-		"com.universalathletics.storage.model",
-		"com.universalathletics.memberInfo.entity", // This seems to be where your entity is now
-		"com.universalathletics.skill.entity",
-		"com.universalathletics.coach.entity",
-		"com.universalathletics.coach.model",
+		"com.universalathletics.modules.skill.model",
+		"com.universalathletics.modules.memberInfo.entity", // This seems to be where your entity is now
+		"com.universalathletics.modules.skill.entity",
+		"com.universalathletics.modules.coach.entity",
+		"com.universalathletics.modules.coach.model",
 })
 @ComponentScan(basePackages = "com.universalathletics")
 public class UaBackendApplication {

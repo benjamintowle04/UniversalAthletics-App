@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS Member_Skill;
-DROP TABLE IF EXISTS Member_Info;
 DROP TABLE IF EXISTS Coach_Skill;
+DROP TABLE IF EXISTS Member_Coach;
+DROP TABLE IF EXISTS Member_Info;
 DROP TABLE IF EXISTS Skill;
 DROP TABLE IF EXISTS Skills;
 DROP TABLE IF EXISTS Coach_Job_Title;
@@ -8,6 +9,7 @@ DROP TABLE IF EXISTS Job_Title_Permission;
 DROP TABLE IF EXISTS Job_Title;
 DROP TABLE IF EXISTS Permission;
 DROP TABLE IF EXISTS Coach;
+
 
 CREATE TABLE Coach (
     Coach_ID INT(4) NOT NULL AUTO_INCREMENT,
@@ -24,7 +26,6 @@ CREATE TABLE Coach (
     Firebase_ID NCHAR(30),
     PRIMARY KEY (Coach_ID)
 );
-
 
 CREATE TABLE Job_Title (
     Job_Title_ID INT(4) NOT NULL AUTO_INCREMENT,
@@ -46,7 +47,6 @@ CREATE TABLE Coach_Job_Title (
     CONSTRAINT fk_JT_Job_Title FOREIGN KEY (Job_Title_ID) REFERENCES Job_Title(Job_Title_ID) ON DELETE CASCADE
 );
 
-
 CREATE TABLE Job_Title_Permission(
     Job_Title_ID INT(4) NOT NULL,   
     Permission_ID INT(4) NOT NULL,
@@ -54,7 +54,6 @@ CREATE TABLE Job_Title_Permission(
     CONSTRAINT fk_M_Job_Title FOREIGN KEY (Job_Title_ID) REFERENCES Job_Title(Job_Title_ID) ON DELETE CASCADE,
     CONSTRAINT fk_M_Permission FOREIGN KEY (Permission_ID) REFERENCES Permission(Permission_ID) ON DELETE CASCADE
 );
-
 
 INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2, Profile_Pic, Bio_Pic_1, Bio_Pic_2, Location, Firebase_ID) VALUES (
     'Ben', 
@@ -126,9 +125,6 @@ INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2
     "gdakfbjk"
 );
 
-
-
-
 INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2, Profile_Pic, Bio_Pic_1, Bio_Pic_2, Location, Firebase_ID) VALUES (
     'Coach', 
     'Hastings1', 
@@ -170,7 +166,6 @@ INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2
     "Latitude: 40.40280001, Longitude: -91.37700001",
     "llllllll"
 );
-
 
 INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2, Profile_Pic, Bio_Pic_1, Bio_Pic_2, Location, Firebase_ID) VALUES (
     'Coach', 
@@ -214,9 +209,6 @@ INSERT INTO Coach (First_Name, Last_Name, Email, Phone, Biography_1, Biography_2
     "fhjabfabjk"
 );
 
-
-
-
 CREATE TABLE Member_Info(
     Member_ID INT(4) NOT NULL AUTO_INCREMENT, 
     First_Name VARCHAR(20),
@@ -230,9 +222,16 @@ CREATE TABLE Member_Info(
     PRIMARY KEY (Member_ID)
 );
 
+CREATE TABLE Member_Coach (
+    Member_ID INT(4) NOT NULL,
+    Coach_ID INT(4) NOT NULL,
+    PRIMARY KEY (Member_ID, Coach_ID),
+    CONSTRAINT fk_MC_Member FOREIGN KEY (Member_ID) REFERENCES Member_Info(Member_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_MC_Coach FOREIGN KEY (Coach_ID) REFERENCES Coach(Coach_ID) ON DELETE CASCADE
+);
+
 # Insert test user
-INSERT INTO Member_Info (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location, Firebase_ID) 
-VALUES (
+INSERT INTO Member_Info (Member_ID, First_Name, Last_Name, Email, Phone, Biography, Profile_Pic, Location, Firebase_ID) VALUES (
     1,
     'TestFirst',
     'TestLast',
@@ -289,7 +288,6 @@ CREATE TABLE Coach_Skill(
     CONSTRAINT fk_CS_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
 );
 
-# Insert test user's skills
 INSERT INTO Member_Skill (Member_ID, Skill_ID) VALUES 
     (1, 1),
     (1, 2);
@@ -319,4 +317,7 @@ INSERT INTO Coach_Skill (Coach_ID, Skill_ID) VALUES
     (9, 2),
     (10, 20);
 
-
+INSERT INTO Member_Coach (Member_ID, Coach_ID) VALUES
+    (1, 1),
+    (1, 9),
+    (1, 3);

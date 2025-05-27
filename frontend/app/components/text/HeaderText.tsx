@@ -3,7 +3,6 @@ import { Text, StyleSheet } from 'react-native';
 import { Colors } from '../../themes/colors/Colors';
 import { useFonts } from 'expo-font';
 
-
 interface HeaderTextProps {
     text: string;
 }
@@ -11,7 +10,12 @@ interface HeaderTextProps {
 export const HeaderText = ({ text }: HeaderTextProps) => {
     const [fontsLoaded] = useFonts({
         Gagalin: require('../../themes/fonts/Gagalin-Regular.otf'),
-      });
+    });
+
+    // Don't render until fonts are loaded
+    if (!fontsLoaded) {
+        return null;
+    }
 
     return (
         <Text style={styles.title}>{text}</Text>
@@ -28,6 +32,4 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         letterSpacing: 1.5,
     },
-    
 });
-

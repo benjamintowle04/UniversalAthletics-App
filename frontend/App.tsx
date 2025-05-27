@@ -4,10 +4,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
-import Login from './app/screens/Login';
-import SignUp from './app/screens/SignUp';
-import EntryPoint from './app/screens/EntryPoint';
-import Home from './app/screens/Home';
+import Login from './app/screens/pre_login/Login';
+import SignUp from './app/screens/pre_login/SignUp';
+import EntryPoint from './app/screens/pre_login/EntryPoint';
+import Home from './app/screens/home/Home';
 import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
 import React from 'react';
@@ -15,8 +15,10 @@ import { UserProvider } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Text } from 'react-native';
-import UserSettings from './app/screens/UserSettings';
-import MyCoaches from './app/screens/MyCoaches';
+import UserSettings from './app/screens/settings/UserSettings';
+import MyCoaches from './app/screens/coaches/MyCoaches';
+import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
+import CoachProfile from './app/screens/coaches/CoachProfile';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -24,8 +26,37 @@ const MerchScreen = () => <Text>Merch Screen</Text>;
 
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
+const CoachesStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+ const backButtonOnlyHeader = {
+    headerShown: true,
+    title: '',
+    headerBackTitle: 'Back'
+  }
+
+
+function CoachesStackNavigator() {
+  return (
+    <CoachesStack.Navigator>
+      <CoachesStack.Screen 
+        name="MyCoaches" 
+        component={MyCoaches} 
+        options={{ headerShown: false }}
+      />
+      <CoachesStack.Screen 
+        name="ExploreCoaches" 
+        component={ExploreCoaches}
+        options={backButtonOnlyHeader}
+      />
+      <CoachesStack.Screen 
+        name="CoachProfile" 
+        component={CoachProfile as React.ComponentType<any>}
+        options={backButtonOnlyHeader}
+      />
+    </CoachesStack.Navigator>
+  );
+}
 // Main tab navigator that will have the bottom navigation bar
 function MainTabNavigator() {
   return (
@@ -46,7 +77,6 @@ function MainTabNavigator() {
           } else if (route.name === 'Profile') {
             iconName = focused ? 'settings' : 'settings-outline';
           } 
-          
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -75,8 +105,8 @@ function MainTabNavigator() {
 
       <Tab.Screen 
         name="MyCoaches"
-        component={MyCoaches}
-        options={{ title: 'My Coaches'}}
+        component={CoachesStackNavigator}
+        options={{headerShown: false}}
       />
 
       <Tab.Screen 
@@ -94,11 +124,6 @@ export default function App() {
   const [user, setUser] = useState<User | null >(null);
   const [newUser, setNewUser] = useState(false);
   
-  const backButtonOnlyHeader = {
-    headerShown: true,
-    title: '',
-    headerBackTitle: 'Back'
-  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -175,12 +200,12 @@ export default function App() {
   return (
     <UserProvider>
       <NavigationContainer>
-        <PostLoginLayout />
-        {/* {user ? (   
+        <PostLoginLayout/>
+        {/* user ? (   
           <PostLoginLayout />
         ) : (
           <PreLoginLayout/>
-        )} */}
+        ) */}
       </NavigationContainer>
     </UserProvider>
   );

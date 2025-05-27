@@ -173,7 +173,7 @@ export const getIconsFromSkills = (skills: Array<{skill_id: number, title: strin
     
     const [name] = iconEntry;
     return {
-      skill_id: skill.skill_id.toString(), // Convert to string to match interface
+      skill_id: skill.skill_id, 
       title: skill.title,
       icon: <Icon name={name as IconName} size={size} color={color} />
     };
