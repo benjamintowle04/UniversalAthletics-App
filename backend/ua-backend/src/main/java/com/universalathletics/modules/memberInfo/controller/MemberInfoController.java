@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.google.rpc.context.AttributeContext.Response;
 import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
 import com.universalathletics.modules.coach.entity.CoachEntity;
 import com.universalathletics.modules.memberInfo.entity.MemberInfoEntity;
@@ -16,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
-//------------------------ MemberInfo Controller Class ----------------------//
 /**
  * REST Controller for handling member information operations.
  * Provides endpoints for managing member data in the Universal Athletics
@@ -46,7 +44,6 @@ public class MemberInfoController {
     private GoogleCloudStorageService storageService;
 
 
-    // ------------------------- Create Member Endpoint --------------------------//
     /**
      * Creates a new member in the system.
      *
@@ -60,7 +57,6 @@ public class MemberInfoController {
         return new ResponseEntity<>(createdMember, HttpStatus.CREATED);
     }
 
-// -------------------------- Get All Members Endpoint -----------------------//
     /**
      * Retrieves all members from the system.
      *
@@ -83,7 +79,6 @@ public class MemberInfoController {
         } 
     }
 
-    // -------------------------- Get Member by FirebaseID Endpoint -----------------------//
     /**
      * Retrieves a member by their FirebaseID.
      * 

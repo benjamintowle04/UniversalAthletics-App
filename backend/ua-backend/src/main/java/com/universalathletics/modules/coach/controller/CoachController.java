@@ -23,7 +23,6 @@ import java.util.List;
 
 
 
-//------------------------ Coach Controller Class ----------------------//
 /**
  * REST Controller for handling member information operations.
  * Provides endpoints for managing member data in the Universal Athletics

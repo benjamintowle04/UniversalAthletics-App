@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS Member_Skill;
 DROP TABLE IF EXISTS Coach_Skill;
 DROP TABLE IF EXISTS Member_Coach;
 DROP TABLE IF EXISTS Member_Info;
+DROP TABLE IF EXISTS Connection_Request;
 DROP TABLE IF EXISTS Skill;
 DROP TABLE IF EXISTS Skills;
 DROP TABLE IF EXISTS Coach_Job_Title;
@@ -9,6 +10,24 @@ DROP TABLE IF EXISTS Job_Title_Permission;
 DROP TABLE IF EXISTS Job_Title;
 DROP TABLE IF EXISTS Permission;
 DROP TABLE IF EXISTS Coach;
+
+
+CREATE TABLE Connection_Request (
+    Request_ID INT(4) NOT NULL AUTO_INCREMENT,
+    Sender_Type ENUM('COACH', 'MEMBER') NOT NULL,
+    Sender_ID INT(4) NOT NULL,
+    Receiver_Type ENUM('COACH', 'MEMBER') NOT NULL,
+    Receiver_ID INT(4) NOT NULL,
+    Status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    Message TEXT(500),
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (Request_ID),
+    UNIQUE KEY unique_request (Sender_Type, Sender_ID, Receiver_Type, Receiver_ID, Status),
+    INDEX idx_sender (Sender_Type, Sender_ID),
+    INDEX idx_receiver (Receiver_Type, Receiver_ID),
+    INDEX idx_status (Status)
+);
 
 
 CREATE TABLE Coach (
@@ -321,3 +340,15 @@ INSERT INTO Member_Coach (Member_ID, Coach_ID) VALUES
     (1, 1),
     (1, 9),
     (1, 3);
+
+
+INSERT INTO Connection_Request (Sender_Type, Sender_ID, Receiver_Type, Receiver_ID, Status, Message) VALUES
+    ('COACH', 1, 'MEMBER', 1, 'PENDING', 'I would like to connect'), 
+    ('COACH', 2, 'MEMBER', 1, 'PENDING', 'I would like to connect again'),
+    ('COACH', 9, 'MEMBER', 1, 'ACCEPTED', 'I would like to connect'),
+    ('COACH', 4, 'MEMBER', 1, 'REJECTED', 'I would like to connect'),
+    ('COACH', 3, 'MEMBER', 1, 'ACCEPTED', 'I would like to connect'),
+    ('MEMBER', 1, 'COACH', 2, 'CANCELLED', 'I would like to connect'),
+    ('MEMBER', 1, 'COACH', 4, 'CANCELLED', 'I would like to connect');
+
+    

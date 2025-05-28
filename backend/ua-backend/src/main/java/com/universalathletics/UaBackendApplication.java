@@ -5,13 +5,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 
+	
+
 @SpringBootApplication
 @EntityScan(basePackages = {
 		"com.universalathletics.modules.skill.model",
-		"com.universalathletics.modules.memberInfo.entity", // This seems to be where your entity is now
+		"com.universalathletics.modules.memberInfo.entity",
 		"com.universalathletics.modules.skill.entity",
 		"com.universalathletics.modules.coach.entity",
 		"com.universalathletics.modules.coach.model",
+		"com.universalathletics.modules.requests.connection.entity"
 })
 @ComponentScan(basePackages = "com.universalathletics")
 public class UaBackendApplication {
