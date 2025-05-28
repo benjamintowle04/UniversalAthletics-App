@@ -20,6 +20,4 @@ public class ConnectionRequestDTO {
     private RequestStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
-
 }

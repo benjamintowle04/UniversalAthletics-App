@@ -5,10 +5,8 @@ import { getIconsFromSkills } from '../../../utils/IconLibrary'
 import { Ionicons } from '@expo/vector-icons'
 import { UserContext } from '../../contexts/UserContext'
 import { getMembersCoaches } from '../../../controllers/MemberInfoController'
-import { Navigation } from 'lucide-react-native'
 import { RouterProps } from "../../types/RouterProps";
 import { HeaderText } from '../../components/text/HeaderText'
-import { Header } from 'react-native/Libraries/NewAppScreen'
 import "../../../global.css"
 
 

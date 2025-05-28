@@ -6,8 +6,10 @@ import { UserContext } from '../../contexts/UserContext'
 import { getAllCoaches } from '../../../controllers/CoachController'
 import { Ionicons } from '@expo/vector-icons'
 import { HeaderText } from '../../components/text/HeaderText'
+import { RouterProps } from "../../types/RouterProps";
 
-const MyCoaches = () => {
+
+const MyCoaches = ({navigation}: RouterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   interface Coach {
@@ -76,6 +78,7 @@ const MyCoaches = () => {
               lastName={coach.lastName || ""}
               location={coach.location || ""}
               skills={coach.skills ? getIconsFromSkills(coach.skills) : []}
+              onPress={() => navigation.navigate('CoachProfile', { coachId: coach.firebaseID})}
             />
           </View> 
         ))}

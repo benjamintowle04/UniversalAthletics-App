@@ -1,7 +1,9 @@
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
+import { View, TouchableOpacity } from 'react-native';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
 import Login from './app/screens/pre_login/Login';
@@ -10,8 +12,7 @@ import EntryPoint from './app/screens/pre_login/EntryPoint';
 import Home from './app/screens/home/Home';
 import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
-import React from 'react';
-import { UserProvider } from './app/contexts/UserContext';
+import { UserProvider, useUser } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Text } from 'react-native';
@@ -19,6 +20,7 @@ import UserSettings from './app/screens/settings/UserSettings';
 import MyCoaches from './app/screens/coaches/MyCoaches';
 import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
 import CoachProfile from './app/screens/coaches/CoachProfile';
+import InboxHome from './app/screens/inbox/InboxHome';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -27,43 +29,128 @@ const MerchScreen = () => <Text>Merch Screen</Text>;
 const PreLoginStack = createNativeStackNavigator();
 const PostLoginStack = createNativeStackNavigator();
 const CoachesStack = createNativeStackNavigator();
+const InboxStack = createNativeStackNavigator();
+const MainStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
- const backButtonOnlyHeader = {
+const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
     headerBackTitle: 'Back'
-  }
+}
 
+// Header functions that use UserContext
+const createInboxHeaderWithBackButton = (hasNotifications: boolean, notificationCount: number, navigation: any) => ({
+  headerShown: true,
+  title: '',
+  headerBackTitle: 'Back',
+  headerRight: () => (
+    <TouchableOpacity 
+      onPress={() => navigation.navigate('InboxStack')}
+      style={{ marginRight: 15, position: 'relative' }}
+    >
+      <Ionicons name="mail-outline" size={24} color="blue" />
+      {hasNotifications && (
+        <View 
+          style={{
+            position: 'absolute',
+            top: -8,
+            right: -8,
+            backgroundColor: 'red',
+            borderRadius: 10,
+            minWidth: 20,
+            height: 20,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 4,
+          }}
+        >
+          <Text 
+            style={{
+              color: 'white',
+              fontSize: 12,
+              fontWeight: 'bold',
+            }}
+          >
+            {notificationCount > 99 ? '99+' : notificationCount.toString()}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  ),
+})
+
+const createInboxHeaderWithoutBackButton = (hasNotifications: boolean, notificationCount: number, navigation: any) => ({
+  headerShown: true,
+  title: '',
+  headerBackTitle: 'Back',
+  headerRight: () => (
+    <TouchableOpacity 
+      onPress={() => navigation.navigate('InboxStack')}
+      style={{ marginRight: 15, position: 'relative' }}
+    >
+      <Ionicons name="mail-outline" size={24} color="blue" />
+      {hasNotifications && (
+        <View 
+          style={{
+            position: 'absolute',
+            top: -8,
+            right: -8,
+            backgroundColor: 'red',
+            borderRadius: 10,
+            minWidth: 20,
+            height: 20,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 4,
+          }}
+        >
+          <Text 
+            style={{
+              color: 'white',
+              fontSize: 12,
+              fontWeight: 'bold',
+            }}
+          >
+            {notificationCount > 99 ? '99+' : notificationCount.toString()}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  ),
+})
 
 function CoachesStackNavigator() {
+  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+  
   return (
     <CoachesStack.Navigator>
       <CoachesStack.Screen 
         name="MyCoaches" 
         component={MyCoaches} 
-        options={{ headerShown: false }}
+        options={({ navigation }) => createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
       />
       <CoachesStack.Screen 
         name="ExploreCoaches" 
         component={ExploreCoaches}
-        options={backButtonOnlyHeader}
+        options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
       />
       <CoachesStack.Screen 
         name="CoachProfile" 
         component={CoachProfile as React.ComponentType<any>}
-        options={backButtonOnlyHeader}
+        options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
       />
     </CoachesStack.Navigator>
   );
 }
-// Main tab navigator that will have the bottom navigation bar
+
 function MainTabNavigator() {
+  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          // Use explicit type for iconName with specific Ionicons names
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
 
           if (route.name === 'HomeTab') {
@@ -82,48 +169,110 @@ function MainTabNavigator() {
         },
         tabBarActiveTintColor: 'blue',
         tabBarInactiveTintColor: 'gray',
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginTop: -5,
+          marginBottom: 5,
+        },
       })}
     >
       <Tab.Screen 
         name="HomeTab" 
         component={Home} 
-        options={{ 
-          headerShown: true,
-          title: 'Home'
-        }}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          tabBarLabel: 'Home',
+        })}
       />
       <Tab.Screen 
         name="ScheduleMonthView" 
         component={ScheduleScreen} 
-        options={{ title: 'Schedule' }}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          tabBarLabel: 'Schedule',
+        })}
       />
       <Tab.Screen 
         name="Merch" 
         component={MerchScreen} 
-        options={{ title: 'Merch' }}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          tabBarLabel: 'Merch',
+        })}
       />
 
       <Tab.Screen 
         name="MyCoaches"
         component={CoachesStackNavigator}
-        options={{headerShown: false}}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Coaches',
+        }}
       />
 
       <Tab.Screen 
         name="Profile" 
         component={UserSettings} 
-        options={{ title: 'Settings' }}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          tabBarLabel: 'Settings',
+        })}
       />
-
-      
     </Tab.Navigator>
   );
 }
 
-export default function App() {
-  const [user, setUser] = useState<User | null >(null);
+function InboxStackNavigator() {  
+  return (
+    <InboxStack.Navigator>
+      <InboxStack.Screen 
+        name="Inbox" 
+        component={InboxHome}
+        options={({ navigation }) => ({
+          headerShown: true,
+          title: 'Inbox',
+          headerBackTitle: 'Back',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => navigation.goBack()}
+              style={{ marginLeft: 15, padding: 5 }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="chevron-back-outline" size={24} color="blue" />
+                <Text style={{ color: 'blue', fontSize: 16 }}>Back</Text>
+              </View>
+            </TouchableOpacity>
+          ),
+        })}
+      />
+    </InboxStack.Navigator>
+  );
+}
+
+function MainAppNavigator() {
+  return (
+    <MainStack.Navigator>
+      <MainStack.Screen 
+        name="MainTabs" 
+        component={MainTabNavigator}
+        options={{ headerShown: false }}
+      />
+      
+      <MainStack.Screen 
+        name="InboxStack" 
+        component={InboxStackNavigator}
+        options={{ headerShown: false }}
+      />
+    </MainStack.Navigator>
+  );
+}
+
+// Component uses UserContext - must be inside UserProvider
+function AppContent() {
+  const [user, setUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState(false);
-  
+  const { userData, hasInboxNotifications, inboxNotificationCount, isLoading } = useUser();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -139,6 +288,18 @@ export default function App() {
 
     return () => unsubscribe();
   }, []);
+
+  // Log inbox notification updates for debugging
+  useEffect(() => {
+    if (userData) {
+      console.log('Inbox notifications updated:', {
+        hasNotifications: hasInboxNotifications,
+        count: inboxNotificationCount,
+        pendingRequests: userData.pendingConnectionRequests?.length || 0,
+        isLoadingRequests: userData.isLoadingRequests
+      });
+    }
+  }, [hasInboxNotifications, inboxNotificationCount, userData]);
 
   function PostLoginLayout() {
     if (newUser) {
@@ -164,14 +325,14 @@ export default function App() {
 
           <PostLoginStack.Screen 
             name="Home" 
-            component={MainTabNavigator} 
+            component={MainAppNavigator} 
             options={{headerShown: false}}
           />
         </PostLoginStack.Navigator>
       );
     }
     else {
-      return <MainTabNavigator />;
+      return <MainAppNavigator />;
     }
   }
 
@@ -198,15 +359,21 @@ export default function App() {
   }
 
   return (
+    <NavigationContainer>
+      <PostLoginLayout/>
+      {/* user ? (   
+        <PostLoginLayout />
+      ) : (
+        <PreLoginLayout/>
+      ) */}
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
     <UserProvider>
-      <NavigationContainer>
-        <PostLoginLayout/>
-        {/* user ? (   
-          <PostLoginLayout />
-        ) : (
-          <PreLoginLayout/>
-        ) */}
-      </NavigationContainer>
+      <AppContent />
     </UserProvider>
   );
 }
