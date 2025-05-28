@@ -112,8 +112,6 @@ Ensure you have the following installed on your system:
     ```
     This should display the Maven version number.
 
-### TODO: Include instructions for tailwind installation
-
 
 ### 8. Backend Setup (Spring Boot with Maven)
 1. Navigate to the backend directory:
