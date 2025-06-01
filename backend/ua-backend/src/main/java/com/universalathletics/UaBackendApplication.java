@@ -14,7 +14,8 @@ import org.springframework.context.annotation.ComponentScan;
 		"com.universalathletics.modules.skill.entity",
 		"com.universalathletics.modules.coach.entity",
 		"com.universalathletics.modules.coach.model",
-		"com.universalathletics.modules.requests.connection.entity"
+		"com.universalathletics.modules.requests.connection.entity",
+		"com.universalathletics.modules.jct.memberCoach.entity",
 })
 @ComponentScan(basePackages = "com.universalathletics")
 public class UaBackendApplication {

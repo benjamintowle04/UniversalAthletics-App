@@ -6,5 +6,6 @@ export const ApiRoutes = {
     POST_USER_ONBOARDING: `${BASE_URL}/api/onboarding`,
     MEMBERS: `${BASE_URL}/api/members`,
     COACHES: `${BASE_URL}/api/coaches`,
+    CONNECTION_REQUESTS: `${BASE_URL}/api/requests/connections`,
     PENDING_CONNECTION_REQUESTS: `${BASE_URL}/api/requests/connections/pending`,
 } as const

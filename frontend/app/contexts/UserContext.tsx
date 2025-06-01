@@ -5,7 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getMembersIncomingPendingConnectionRequests } from '../../controllers/ConnectionRequestController';
 
 interface ConnectionRequest {
-  requestId: number;
+  id: number;
   senderType: 'COACH' | 'MEMBER';
   senderId: number;
   senderFirebaseId?: string;

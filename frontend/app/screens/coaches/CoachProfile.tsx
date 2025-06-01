@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { getIconsFromSkills } from '../../../utils/IconLibrary'
 import { useUser } from '../../contexts/UserContext'
 import { Colors } from '../../themes/colors/Colors'
+import { acceptConnectionRequest, declineConnectionRequest } from '../../../controllers/ConnectionRequestController'
 import "../../../global.css"
 
 // Define the Coach interface based on your data structure
@@ -31,8 +32,9 @@ type CoachProfileRouteProp = RouteProp<{ params: { coachId: string } }, 'params'
 const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
   // Initialize with proper typing
   const [coachData, setCoachData] = useState<Coach | null>(null);
+  const [isProcessingRequest, setIsProcessingRequest] = useState(false);
   const { coachId } = route.params;
-  const { userData } = useUser();
+  const { userData, updateUserData } = useUser();
 
   // Check if this coach has a pending connection request to the current user
   const pendingRequest = userData?.pendingConnectionRequests?.find(
@@ -71,21 +73,53 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     }
   };
 
-  const handleAcceptRequest = () => {
-    if (pendingRequest) {
-      // TODO: Implement accept connection request logic
-      console.log('Accept pressed for request:', pendingRequest);
-      Alert.alert("Request Accepted", "Connection request has been accepted!");
-      // You'll need to call your API to accept the request and update the user context
+  const handleAcceptRequest = async () => {
+    if (pendingRequest && userData) {
+      setIsProcessingRequest(true);
+      try {
+        await acceptConnectionRequest(pendingRequest.id, userData.id);
+        
+        // Remove the request from the pending list
+        const updatedRequests = userData.pendingConnectionRequests.filter(
+          request => request.id !== pendingRequest.id
+        );
+        
+        updateUserData({
+          pendingConnectionRequests: updatedRequests
+        });
+        
+        Alert.alert("Success", "Connection request accepted! You are now connected with this coach.");
+      } catch (error) {
+        console.error('Error accepting connection request:', error);
+        Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept connection request");
+      } finally {
+        setIsProcessingRequest(false);
+      }
     }
   };
 
-  const handleDeclineRequest = () => {
-    if (pendingRequest) {
-      // TODO: Implement decline connection request logic
-      console.log('Decline pressed for request:', pendingRequest);
-      Alert.alert("Request Declined", "Connection request has been declined.");
-      // You'll need to call your API to decline the request and update the user context
+  const handleDeclineRequest = async () => {
+    if (pendingRequest && userData) {
+      setIsProcessingRequest(true);
+      try {
+        await declineConnectionRequest(pendingRequest.id, userData.id);
+        
+        // Remove the request from the pending list
+        const updatedRequests = userData.pendingConnectionRequests.filter(
+          request => request.id !== pendingRequest.id
+        );
+        
+        updateUserData({
+          pendingConnectionRequests: updatedRequests
+        });
+        
+        Alert.alert("Request Declined", "Connection request has been declined.");
+      } catch (error) {
+        console.error('Error declining connection request:', error);
+        Alert.alert("Error", error instanceof Error ? error.message : "Failed to decline connection request");
+      } finally {
+        setIsProcessingRequest(false);
+      }
     }
   };
 
@@ -229,23 +263,35 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
           <View className="flex-row space-x-3">
             <TouchableOpacity 
               className="flex-1 py-3 rounded-lg items-center mr-2"
-              style={{ backgroundColor: Colors.uaGreen }}
+              style={{ 
+                backgroundColor: isProcessingRequest ? Colors.grey.medium : Colors.uaGreen,
+                opacity: isProcessingRequest ? 0.6 : 1 
+              }}
               onPress={handleAcceptRequest}
+              disabled={isProcessingRequest}
             >
               <View className="flex-row items-center">
                 <Ionicons name="checkmark-circle-outline" size={20} color="white" />
-                <Text className="text-white font-semibold text-lg ml-2">Accept</Text>
+                <Text className="text-white font-semibold text-lg ml-2">
+                  {isProcessingRequest ? "Processing..." : "Accept"}
+                </Text>
               </View>
             </TouchableOpacity>
             
             <TouchableOpacity 
               className="flex-1 py-3 rounded-lg items-center ml-2"
-              style={{ backgroundColor: Colors.uaRed }}
+              style={{ 
+                backgroundColor: isProcessingRequest ? Colors.grey.medium : Colors.uaRed,
+                opacity: isProcessingRequest ? 0.6 : 1 
+              }}
               onPress={handleDeclineRequest}
+              disabled={isProcessingRequest}
             >
               <View className="flex-row items-center">
                 <Ionicons name="close-circle-outline" size={20} color="white" />
-                <Text className="text-white font-semibold text-lg ml-2">Decline</Text>
+                <Text className="text-white font-semibold text-lg ml-2">
+                  {isProcessingRequest ? "Processing..." : "Decline"}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>

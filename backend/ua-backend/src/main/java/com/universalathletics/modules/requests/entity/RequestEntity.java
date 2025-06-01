@@ -66,7 +66,7 @@ public abstract class RequestEntity {
     /**
      * Firebase ID of the receiver.
      */
-    @Column(name = "Reciever_Firebase_ID", length = 100)
+    @Column(name = "Receiver_Firebase_ID", length = 100)
     private String receiverFirebaseId;
 
     /**

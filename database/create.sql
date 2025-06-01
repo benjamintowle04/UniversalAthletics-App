@@ -345,7 +345,6 @@ INSERT INTO Coach_Skill (Coach_ID, Skill_ID) VALUES
     (10, 20);
 
 INSERT INTO Member_Coach (Member_ID, Coach_ID) VALUES
-    (1, 1),
     (1, 9),
     (1, 3);
 

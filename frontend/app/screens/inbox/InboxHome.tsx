@@ -1,16 +1,20 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native'
-import React from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
+import React, { useState, useMemo } from 'react'
 import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
+import { acceptConnectionRequest, declineConnectionRequest } from '../../../controllers/ConnectionRequestController'
 import "../../../global.css"
 import { RouterProps } from "../../types/RouterProps"
 
 const InboxHome = ({navigation}: RouterProps) => {
-  const { userData } = useUser()
+  const { userData, updateUserData } = useUser()
+  const [processingRequests, setProcessingRequests] = useState<Set<number>>(new Set())
 
-  // Get connection requests from user data
-  const connectionRequests = userData?.pendingConnectionRequests || []
+  // Use useMemo to ensure the component re-renders when pendingConnectionRequests changes
+  const connectionRequests = useMemo(() => {
+    return userData?.pendingConnectionRequests || []
+  }, [userData?.pendingConnectionRequests])
   
   // Placeholder data for other categories
   const sessionRequests: any[] = [] // Will be populated later
@@ -24,65 +28,152 @@ const InboxHome = ({navigation}: RouterProps) => {
       console.error('No sender Firebase ID found in connection request:', request);
     }
   }
+
+  const handleAcceptRequest = async (request: any) => {
+    if (!userData) return;
+    
+    setProcessingRequests(prev => new Set(prev).add(request.id)); // Use request.id instead of request.requestId
+    
+    try {
+      await acceptConnectionRequest(request.id, userData.id); // Use request.id instead of request.requestId
+      
+      // Remove the request from the pending list
+      const updatedRequests = userData.pendingConnectionRequests.filter(
+        req => req.id !== request.id // Use request.id instead of request.requestId
+      );
+      
+      updateUserData({
+        pendingConnectionRequests: updatedRequests
+      });
+      
+      Alert.alert("Success", "Connection request accepted! You are now connected with this coach.");
+    } catch (error) {
+      console.error('Error accepting connection request:', error);
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept connection request");
+    } finally {
+      setProcessingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(request.id); // Use request.id instead of request.requestId
+        return newSet;
+      });
+    }
+  };
+
+  const handleDeclineRequest = async (request: any) => {
+    if (!userData) return;
+    
+    setProcessingRequests(prev => new Set(prev).add(request.id)); // Use request.id instead of request.requestId
+    
+    try {
+      await declineConnectionRequest(request.id, userData.id); // Use request.id instead of request.requestId
+      
+      // Remove the request from the pending list
+      const updatedRequests = userData.pendingConnectionRequests.filter(
+        req => req.id !== request.id // Use request.id instead of request.requestId
+      );
+      
+      updateUserData({
+        pendingConnectionRequests: updatedRequests
+      });
+      
+      Alert.alert("Request Declined", "Connection request has been declined.");
+    } catch (error) {
+      console.error('Error declining connection request:', error);
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to decline connection request");
+    } finally {
+      setProcessingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(request.id); // Use request.id instead of request.requestId
+        return newSet;
+      });
+    }
+  };
   
-  const renderConnectionRequest = (request: any, index: number) => (
-    <TouchableOpacity 
-      key={request.requestId || index}
-      className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
-      onPress={() => handleConnectionRequestPress(request)}
-    >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center flex-1">
-          {/* Profile picture placeholder */}
-          <View 
-            className="w-12 h-12 rounded-full items-center justify-center mr-3"
-            style={{ backgroundColor: Colors.uaBlue + '20' }} // 20% opacity
-          >
-            {request.senderProfilePic ? (
-              <Image 
-                source={{ uri: request.senderProfilePic }}
-                className="w-12 h-12 rounded-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <Ionicons name="person" size={24} color={Colors.uaBlue} />
-            )}
+  const renderConnectionRequest = (request: any, index: number) => {
+    const isProcessing = processingRequests.has(request.id); // Use request.id instead of request.requestId
+    
+    return (
+      <TouchableOpacity 
+        key={request.id || index} // Use request.id instead of request.requestId
+        className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
+        onPress={() => handleConnectionRequestPress(request)}
+        disabled={isProcessing}
+      >
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1">
+            {/* Profile picture placeholder */}
+            <View 
+              className="w-12 h-12 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: Colors.uaBlue + '20' }} // 20% opacity
+            >
+              {request.senderProfilePic ? (
+                <Image 
+                  source={{ uri: request.senderProfilePic }}
+                  className="w-12 h-12 rounded-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="person" size={24} color={Colors.uaBlue} />
+              )}
+            </View>
+            
+            <View className="flex-1">
+              <Text className="text-gray-900 font-semibold text-base">
+                {request.senderFirstName && request.senderLastName
+                  ? `${request.senderFirstName} ${request.senderLastName}`
+                  : `Coach #${request.senderId}`
+                }
+              </Text>
+              <Text className="text-gray-600 text-sm mt-1">
+                {request.message || "Would like to connect with you"}
+              </Text>
+              <Text className="text-gray-400 text-xs mt-1">
+                {new Date(request.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
           </View>
           
-          <View className="flex-1">
-            <Text className="text-gray-900 font-semibold text-base">
-              {request.senderFirstName && request.senderLastName
-                ? `${request.senderFirstName} ${request.senderLastName}`
-                : `Coach #${request.senderId}`
-              }
-            </Text>
-            <Text className="text-gray-600 text-sm mt-1">
-              {request.message || "Would like to connect with you"}
-            </Text>
-            <Text className="text-gray-400 text-xs mt-1">
-              {new Date(request.createdAt).toLocaleDateString()}
-            </Text>
+          {/* Action buttons */}
+          <View className="flex-row ml-2">
+            <TouchableOpacity 
+              className="px-3 py-1 rounded-md mr-2"
+              style={{ 
+                backgroundColor: isProcessing ? Colors.grey.medium : Colors.uaGreen,
+                opacity: isProcessing ? 0.6 : 1 
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleAcceptRequest(request);
+              }}
+              disabled={isProcessing}
+            >
+              <Text className="text-white text-xs font-medium">
+                {isProcessing ? "..." : "Accept"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className="px-3 py-1 rounded-md"
+              style={{ 
+                backgroundColor: isProcessing ? Colors.grey.medium : Colors.uaRed,
+                opacity: isProcessing ? 0.6 : 1 
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleDeclineRequest(request);
+              }}
+              disabled={isProcessing}
+            >
+              <Text className="text-white text-xs font-medium">
+                {isProcessing ? "..." : "Decline"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-        
-        {/* Action buttons */}
-        <View className="flex-row ml-2">
-          <TouchableOpacity 
-            className="px-3 py-1 rounded-md mr-2"
-            style={{ backgroundColor: Colors.uaGreen }}
-          >
-            <Text className="text-white text-xs font-medium">Accept</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            className="px-3 py-1 rounded-md"
-            style={{ backgroundColor: Colors.uaRed }}
-          >
-            <Text className="text-white text-xs font-medium">Decline</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </TouchableOpacity>
-  )
+      </TouchableOpacity>
+    );
+  };
+
+  // ... rest of your component remains the same
 
   const renderSessionRequest = (request: any, index: number) => (
     <TouchableOpacity 
@@ -246,4 +337,5 @@ const InboxHome = ({navigation}: RouterProps) => {
     </ScrollView>
   )
 }
+
 export default InboxHome

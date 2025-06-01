@@ -6,12 +6,15 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.universalathletics.modules.requests.connection.entity.ConnectionRequestEntity;
 import com.universalathletics.modules.requests.connection.model.ConnectionRequestDTO;
 import com.universalathletics.modules.requests.connection.repository.ConnectionRequestRepository;
 import com.universalathletics.modules.requests.util.enums.RequestStatus;
 import com.universalathletics.modules.requests.util.enums.UserType;
-
+import com.universalathletics.modules.jct.memberCoach.entity.MemberCoachEntity;
+import com.universalathletics.modules.jct.memberCoach.repository.MemberCoachRepository;
 
 /**
  * Service class for routing connection request operations. 
@@ -21,6 +24,9 @@ public class ConnectionRequestService {
     
     @Autowired
     private ConnectionRequestRepository connectionRequestRepository;
+    
+    @Autowired
+    private MemberCoachRepository memberCoachRepository;
     
     /**
      * Get all pending connection requests where the recipient is a member with the specified ID.
@@ -41,12 +47,13 @@ public class ConnectionRequestService {
     }
     
     /**
-     * Accept a connection request by updating its status to ACCEPTED.
+     * Accept a connection request by updating its status to ACCEPTED and creating the member-coach relationship.
      * 
      * @param requestId The ID of the connection request to accept
      * @param receiverId The ID of the receiver (to verify ownership)
      * @return true if the request was successfully accepted, false otherwise
      */
+    @Transactional
     public boolean acceptConnectionRequest(Integer requestId, Integer receiverId) {
         // Verify the request exists and belongs to the receiver
         Optional<ConnectionRequestEntity> requestOpt = connectionRequestRepository.findByIdAndReceiverId(requestId, receiverId);
@@ -56,8 +63,19 @@ public class ConnectionRequestService {
             
             // Only allow accepting if the current status is PENDING
             if (request.getStatus() == RequestStatus.PENDING) {
-                int rowsUpdated = connectionRequestRepository.updateStatusById(requestId, RequestStatus.ACCEPTED);
-                return rowsUpdated > 0;
+                try {
+                    // Update the request status
+                    int rowsUpdated = connectionRequestRepository.updateStatusById(requestId, RequestStatus.ACCEPTED);
+                    
+                    if (rowsUpdated > 0) {
+                        // Create the member-coach relationship
+                        createMemberCoachRelationship(request);
+                        return true;
+                    }
+                } catch (Exception e) {
+                    // Log the error and let the transaction roll back
+                    throw new RuntimeException("Failed to accept connection request and create member-coach relationship", e);
+                }
             }
         }
         
@@ -86,6 +104,36 @@ public class ConnectionRequestService {
         }
         
         return false;
+    }
+    
+    /**
+     * Create a member-coach relationship based on the connection request.
+     * 
+     * @param request The accepted connection request
+     */
+    private void createMemberCoachRelationship(ConnectionRequestEntity request) {
+        Integer memberId = null;
+        Integer coachId = null;
+        
+        // Determine which is the member and which is the coach
+        if (request.getSenderType() == UserType.COACH && request.getReceiverType() == UserType.MEMBER) {
+            // Coach sent request to Member
+            coachId = request.getSenderId();
+            memberId = request.getReceiverId();
+        } else if (request.getSenderType() == UserType.MEMBER && request.getReceiverType() == UserType.COACH) {
+            // Member sent request to Coach
+            memberId = request.getSenderId();
+            coachId = request.getReceiverId();
+        } else {
+            // This shouldn't happen based on your current setup, but handle it gracefully
+            throw new IllegalArgumentException("Invalid connection request: both parties must be different types (MEMBER and COACH)");
+        }
+        
+        // Check if the relationship already exists to avoid duplicates
+        if (!memberCoachRepository.existsByMemberIdAndCoachId(memberId, coachId)) {
+            MemberCoachEntity memberCoach = new MemberCoachEntity(memberId, coachId);
+            memberCoachRepository.save(memberCoach);
+        }
     }
     
     /**
