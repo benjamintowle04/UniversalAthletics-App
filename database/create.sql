@@ -16,8 +16,16 @@ CREATE TABLE Connection_Request (
     Request_ID INT(4) NOT NULL AUTO_INCREMENT,
     Sender_Type ENUM('COACH', 'MEMBER') NOT NULL,
     Sender_ID INT(4) NOT NULL,
+    Sender_Firebase_ID NCHAR(30),
     Receiver_Type ENUM('COACH', 'MEMBER') NOT NULL,
     Receiver_ID INT(4) NOT NULL,
+    Receiver_Firebase_ID NCHAR(30),
+    Sender_First_Name NCHAR(30),
+    Sender_Last_Name NCHAR(30),
+    Sender_Profile_Pic TEXT(500),
+    Reciever_First_Name NCHAR(30),
+    Reciever_Last_Name NCHAR(30),
+    Reciever_Profile_Pic TEXT(500),
     Status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
     Message TEXT(500),
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -342,13 +350,30 @@ INSERT INTO Member_Coach (Member_ID, Coach_ID) VALUES
     (1, 3);
 
 
-INSERT INTO Connection_Request (Sender_Type, Sender_ID, Receiver_Type, Receiver_ID, Status, Message) VALUES
-    ('COACH', 1, 'MEMBER', 1, 'PENDING', 'I would like to connect'), 
-    ('COACH', 2, 'MEMBER', 1, 'PENDING', 'I would like to connect again'),
-    ('COACH', 9, 'MEMBER', 1, 'ACCEPTED', 'I would like to connect'),
-    ('COACH', 4, 'MEMBER', 1, 'REJECTED', 'I would like to connect'),
-    ('COACH', 3, 'MEMBER', 1, 'ACCEPTED', 'I would like to connect'),
-    ('MEMBER', 1, 'COACH', 2, 'CANCELLED', 'I would like to connect'),
-    ('MEMBER', 1, 'COACH', 4, 'CANCELLED', 'I would like to connect');
+INSERT INTO Connection_Request (
+    Sender_Type, 
+    Sender_ID, 
+    Receiver_Type, 
+    Receiver_ID, 
+    Sender_First_Name, 
+    Sender_Last_Name, 
+    Sender_Profile_Pic, 
+    Sender_Firebase_ID,
+    Reciever_First_Name, 
+    Reciever_Last_Name, 
+    Reciever_Profile_Pic, 
+    Receiver_Firebase_ID,
+    Status, 
+    Message
+) VALUES    
+    ('COACH', 1, 'MEMBER', 1, 'Ben', 'Towle', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 'pGdWihV35TbdydmijyqToZOCkLs2', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect'),
+    
+    ('COACH', 2, 'MEMBER', 1, 'Coach', 'San Diego', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'hfjkabfjkabkj', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect again'),
+    
+    ('MEMBER', 1, 'COACH', 3, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'Max', 'Robinson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'maxRobinsonFirebaseId123', 'PENDING', 'I would like to connect with you'),
+    
+    ('MEMBER', 1, 'COACH', 4, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'Coach', 'Eden Praire1', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'edenPraireCoachFirebaseId456', 'PENDING', 'Looking forward to working together');
+
+ 
 
     

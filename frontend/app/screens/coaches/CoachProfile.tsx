@@ -1,9 +1,11 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native'
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, Linking, Alert } from 'react-native'
 import React from 'react'
 import { useEffect, useState } from 'react'
 import { getCoachByFirebaseId } from '../../../controllers/CoachController'
 import { Ionicons } from '@expo/vector-icons'
 import { getIconsFromSkills } from '../../../utils/IconLibrary'
+import { useUser } from '../../contexts/UserContext'
+import { Colors } from '../../themes/colors/Colors'
 import "../../../global.css"
 
 // Define the Coach interface based on your data structure
@@ -13,6 +15,7 @@ interface Coach {
   firstName: string;
   lastName: string;
   location: string;
+  email?: string;
   profilePic?: string;
   bio1?: string;
   bio2?: string;
@@ -29,6 +32,12 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
   // Initialize with proper typing
   const [coachData, setCoachData] = useState<Coach | null>(null);
   const { coachId } = route.params;
+  const { userData } = useUser();
+
+  // Check if this coach has a pending connection request to the current user
+  const pendingRequest = userData?.pendingConnectionRequests?.find(
+    request => request.senderFirebaseId === coachId
+  );
 
   useEffect(() => {
     const fetchCoachData = async () => {
@@ -43,6 +52,42 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     }
     fetchCoachData();
   }, [coachId]);
+
+  const handleEmailPress = () => {
+    if (coachData?.email) {
+      const emailUrl = `mailto:${coachData.email}`;
+      Linking.canOpenURL(emailUrl)
+        .then((supported) => {
+          if (supported) {
+            Linking.openURL(emailUrl);
+          } else {
+            Alert.alert("Error", "Email app is not available on this device");
+          }
+        })
+        .catch((err) => {
+          console.error('Error opening email:', err);
+          Alert.alert("Error", "Failed to open email app");
+        });
+    }
+  };
+
+  const handleAcceptRequest = () => {
+    if (pendingRequest) {
+      // TODO: Implement accept connection request logic
+      console.log('Accept pressed for request:', pendingRequest);
+      Alert.alert("Request Accepted", "Connection request has been accepted!");
+      // You'll need to call your API to accept the request and update the user context
+    }
+  };
+
+  const handleDeclineRequest = () => {
+    if (pendingRequest) {
+      // TODO: Implement decline connection request logic
+      console.log('Decline pressed for request:', pendingRequest);
+      Alert.alert("Request Declined", "Connection request has been declined.");
+      // You'll need to call your API to decline the request and update the user context
+    }
+  };
 
   if (!coachData) {
     return (
@@ -87,6 +132,53 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
         </View>
       </View>
 
+      {/* Pending Request Notice */}
+      {pendingRequest && (
+        <View className="mt-4 mx-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <View className="flex-row items-center">
+            <Ionicons name="time-outline" size={20} color={Colors.uaBlue} />
+            <Text className="ml-2 text-blue-800 font-medium">
+              Connection Request Pending
+            </Text>
+          </View>
+          <Text className="mt-1 text-blue-600 text-sm">
+            This coach has sent you a connection request.
+          </Text>
+        </View>
+      )}
+
+      {/* Contact Information Section */}
+      <View className="mt-6 px-4">
+        <Text className="text-lg font-semibold mb-3">Contact Information</Text>
+        
+        {/* Email */}
+        {coachData.email ? (
+          <TouchableOpacity 
+            className="flex-row items-center mb-3 p-3 bg-gray-50 rounded-lg"
+            onPress={handleEmailPress}
+          >
+            <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
+              <Ionicons name="mail-outline" size={20} color="#3B82F6" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm text-gray-500">Email</Text>
+              <Text className="text-base text-gray-900">{coachData.email}</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={16} color="#666" />
+          </TouchableOpacity>
+        ) : (
+          <View className="flex-row items-center mb-3 p-3 bg-gray-50 rounded-lg opacity-50">
+            <View className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center mr-3">
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm text-gray-400">Email</Text>
+              <Text className="text-base text-gray-400">Not provided</Text>
+            </View>
+          </View>
+        )}
+      </View>
+
       {/* Skills Section */}
       <View className="mt-6 px-4">
         <Text className="text-lg font-semibold mb-2">Skills</Text>
@@ -121,7 +213,6 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
           )}
         </View>
         
-        {/* Bio Image - Adjusted width to match your changes */}
         <View className="my-3 flex items-center justify-center">
           <Image 
             source={coachData.bioPic1 ? { uri: coachData.bioPic1 } : require('../../images/logo.png')} 
@@ -131,11 +222,51 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
         </View>
       </View>
 
-      {/* Contact Button */}
+      {/* Action Buttons */}
       <View className="mt-8 px-4 mb-8">
-        <TouchableOpacity className="bg-blue-500 py-3 rounded-lg items-center">
-          <Text className="text-white font-semibold text-lg">Contact Coach</Text>
-        </TouchableOpacity>
+        {pendingRequest ? (
+          // Show Accept/Decline buttons if there's a pending request
+          <View className="flex-row space-x-3">
+            <TouchableOpacity 
+              className="flex-1 py-3 rounded-lg items-center mr-2"
+              style={{ backgroundColor: Colors.uaGreen }}
+              onPress={handleAcceptRequest}
+            >
+              <View className="flex-row items-center">
+                <Ionicons name="checkmark-circle-outline" size={20} color="white" />
+                <Text className="text-white font-semibold text-lg ml-2">Accept</Text>
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              className="flex-1 py-3 rounded-lg items-center ml-2"
+              style={{ backgroundColor: Colors.uaRed }}
+              onPress={handleDeclineRequest}
+            >
+              <View className="flex-row items-center">
+                <Ionicons name="close-circle-outline" size={20} color="white" />
+                <Text className="text-white font-semibold text-lg ml-2">Decline</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          // Show Contact button if no pending request
+          <TouchableOpacity 
+            className="bg-blue-500 py-3 rounded-lg items-center"
+            onPress={() => {
+              if (coachData.email) {
+                handleEmailPress();
+              } else {
+                Alert.alert("Contact Unavailable", "No email address is available for this coach.");
+              }
+            }}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="mail-outline" size={20} color="white" />
+              <Text className="text-white font-semibold text-lg ml-2">Contact Coach</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   </SafeAreaView>

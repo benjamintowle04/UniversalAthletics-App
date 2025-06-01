@@ -14,8 +14,16 @@ public class ConnectionRequestDTO {
     private Integer id;
     private UserType senderType;
     private Integer senderId;
+    private String senderFirebaseId;
     private UserType receiverType;
     private Integer receiverId;
+    private String recieverFirebaseId;
+    private String senderFirstName;
+    private String senderLastName;
+    private String senderProfilePic;
+    private String receiverFirstName;
+    private String receiverLastName;
+    private String receiverProfilePic;
     private String message;
     private RequestStatus status;
     private LocalDateTime createdAt;

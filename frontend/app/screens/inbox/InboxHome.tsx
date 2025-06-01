@@ -4,8 +4,9 @@ import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
 import "../../../global.css"
+import { RouterProps } from "../../types/RouterProps"
 
-const InboxHome = () => {
+const InboxHome = ({navigation}: RouterProps) => {
   const { userData } = useUser()
 
   // Get connection requests from user data
@@ -15,10 +16,20 @@ const InboxHome = () => {
   const sessionRequests: any[] = [] // Will be populated later
   const regularMessages: any[] = [] // Will be populated later
 
+  const handleConnectionRequestPress = (request: any) => {
+    // Navigate to CoachProfile with the sender's Firebase ID
+    if (request.senderFirebaseId) {
+      navigation.navigate('CoachProfile', { coachId: request.senderFirebaseId });
+    } else {
+      console.error('No sender Firebase ID found in connection request:', request);
+    }
+  }
+  
   const renderConnectionRequest = (request: any, index: number) => (
     <TouchableOpacity 
-      key={request.Request_ID || index}
+      key={request.requestId || index}
       className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
+      onPress={() => handleConnectionRequestPress(request)}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
@@ -27,9 +38,9 @@ const InboxHome = () => {
             className="w-12 h-12 rounded-full items-center justify-center mr-3"
             style={{ backgroundColor: Colors.uaBlue + '20' }} // 20% opacity
           >
-            {request.Sender_Profile_Pic ? (
+            {request.senderProfilePic ? (
               <Image 
-                source={{ uri: request.Sender_Profile_Pic }}
+                source={{ uri: request.senderProfilePic }}
                 className="w-12 h-12 rounded-full"
                 resizeMode="cover"
               />
@@ -40,16 +51,16 @@ const InboxHome = () => {
           
           <View className="flex-1">
             <Text className="text-gray-900 font-semibold text-base">
-              {request.Sender_First_Name && request.Sender_Last_Name 
-                ? `${request.Sender_First_Name} ${request.Sender_Last_Name}`
-                : `Coach #${request.Sender_ID}`
+              {request.senderFirstName && request.senderLastName
+                ? `${request.senderFirstName} ${request.senderLastName}`
+                : `Coach #${request.senderId}`
               }
             </Text>
             <Text className="text-gray-600 text-sm mt-1">
-              {request.Message || "Would like to connect with you"}
+              {request.message || "Would like to connect with you"}
             </Text>
             <Text className="text-gray-400 text-xs mt-1">
-              {new Date(request.Created_At).toLocaleDateString()}
+              {new Date(request.createdAt).toLocaleDateString()}
             </Text>
           </View>
         </View>

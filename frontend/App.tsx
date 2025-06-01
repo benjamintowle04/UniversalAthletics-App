@@ -21,6 +21,7 @@ import MyCoaches from './app/screens/coaches/MyCoaches';
 import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
 import CoachProfile from './app/screens/coaches/CoachProfile';
 import InboxHome from './app/screens/inbox/InboxHome';
+import { Inbox } from 'lucide-react-native';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -135,11 +136,6 @@ function CoachesStackNavigator() {
         component={ExploreCoaches}
         options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
       />
-      <CoachesStack.Screen 
-        name="CoachProfile" 
-        component={CoachProfile as React.ComponentType<any>}
-        options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
-      />
     </CoachesStack.Navigator>
   );
 }
@@ -251,6 +247,8 @@ function InboxStackNavigator() {
 }
 
 function MainAppNavigator() {
+  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+
   return (
     <MainStack.Navigator>
       <MainStack.Screen 
@@ -264,6 +262,15 @@ function MainAppNavigator() {
         component={InboxStackNavigator}
         options={{ headerShown: false }}
       />
+
+       <MainStack.Screen
+        name = "CoachProfile"
+        component={CoachProfile as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          tabBarButton: () => null, // Hide this tab button
+        })}
+        />
     </MainStack.Navigator>
   );
 }

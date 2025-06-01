@@ -45,6 +45,12 @@ public abstract class RequestEntity {
     private Integer senderId;
 
     /**
+     * Firebase ID of the sender.
+     */
+    @Column(name = "Sender_Firebase_ID", length = 100)
+    private String senderFirebaseId;
+
+    /**
      * Type of the receiver (COACH or MEMBER).
      */
     @Enumerated(EnumType.STRING)
@@ -56,6 +62,48 @@ public abstract class RequestEntity {
      */
     @Column(name = "Receiver_ID", nullable = false)
     private Integer receiverId;
+
+    /**
+     * Firebase ID of the receiver.
+     */
+    @Column(name = "Reciever_Firebase_ID", length = 100)
+    private String receiverFirebaseId;
+
+    /**
+     * First name of the sender.
+     */
+    @Column(name = "Sender_First_Name", length = 30)
+    private String senderFirstName;
+
+    /**
+     * Last name of the sender.
+     */
+    @Column(name = "Sender_Last_Name", length = 30)
+    private String senderLastName;
+
+    /**
+     * Profile picture URL of the sender.
+     */
+    @Column(name = "Sender_Profile_Pic", length = 500)
+    private String senderProfilePic;
+
+    /**
+     * First name of the receiver.
+     */
+    @Column(name = "Reciever_First_Name", length = 30)
+    private String receiverFirstName;
+
+    /**
+     * Last name of the receiver.
+     */
+    @Column(name = "Reciever_Last_Name", length = 30)
+    private String receiverLastName;
+
+    /**
+     * Profile picture URL of the receiver.
+     */
+    @Column(name = "Reciever_Profile_Pic", length = 500)
+    private String receiverProfilePic;
 
     /**
      * Status of the request.
@@ -117,6 +165,7 @@ public abstract class RequestEntity {
     @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false)
     @JsonIgnore
     private CoachEntity receiverCoach;
+
 
     /**
      * Automatically set timestamps before persisting.

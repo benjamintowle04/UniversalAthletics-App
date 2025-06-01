@@ -3,23 +3,22 @@ import { User } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../../firebase_config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getMembersIncomingPendingConnectionRequests } from '../../controllers/ConnectionRequestController';
-import { User as LucideUser } from 'lucide-react-native';
 
-// Define the connection request interface based on your database schema
 interface ConnectionRequest {
-  Request_ID: number;
-  Sender_Type: 'COACH' | 'MEMBER';
-  Sender_ID: number;
-  Receiver_Type: 'COACH' | 'MEMBER';
-  Receiver_ID: number;
-  Status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
-  Message?: string;
-  Created_At: string;
-  Updated_At: string;
-  // Add any additional fields that your API returns (like sender details)
-  Sender_First_Name?: string;
-  Sender_Last_Name?: string;
-  Sender_Profile_Pic?: string;
+  requestId: number;
+  senderType: 'COACH' | 'MEMBER';
+  senderId: number;
+  senderFirebaseId?: string;
+  receiverType: 'COACH' | 'MEMBER';
+  receiverId: number;
+  receiverFirebaseId?: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  message?: string;
+  createdAt: string;
+  updatedAt: string;
+  senderFirstName?: string;
+  senderLastName?: string;
+  senderProfilePic?: string;
 }
 
 interface UserData {
@@ -32,7 +31,7 @@ interface UserData {
   profilePic?: string;
   location?: string;
   firebaseId: string;
-  // Add pending connection requests
+  // Add pending connection requests - these should be part of the interface
   pendingConnectionRequests: ConnectionRequest[];
   isLoadingRequests: boolean;
   // Add any other user fields you have
@@ -41,7 +40,7 @@ interface UserData {
 interface UserContextType {
   user: User | null;
   userData: UserData | null;
-  setUserData: (data: UserData | null) => void;
+  setUserData: (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests'> | null) => void;
   updateUserData: (updates: Partial<UserData>) => void;
   hasInboxNotifications: boolean;
   inboxNotificationCount: number;
@@ -72,17 +71,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Function to set user data and fetch connection requests
-  const setUserDataWithRequests = async (data: UserData | null) => {
+  const setUserDataWithRequests = async (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests'> | null) => {
     if (data) {
-      // Set initial user data
-      const userDataWithRequests = {
+      // Set initial user data with empty requests and loading state
+      const userDataWithRequests: UserData = {
         ...data,
         pendingConnectionRequests: [],
         isLoadingRequests: true
       };
       setUserData(userDataWithRequests);
 
-      // Fetch connection requests
+      // Fetch connection requests in the background
       try {
         const requests = await fetchConnectionRequests(data.id);
         setUserData(prev => prev ? { 
@@ -116,7 +115,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribe();
   }, []);
 
-
   const value: UserContextType = {
     user,
     userData,
@@ -143,5 +141,3 @@ export const useUser = (): UserContextType => {
 };
 
 export { UserContext };
-
-
