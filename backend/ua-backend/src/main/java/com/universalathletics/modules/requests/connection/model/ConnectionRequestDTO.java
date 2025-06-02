@@ -17,7 +17,7 @@ public class ConnectionRequestDTO {
     private String senderFirebaseId;
     private UserType receiverType;
     private Integer receiverId;
-    private String recieverFirebaseId;
+    private String receiverFirebaseId;
     private String senderFirstName;
     private String senderLastName;
     private String senderProfilePic;

@@ -90,19 +90,19 @@ public abstract class RequestEntity {
     /**
      * First name of the receiver.
      */
-    @Column(name = "Reciever_First_Name", length = 30)
+    @Column(name = "Receiver_First_Name", length = 30)
     private String receiverFirstName;
 
     /**
      * Last name of the receiver.
      */
-    @Column(name = "Reciever_Last_Name", length = 30)
+    @Column(name = "Receiver_Last_Name", length = 30)
     private String receiverLastName;
 
     /**
      * Profile picture URL of the receiver.
      */
-    @Column(name = "Reciever_Profile_Pic", length = 500)
+    @Column(name = "Receiver_Profile_Pic", length = 500)
     private String receiverProfilePic;
 
     /**

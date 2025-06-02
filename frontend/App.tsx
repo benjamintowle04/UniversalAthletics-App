@@ -14,14 +14,14 @@ import GenInfo from './app/screens/onboarding/GenInfo';
 import EnterSkills from './app/screens/onboarding/EnterSkills';
 import { UserProvider, useUser } from './app/contexts/UserContext';
 import AccountSummary from './app/screens/onboarding/AccountSummary';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from 'react-native';
 import UserSettings from './app/screens/settings/UserSettings';
 import MyCoaches from './app/screens/coaches/MyCoaches';
 import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
 import CoachProfile from './app/screens/coaches/CoachProfile';
 import InboxHome from './app/screens/inbox/InboxHome';
-import { Inbox } from 'lucide-react-native';
+import SentRequests from './app/screens/inbox/SentRequests';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -40,108 +40,182 @@ const backButtonOnlyHeader = {
     headerBackTitle: 'Back'
 }
 
-// Header functions that use UserContext
-const createInboxHeaderWithBackButton = (hasNotifications: boolean, notificationCount: number, navigation: any) => ({
+const createInboxHeaderWithBackButton = (hasNotifications: boolean, notificationCount: number, hasSentNotifications: boolean, sentNotificationCount: number, navigation: any) => ({
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
   headerRight: () => (
-    <TouchableOpacity 
-      onPress={() => navigation.navigate('InboxStack')}
-      style={{ marginRight: 15, position: 'relative' }}
-    >
-      <Ionicons name="mail-outline" size={24} color="blue" />
-      {hasNotifications && (
-        <View 
-          style={{
-            position: 'absolute',
-            top: -8,
-            right: -8,
-            backgroundColor: 'red',
-            borderRadius: 10,
-            minWidth: 20,
-            height: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 4,
-          }}
-        >
-          <Text 
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
+      {/* Sent icon */}
+      <TouchableOpacity 
+        onPress={() => navigation.navigate('InboxStack', { screen: 'SentRequests', params: { tab: 'sent' } })}
+        style={{ marginRight: 15, position: 'relative' }}
+      >
+        <Ionicons name="send-outline" size={24} color="blue" />
+        {hasSentNotifications && (
+          <View 
             style={{
-              color: 'white',
-              fontSize: 12,
-              fontWeight: 'bold',
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              minWidth: 20,
+              height: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 4,
             }}
           >
-            {notificationCount > 99 ? '99+' : notificationCount.toString()}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
+            <Text 
+              style={{
+                color: 'white',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}
+            >
+              {sentNotificationCount > 99 ? '99+' : sentNotificationCount.toString()}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+      
+      {/* Inbox icon */}
+      <TouchableOpacity 
+        onPress={() => navigation.navigate('InboxStack')}
+        style={{ position: 'relative' }}
+      >
+        <Ionicons name="mail-outline" size={24} color="blue" />
+        {hasNotifications && (
+          <View 
+            style={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              minWidth: 20,
+              height: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 4,
+            }}
+          >
+            <Text 
+              style={{
+                color: 'white',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}
+            >
+              {notificationCount > 99 ? '99+' : notificationCount.toString()}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </View>
   ),
 })
 
-const createInboxHeaderWithoutBackButton = (hasNotifications: boolean, notificationCount: number, navigation: any) => ({
+const createInboxHeaderWithoutBackButton = (hasNotifications: boolean, notificationCount: number, hasSentNotifications: boolean, sentNotificationCount: number, navigation: any) => ({
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
   headerRight: () => (
-    <TouchableOpacity 
-      onPress={() => navigation.navigate('InboxStack')}
-      style={{ marginRight: 15, position: 'relative' }}
-    >
-      <Ionicons name="mail-outline" size={24} color="blue" />
-      {hasNotifications && (
-        <View 
-          style={{
-            position: 'absolute',
-            top: -8,
-            right: -8,
-            backgroundColor: 'red',
-            borderRadius: 10,
-            minWidth: 20,
-            height: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 4,
-          }}
-        >
-          <Text 
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
+      {/* Sent icon */}
+      <TouchableOpacity 
+        onPress={() => navigation.navigate('InboxStack', { screen: 'SentRequests', params: { tab: 'sent' } })}
+        style={{ marginRight: 15, position: 'relative' }}
+      >
+        <Ionicons name="send-outline" size={24} color="blue" />
+        {hasSentNotifications && (
+          <View 
             style={{
-              color: 'white',
-              fontSize: 12,
-              fontWeight: 'bold',
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              minWidth: 20,
+              height: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 4,
             }}
           >
-            {notificationCount > 99 ? '99+' : notificationCount.toString()}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
+            <Text 
+              style={{
+                color: 'white',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}
+            >
+              {sentNotificationCount > 99 ? '99+' : sentNotificationCount.toString()}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+      
+      {/* Inbox icon */}
+      <TouchableOpacity 
+        onPress={() => navigation.navigate('InboxStack')}
+        style={{ position: 'relative' }}
+      >
+        <Ionicons name="mail-outline" size={24} color="blue" />
+        {hasNotifications && (
+          <View 
+            style={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              minWidth: 20,
+              height: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 4,
+            }}
+          >
+            <Text 
+              style={{
+                color: 'white',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}
+            >
+              {notificationCount > 99 ? '99+' : notificationCount.toString()}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </View>
   ),
 })
 
 function CoachesStackNavigator() {
-  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+  const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount} = useUser();
+
   
   return (
     <CoachesStack.Navigator>
       <CoachesStack.Screen 
         name="MyCoaches" 
         component={MyCoaches} 
-        options={({ navigation }) => createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
+        options={({ navigation }) => createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation)}
       />
       <CoachesStack.Screen 
         name="ExploreCoaches" 
         component={ExploreCoaches}
-        options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, navigation)}
+        options={({ navigation }) => createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation)}
       />
     </CoachesStack.Navigator>
   );
 }
 
 function MainTabNavigator() {
-  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+  const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
   
   return (
     <Tab.Navigator
@@ -177,7 +251,7 @@ function MainTabNavigator() {
         name="HomeTab" 
         component={Home} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarLabel: 'Home',
         })}
       />
@@ -185,7 +259,7 @@ function MainTabNavigator() {
         name="ScheduleMonthView" 
         component={ScheduleScreen} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarLabel: 'Schedule',
         })}
       />
@@ -193,7 +267,7 @@ function MainTabNavigator() {
         name="Merch" 
         component={MerchScreen} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarLabel: 'Merch',
         })}
       />
@@ -211,7 +285,7 @@ function MainTabNavigator() {
         name="Profile" 
         component={UserSettings} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarLabel: 'Settings',
         })}
       />
@@ -242,12 +316,33 @@ function InboxStackNavigator() {
           ),
         })}
       />
+
+      <InboxStack.Screen 
+        name="SentRequests" 
+        component={SentRequests}
+        options={({ navigation }) => ({
+          headerShown: true,
+          title: 'SentRequests',
+          headerBackTitle: 'Back',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => navigation.goBack()}
+              style={{ marginLeft: 15, padding: 5 }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="chevron-back-outline" size={24} color="blue" />
+                <Text style={{ color: 'blue', fontSize: 16 }}>Back</Text>
+              </View>
+            </TouchableOpacity>
+          ),
+        })}
+      />
     </InboxStack.Navigator>
   );
 }
 
 function MainAppNavigator() {
-  const { hasInboxNotifications, inboxNotificationCount } = useUser();
+  const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
   return (
     <MainStack.Navigator>
@@ -267,7 +362,7 @@ function MainAppNavigator() {
         name = "CoachProfile"
         component={CoachProfile as React.ComponentType<any>}
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, navigation),
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, // Hide this tab button
         })}
         />
@@ -367,12 +462,11 @@ function AppContent() {
 
   return (
     <NavigationContainer>
-      <PostLoginLayout/>
-      {/* user ? (   
+      {user ? (   
         <PostLoginLayout />
       ) : (
         <PreLoginLayout/>
-      ) */}
+      )}
     </NavigationContainer>
   );
 }
