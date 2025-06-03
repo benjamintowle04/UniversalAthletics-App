@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, Linking, Alert } from 'react-native'
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, Linking, Alert, Modal, ActivityIndicator, TextInput as RNTextInput } from 'react-native'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { getCoachByFirebaseId } from '../../../controllers/CoachController'
 import { Ionicons } from '@expo/vector-icons'
@@ -7,9 +7,9 @@ import { useUser } from '../../contexts/UserContext'
 import { Colors } from '../../themes/colors/Colors'
 import { acceptConnectionRequest, declineConnectionRequest, createMemberToCoachConnectionRequest } from '../../../controllers/ConnectionRequestController'
 import { getMembersCoaches } from '../../../controllers/MemberInfoController'
+import { getUnsignedUrl } from '../../../utils/UnsignUrls'
 import "../../../global.css"
 
-// Define the Coach interface based on your data structure
 interface Coach {
   firebaseID?: string;
   id?: string;
@@ -34,12 +34,13 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
   const [isProcessingRequest, setIsProcessingRequest] = useState(false);
   const { coachId } = route.params;
   const { userData, updateUserData, isConnectedToCoach } = useUser();
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [customMessage, setCustomMessage] = useState("I would like to connect with you");
+  const [sendingRequest, setSendingRequest] = useState(false);
 
-  // Use the context function to check connection status
   const isConnected = isConnectedToCoach(coachId);
   const isLoadingConnectionStatus = userData?.isLoadingConnectedCoaches ?? true;
 
-  // Memoize connection status calculations
   const connectionStatus = useMemo(() => {
     if (!userData) return { pendingIncoming: null, pendingSent: null, hasPending: false };
 
@@ -58,12 +59,10 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     };
   }, [userData?.pendingConnectionRequests, userData?.sentConnectionRequests, coachId]);
 
-  // Memoize skill icons
   const skillIcons = useMemo(() => {
     return coachData?.skills ? getIconsFromSkills(coachData.skills) : [];
   }, [coachData?.skills]);
 
-  // Memoize button state
   const buttonState = useMemo(() => {
     if (isLoadingConnectionStatus) return 'loading';
     if (isConnected) return 'connected';
@@ -74,10 +73,8 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
 
   useEffect(() => {
     const fetchCoachData = async () => {
-      console.log("Fetching coach data by firebase ID:", coachId);
       try {
         let coachData = await getCoachByFirebaseId(coachId);
-        console.log("Coach data received in page layer:", coachData);
         setCoachData(coachData);
       } catch (error) {
         console.error("Error fetching coach data:", error);
@@ -86,7 +83,6 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     fetchCoachData();
   }, [coachId]);
 
-  // Memoize callback functions
   const handleEmailPress = useCallback(() => {
     if (coachData?.email) {
       const emailUrl = `mailto:${coachData.email}`;
@@ -105,9 +101,16 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     }
   }, [coachData?.email]);
 
-  const handleConnectWithCoach = useCallback(async () => {
-    if (!userData || !coachData) return;
+  // Show modal to enter message
+  const handleConnectWithCoach = useCallback(() => {
+    setCustomMessage("I would like to connect with you");
+    setShowMessageModal(true);
+  }, []);
 
+  // Actually send the request
+  const handleSendConnectionRequest = useCallback(async () => {
+    if (!userData || !coachData) return;
+    setSendingRequest(true);
     setIsProcessingRequest(true);
     try {
       const connectionRequestData = {
@@ -119,58 +122,56 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
         receiverFirebaseId: coachId,
         senderFirstName: userData.firstName,
         senderLastName: userData.lastName,
-        senderProfilePic: userData.profilePic,
+        senderProfilePic: getUnsignedUrl(userData.profilePic),
         receiverFirstName: coachData.firstName,
         receiverLastName: coachData.lastName,
-        receiverProfilePic: coachData.profilePic,
-        message: "I would like to connect with you",
+        receiverProfilePic: getUnsignedUrl(coachData.profilePic),
+        message: customMessage,
         status: 'PENDING' as const
       };
 
       await createMemberToCoachConnectionRequest(connectionRequestData);
-      
-      // Add the new request to the user's sent requests
+
       if (userData.sentConnectionRequests) {
         const newRequest = {
           ...connectionRequestData,
-          id: Date.now(), // Temporary ID until we get the real one from the server
+          id: Date.now(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
-        
         updateUserData({
           sentConnectionRequests: [...userData.sentConnectionRequests, newRequest]
         });
       }
-      
+
+      setShowMessageModal(false);
       Alert.alert("Success", "Connection request sent successfully!");
     } catch (error) {
       console.error('Error sending connection request:', error);
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to send connection request");
     } finally {
+      setSendingRequest(false);
       setIsProcessingRequest(false);
     }
-  }, [userData, coachData, coachId, updateUserData]);
+  }, [userData, coachData, coachId, updateUserData, customMessage]);
 
   const handleAcceptRequest = useCallback(async () => {
     if (connectionStatus.pendingIncoming && userData) {
       setIsProcessingRequest(true);
       try {
         await acceptConnectionRequest(connectionStatus.pendingIncoming.id, userData.id);
-        
-        // Remove the request from the pending list
+
         const updatedRequests = userData.pendingConnectionRequests.filter(
           request => request.id !== connectionStatus.pendingIncoming!.id
         );
-        
-        // Refresh connected coaches by fetching them again
+
         const updatedConnectedCoaches = await getMembersCoaches(userData.id);
-        
+
         updateUserData({
           pendingConnectionRequests: updatedRequests,
           connectedCoaches: updatedConnectedCoaches || userData.connectedCoaches
         });
-        
+
         Alert.alert("Success", "Connection request accepted! You are now connected with this coach.");
       } catch (error) {
         console.error('Error accepting connection request:', error);
@@ -186,16 +187,15 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
       setIsProcessingRequest(true);
       try {
         await declineConnectionRequest(connectionStatus.pendingIncoming.id, userData.id);
-        
-        // Remove the request from the pending list
+
         const updatedRequests = userData.pendingConnectionRequests.filter(
           request => request.id !== connectionStatus.pendingIncoming!.id
         );
-        
+
         updateUserData({
           pendingConnectionRequests: updatedRequests
         });
-        
+
         Alert.alert("Request Declined", "Connection request has been declined.");
       } catch (error) {
         console.error('Error declining connection request:', error);
@@ -207,11 +207,9 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
   }, [connectionStatus.pendingIncoming, userData, updateUserData]);
 
   const handleBookSession = useCallback(() => {
-    // TODO: Implement session booking functionality
     Alert.alert("Coming Soon", "Session booking functionality will be available soon!");
   }, []);
 
-  // Memoize action button component
   const ActionButton = useMemo(() => {
     switch (buttonState) {
       case 'loading':
@@ -314,7 +312,6 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     }
   }, [buttonState, isProcessingRequest, handleBookSession, handleAcceptRequest, handleDeclineRequest, handleConnectWithCoach]);
 
-  // Memoize status notice component
   const StatusNotice = useMemo(() => {
     if (connectionStatus.pendingIncoming) {
       return (
@@ -375,12 +372,54 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     );
   }
 
-    return (
+  return (
     <SafeAreaView className="flex-1 bg-white">
+      {/* Modal for custom message */}
+      <Modal
+        visible={showMessageModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowMessageModal(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-40">
+          <View className="bg-white rounded-lg p-6 w-11/12 max-w-lg">
+            <Text className="text-lg font-bold mb-2">Send a message to this coach</Text>
+            <RNTextInput
+              className="border border-gray-300 rounded-md p-2 mb-4 min-h-16"
+              multiline
+              numberOfLines={4}
+              value={customMessage}
+              onChangeText={setCustomMessage}
+              placeholder="Write your message..."
+              editable={!sendingRequest}
+            />
+            <View className="flex-row justify-end space-x-2">
+              <TouchableOpacity
+                className="px-4 py-2 rounded bg-gray-200"
+                onPress={() => setShowMessageModal(false)}
+                disabled={sendingRequest}
+              >
+                <Text className="text-gray-700">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="px-4 py-2 rounded bg-blue-600"
+                onPress={handleSendConnectionRequest}
+                disabled={sendingRequest}
+              >
+                {sendingRequest ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-white font-semibold">Send</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <ScrollView className="flex-1">
         {/* Profile Header */}
         <View className="relative">
-          {/* Banner/Background - Using a generic blue background */}
+          {/* Banner/Background */}
           <View className="h-40 bg-blue-400 border-b" >
             <Image 
               source={require('../../images/sports-banner.jpg')} 
@@ -388,7 +427,6 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
               resizeMode="cover"
             />
           </View>
-          
           {/* Profile Image */}
           <View className="absolute -bottom-0 pb-3 left-4">
             <Image 
@@ -408,14 +446,12 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
           </View>
         </View>
 
-        {/* Status Notice - Memoized component */}
+        {/* Status Notice */}
         {StatusNotice}
 
         {/* Contact Information Section */}
         <View className="mt-6 px-4">
           <Text className="text-lg font-semibold mb-3">Contact Information</Text>
-          
-          {/* Email */}
           {coachData.email ? (
             <TouchableOpacity 
               className="flex-row items-center mb-3 p-3 bg-gray-50 rounded-lg"
@@ -476,7 +512,6 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
               <Text className="text-gray-500 italic">No information available</Text>
             )}
           </View>
-          
           <View className="my-3 flex items-center justify-center">
             <Image 
               source={coachData.bioPic1 ? { uri: coachData.bioPic1 } : require('../../images/logo.png')} 
@@ -486,7 +521,7 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
           </View>
         </View>
 
-        {/* Action Buttons - Memoized component */}
+        {/* Action Buttons */}
         <View className="mt-8 px-4 mb-8">
           {ActionButton}
         </View>
