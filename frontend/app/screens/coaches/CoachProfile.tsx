@@ -402,9 +402,10 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
                 <Text className="text-gray-700">Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="px-4 py-2 rounded bg-blue-600"
+                className="px-4 py-2 rounded"
                 onPress={handleSendConnectionRequest}
                 disabled={sendingRequest}
+                style={{ backgroundColor: Colors.uaBlue, opacity: sendingRequest ? 0.6 : 1 }}
               >
                 {sendingRequest ? (
                   <ActivityIndicator color="#fff" />
