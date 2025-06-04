@@ -16,10 +16,6 @@ import java.time.LocalTime;
  */
 @Entity
 @Table(name = "Session_Request", 
-       uniqueConstraints = @UniqueConstraint(
-           name = "unique_request", 
-           columnNames = {"Sender_Type", "Sender_ID", "Receiver_Type", "Receiver_ID", "Status"}
-       ),
        indexes = {
            @Index(name = "idx_sender", columnList = "Sender_Type, Sender_ID"),
            @Index(name = "idx_receiver", columnList = "Receiver_Type, Receiver_ID"),
