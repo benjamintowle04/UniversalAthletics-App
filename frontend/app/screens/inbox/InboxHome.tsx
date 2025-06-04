@@ -4,6 +4,7 @@ import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
 import { acceptConnectionRequest, declineConnectionRequest } from '../../../controllers/ConnectionRequestController'
+import { acceptSessionRequest, declineSessionRequest } from '../../../controllers/SessionRequestController'
 import "../../../global.css"
 import { RouterProps } from "../../types/RouterProps"
 
@@ -11,13 +12,16 @@ const InboxHome = ({navigation}: RouterProps) => {
   const { userData, updateUserData } = useUser()
   const [processingRequests, setProcessingRequests] = useState<Set<number>>(new Set())
 
-  // Use useMemo to ensure the component re-renders when pendingConnectionRequests changes
+  // Use useMemo to ensure the component re-renders when requests change
   const connectionRequests = useMemo(() => {
     return userData?.pendingConnectionRequests || []
   }, [userData?.pendingConnectionRequests])
+
+  const sessionRequests = useMemo(() => {
+    return userData?.pendingSessionRequests || []
+  }, [userData?.pendingSessionRequests])
   
   // Placeholder data for other categories
-  const sessionRequests: any[] = [] // Will be populated later
   const regularMessages: any[] = [] // Will be populated later
 
   const handleConnectionRequestPress = (request: any) => {
@@ -29,17 +33,26 @@ const InboxHome = ({navigation}: RouterProps) => {
     }
   }
 
+  const handleSessionRequestPress = (request: any) => {
+    // Navigate to SessionDetails with the sender's Firebase ID
+    if (request.senderFirebaseId) {
+      navigation.navigate('SessionDetails', { sessionRequestId: request.id });
+    } else {
+      console.error('No sender Firebase ID found in session request:', request);
+    }
+  }
+
   const handleAcceptRequest = async (request: any) => {
     if (!userData) return;
     
-    setProcessingRequests(prev => new Set(prev).add(request.id)); // Use request.id instead of request.requestId
+    setProcessingRequests(prev => new Set(prev).add(request.id));
     
     try {
-      await acceptConnectionRequest(request.id, userData.id); // Use request.id instead of request.requestId
+      await acceptConnectionRequest(request.id, userData.id);
       
       // Remove the request from the pending list
       const updatedRequests = userData.pendingConnectionRequests.filter(
-        req => req.id !== request.id // Use request.id instead of request.requestId
+        req => req.id !== request.id
       );
       
       updateUserData({
@@ -53,7 +66,7 @@ const InboxHome = ({navigation}: RouterProps) => {
     } finally {
       setProcessingRequests(prev => {
         const newSet = new Set(prev);
-        newSet.delete(request.id); // Use request.id instead of request.requestId
+        newSet.delete(request.id);
         return newSet;
       });
     }
@@ -62,14 +75,14 @@ const InboxHome = ({navigation}: RouterProps) => {
   const handleDeclineRequest = async (request: any) => {
     if (!userData) return;
     
-    setProcessingRequests(prev => new Set(prev).add(request.id)); // Use request.id instead of request.requestId
+    setProcessingRequests(prev => new Set(prev).add(request.id));
     
     try {
-      await declineConnectionRequest(request.id, userData.id); // Use request.id instead of request.requestId
+      await declineConnectionRequest(request.id, userData.id);
       
       // Remove the request from the pending list
       const updatedRequests = userData.pendingConnectionRequests.filter(
-        req => req.id !== request.id // Use request.id instead of request.requestId
+        req => req.id !== request.id
       );
       
       updateUserData({
@@ -83,18 +96,78 @@ const InboxHome = ({navigation}: RouterProps) => {
     } finally {
       setProcessingRequests(prev => {
         const newSet = new Set(prev);
-        newSet.delete(request.id); // Use request.id instead of request.requestId
+        newSet.delete(request.id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleAcceptSessionRequest = async (request: any) => {
+    if (!userData) return;
+    
+    setProcessingRequests(prev => new Set(prev).add(request.id));
+    
+    try {
+      await acceptSessionRequest(request.id, userData.id);
+      
+      // Remove the request from the pending list
+      const updatedRequests = userData.pendingSessionRequests.filter(
+        req => req.id !== request.id
+      );
+      
+      updateUserData({
+        pendingSessionRequests: updatedRequests
+      });
+      
+      Alert.alert("Success", "Session request accepted!");
+    } catch (error) {
+      console.error('Error accepting session request:', error);
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept session request");
+    } finally {
+      setProcessingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(request.id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDeclineSessionRequest = async (request: any) => {
+    if (!userData) return;
+    
+    setProcessingRequests(prev => new Set(prev).add(request.id));
+    
+    try {
+      await declineSessionRequest(request.id, userData.id);
+      
+      // Remove the request from the pending list
+      const updatedRequests = userData.pendingSessionRequests.filter(
+        req => req.id !== request.id
+      );
+      
+      updateUserData({
+        pendingSessionRequests: updatedRequests
+      });
+      
+      Alert.alert("Request Declined", "Session request has been declined.");
+    } catch (error) {
+      console.error('Error declining session request:', error);
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to decline session request");
+    } finally {
+      setProcessingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(request.id);
         return newSet;
       });
     }
   };
   
   const renderConnectionRequest = (request: any, index: number) => {
-    const isProcessing = processingRequests.has(request.id); // Use request.id instead of request.requestId
+    const isProcessing = processingRequests.has(request.id);
     
     return (
       <TouchableOpacity 
-        key={request.id || index} // Use request.id instead of request.requestId
+        key={request.id || index}
         className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
         onPress={() => handleConnectionRequestPress(request)}
         disabled={isProcessing}
@@ -173,34 +246,92 @@ const InboxHome = ({navigation}: RouterProps) => {
     );
   };
 
-  // ... rest of your component remains the same
-
-  const renderSessionRequest = (request: any, index: number) => (
-    <TouchableOpacity 
-      key={index}
-      className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
-    >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center flex-1">
-          <View 
-            className="w-12 h-12 rounded-full items-center justify-center mr-3"
-            style={{ backgroundColor: Colors.uaRed + '20' }} // 20% opacity
-          >
-            <Ionicons name="calendar" size={24} color={Colors.uaRed} />
+  const renderSessionRequest = (request: any, index: number) => {
+    const isProcessing = processingRequests.has(request.id);
+    
+    return (
+      <TouchableOpacity 
+        key={request.id || index}
+        className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
+        onPress={() => handleSessionRequestPress(request)}
+        disabled={isProcessing}
+      >
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1">
+            {/* Profile picture */}
+            <View 
+              className="w-12 h-12 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: Colors.uaRed + '20' }} // 20% opacity
+            >
+              {request.senderProfilePic ? (
+                <Image 
+                  source={{ uri: request.senderProfilePic }}
+                  className="w-12 h-12 rounded-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="calendar" size={24} color={Colors.uaRed} />
+              )}
+            </View>
+            
+            <View className="flex-1">
+              <Text className="text-gray-900 font-semibold text-base">
+                {request.senderFirstName && request.senderLastName
+                  ? `${request.senderFirstName} ${request.senderLastName}`
+                  : `Coach #${request.senderId}`
+                }
+              </Text>
+              <Text className="text-gray-600 text-sm mt-1">
+                {request.message || "Session request"}
+              </Text>
+              <Text className="text-gray-500 text-xs mt-1">
+                📍 {request.sessionLocation}
+              </Text>
+              <Text className="text-gray-400 text-xs mt-1">
+                {new Date(request.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
           </View>
           
-          <View className="flex-1">
-            <Text className="text-gray-900 font-semibold text-base">
-              Session Request
-            </Text>
-            <Text className="text-gray-600 text-sm mt-1">
-              Coming soon...
-            </Text>
+          {/* Action buttons */}
+          <View className="flex-row ml-2">
+            <TouchableOpacity 
+              className="px-3 py-1 rounded-md mr-2"
+              style={{ 
+                backgroundColor: isProcessing ? Colors.grey.medium : Colors.uaGreen,
+                opacity: isProcessing ? 0.6 : 1 
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleAcceptSessionRequest(request);
+              }}
+              disabled={isProcessing}
+            >
+              <Text className="text-white text-xs font-medium">
+                {isProcessing ? "..." : "Accept"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className="px-3 py-1 rounded-md"
+              style={{ 
+                backgroundColor: isProcessing ? Colors.grey.medium : Colors.uaRed,
+                opacity: isProcessing ? 0.6 : 1 
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleDeclineSessionRequest(request);
+              }}
+              disabled={isProcessing}
+            >
+              <Text className="text-white text-xs font-medium">
+                {isProcessing ? "..." : "Decline"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  )
+      </TouchableOpacity>
+    );
+  };
 
   const renderRegularMessage = (message: any, index: number) => (
     <TouchableOpacity 
@@ -339,3 +470,4 @@ const InboxHome = ({navigation}: RouterProps) => {
 }
 
 export default InboxHome
+

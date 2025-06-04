@@ -3,6 +3,7 @@ import { User } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../../firebase_config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getMembersIncomingPendingConnectionRequests, getMembersSentPendingConnectionRequests } from '../../controllers/ConnectionRequestController';
+import { getMembersIncomingPendingSessionRequests, getMembersSentPendingSessionRequests } from '../../controllers/SessionRequestController';
 import { getMembersCoaches } from '../../controllers/MemberInfoController';
 
 interface ConnectionRequest {
@@ -20,6 +21,34 @@ interface ConnectionRequest {
   senderFirstName?: string;
   senderLastName?: string;
   senderProfilePic?: string;
+}
+
+interface SessionRequest {
+  id: number;
+  senderType: 'COACH' | 'MEMBER';
+  senderId: number;
+  senderFirebaseId?: string;
+  receiverType: 'COACH' | 'MEMBER';
+  receiverId: number;
+  receiverFirebaseId?: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  message?: string;
+  createdAt: string;
+  updatedAt: string;
+  senderFirstName?: string;
+  senderLastName?: string;
+  senderProfilePic?: string;
+  receiverFirstName?: string;
+  receiverLastName?: string;
+  receiverProfilePic?: string;
+  sessionDate1: string;
+  sessionDate2: string;
+  sessionDate3: string;
+  sessionTime1: string;
+  sessionTime2: string;
+  sessionTime3: string;
+  sessionLocation: string;
+  sessionDescription: string;
 }
 
 interface ConnectedCoach {
@@ -48,22 +77,25 @@ interface UserData {
   profilePic?: string;
   location?: string;
   firebaseId: string;
-  // Add pending connection requests - these should be part of the interface
+  // Connection requests
   pendingConnectionRequests: ConnectionRequest[];
   isLoadingRequests: boolean;
-  // Add sent connection requests
   sentConnectionRequests: ConnectionRequest[];
   isLoadingSentRequests: boolean;
-  // Add connected coaches
+  // Session requests
+  pendingSessionRequests: SessionRequest[];
+  isLoadingSessionRequests: boolean;
+  sentSessionRequests: SessionRequest[];
+  isLoadingSentSessionRequests: boolean;
+  // Connected coaches
   connectedCoaches: ConnectedCoach[];
   isLoadingConnectedCoaches: boolean;
-  // Add any other user fields you have
 }
 
 interface UserContextType {
   user: User | null;
   userData: UserData | null;
-  setUserData: (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests' | 'sentConnectionRequests' | 'isLoadingSentRequests' | 'connectedCoaches' | 'isLoadingConnectedCoaches'> | null) => void;
+  setUserData: (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests' | 'sentConnectionRequests' | 'isLoadingSentRequests' | 'pendingSessionRequests' | 'isLoadingSessionRequests' | 'sentSessionRequests' | 'isLoadingSentSessionRequests' | 'connectedCoaches' | 'isLoadingConnectedCoaches'> | null) => void;
   updateUserData: (updates: Partial<UserData>) => void;
   hasInboxNotifications: boolean;
   inboxNotificationCount: number;
@@ -102,6 +134,28 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Function to fetch pending session requests
+  const fetchSessionRequests = async (memberId: number): Promise<SessionRequest[]> => {
+    try {
+      const requests = await getMembersIncomingPendingSessionRequests(memberId);
+      return requests || [];
+    } catch (error) {
+      console.error('Error fetching session requests:', error);
+      return [];
+    }
+  };
+
+  // Function to fetch sent session requests
+  const fetchSentSessionRequests = async (memberId: number): Promise<SessionRequest[]> => {
+    try {
+      const requests = await getMembersSentPendingSessionRequests(memberId);
+      return requests || [];
+    } catch (error) {
+      console.error('Error fetching sent session requests:', error);
+      return [];
+    }
+  };
+
   // Function to fetch connected coaches using existing API
   const fetchConnectedCoaches = async (memberId: number): Promise<ConnectedCoach[]> => {
     try {
@@ -119,7 +173,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Function to set user data and fetch all related data
-  const setUserDataWithRequests = async (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests' | 'sentConnectionRequests' | 'isLoadingSentRequests' | 'connectedCoaches' | 'isLoadingConnectedCoaches'> | null) => {
+  const setUserDataWithRequests = async (data: Omit<UserData, 'pendingConnectionRequests' | 'isLoadingRequests' | 'sentConnectionRequests' | 'isLoadingSentRequests' | 'pendingSessionRequests' | 'isLoadingSessionRequests' | 'sentSessionRequests' | 'isLoadingSentSessionRequests' | 'connectedCoaches' | 'isLoadingConnectedCoaches'> | null) => {
     if (data) {
       // Set initial user data with empty arrays and loading states
       const userDataWithRequests: UserData = {
@@ -128,6 +182,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoadingRequests: true,
         sentConnectionRequests: [],
         isLoadingSentRequests: true,
+        pendingSessionRequests: [],
+        isLoadingSessionRequests: true,
+        sentSessionRequests: [],
+        isLoadingSentSessionRequests: true,
         connectedCoaches: [],
         isLoadingConnectedCoaches: true
       };
@@ -135,9 +193,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Fetch all data in parallel
       try {
-        const [incomingRequests, sentRequests, connectedCoaches] = await Promise.all([
+        const [incomingRequests, sentRequests, incomingSessionRequests, sentSessionRequests, connectedCoaches] = await Promise.all([
           fetchConnectionRequests(data.id),
           fetchSentConnectionRequests(data.id),
+          fetchSessionRequests(data.id),
+          fetchSentSessionRequests(data.id),
           fetchConnectedCoaches(data.id)
         ]);
         
@@ -147,6 +207,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           isLoadingRequests: false,
           sentConnectionRequests: sentRequests,
           isLoadingSentRequests: false,
+          pendingSessionRequests: incomingSessionRequests,
+          isLoadingSessionRequests: false,
+          sentSessionRequests: sentSessionRequests,
+          isLoadingSentSessionRequests: false,
           connectedCoaches: connectedCoaches,
           isLoadingConnectedCoaches: false
         } : null);
@@ -156,6 +220,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           ...prev, 
           isLoadingRequests: false,
           isLoadingSentRequests: false,
+          isLoadingSessionRequests: false,
+          isLoadingSentSessionRequests: false,
           isLoadingConnectedCoaches: false
         } : null);
       }
@@ -170,14 +236,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return userData.connectedCoaches.some(coach => coach.firebaseID === coachFirebaseId);
   };
 
-  // Computed values for inbox notifications
-  const hasInboxNotifications = userData ? userData.pendingConnectionRequests.length > 0 : false;
-  const inboxNotificationCount = userData ? userData.pendingConnectionRequests.length : 0;
+  // Computed values for inbox notifications (connection requests + session requests)
+  const hasInboxNotifications = userData ? 
+    (userData.pendingConnectionRequests.length > 0 || userData.pendingSessionRequests.length > 0) : false;
+  const inboxNotificationCount = userData ? 
+    (userData.pendingConnectionRequests.length + userData.pendingSessionRequests.length) : 0;
 
-  // Computed values for sent notifications (you can customize this logic based on your needs)
-  // For example, you might want to show notifications for pending sent requests or recent responses
-  const hasSentNotifications = userData ? userData.sentConnectionRequests.filter(req => req.status === 'PENDING').length > 0 : false;
-  const sentNotificationCount = userData ? userData.sentConnectionRequests.filter(req => req.status === 'PENDING').length : 0;
+  // Computed values for sent notifications (pending sent requests for both types)
+  const hasSentNotifications = userData ? 
+    (userData.sentConnectionRequests.filter(req => req.status === 'PENDING').length > 0 || 
+     userData.sentSessionRequests.filter(req => req.status === 'PENDING').length > 0) : false;
+  const sentNotificationCount = userData ? 
+    (userData.sentConnectionRequests.filter(req => req.status === 'PENDING').length + 
+     userData.sentSessionRequests.filter(req => req.status === 'PENDING').length) : 0;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {

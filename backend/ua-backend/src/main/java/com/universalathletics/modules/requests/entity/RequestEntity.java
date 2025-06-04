@@ -21,13 +21,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class RequestEntity {
-    
+
     /**
      * Unique identifier for the request.
-     * Auto-generated using database identity strategy.
+     * Using TABLE strategy which works with table-per-class inheritance.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "request_id_generator")
+    @TableGenerator(name = "request_id_generator", table = "hibernate_sequences", pkColumnName = "sequence_name", valueColumnName = "next_val", pkColumnValue = "request_id", allocationSize = 1)
     @Column(name = "Request_ID")
     private Integer id;
 
@@ -165,7 +166,6 @@ public abstract class RequestEntity {
     @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false)
     @JsonIgnore
     private CoachEntity receiverCoach;
-
 
     /**
      * Automatically set timestamps before persisting.

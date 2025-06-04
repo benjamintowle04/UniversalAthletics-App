@@ -22,6 +22,8 @@ import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
 import CoachProfile from './app/screens/coaches/CoachProfile';
 import InboxHome from './app/screens/inbox/InboxHome';
 import SentRequests from './app/screens/inbox/SentRequests';
+import SessionDetails from './app/screens/sessions/SessionDetails';
+import RequestASession from './app/screens/sessions/RequestASession';
 
 // Create placeholder screens for the tab navigator
 const ScheduleScreen = () => <Text>Schedule Screen</Text>;
@@ -363,9 +365,27 @@ function MainAppNavigator() {
         component={CoachProfile as React.ComponentType<any>}
         options={({ navigation }) => ({
           ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
-          tabBarButton: () => null, // Hide this tab button
+          tabBarButton: () => null, 
         })}
         />
+
+      <MainStack.Screen
+        name='SessionDetails'
+        component={SessionDetails as React.ComponentType<any>}                                      
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          tabBarButton: () => null, 
+        })}
+      />
+
+      <MainStack.Screen 
+        name="RequestASession" 
+        component={RequestASession as React.ComponentType<any>} 
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          tabBarButton: () => null, 
+        })}
+      />
     </MainStack.Navigator>
   );
 }

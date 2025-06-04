@@ -1,7 +1,6 @@
 package com.universalathletics.modules.requests.connection.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -30,7 +29,6 @@ import com.universalathletics.modules.requests.util.enums.UserType;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class ConnectionRequestEntity extends RequestEntity {
-    // Connection-specific fields can be added here
     
     /**
      * Constructor for creating a connection request with basic information.

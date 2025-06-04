@@ -8,4 +8,7 @@ export const ApiRoutes = {
     COACHES: `${BASE_URL}/api/coaches`,
     CONNECTION_REQUESTS: `${BASE_URL}/api/requests/connections`,
     PENDING_CONNECTION_REQUESTS: `${BASE_URL}/api/requests/connections/pending`,
+    SESSION_REQUESTS: `${BASE_URL}/api/requests/sessions`,
+    PENDING_SESSION_REQUESTS: `${BASE_URL}/api/requests/sessions/pending`,
+    SESSIONS: `${BASE_URL}/api/sessions`,
 } as const

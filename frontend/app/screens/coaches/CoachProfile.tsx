@@ -9,6 +9,8 @@ import { acceptConnectionRequest, declineConnectionRequest, createMemberToCoachC
 import { getMembersCoaches } from '../../../controllers/MemberInfoController'
 import { getUnsignedUrl } from '../../../utils/UnsignUrls'
 import "../../../global.css"
+import { RouterProps } from "../../types/RouterProps"
+
 
 interface Coach {
   firebaseID?: string;
@@ -29,8 +31,11 @@ import { RouteProp } from '@react-navigation/native';
 
 type CoachProfileRouteProp = RouteProp<{ params: { coachId: string } }, 'params'>;
 
-const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
-  const [coachData, setCoachData] = useState<Coach | null>(null);
+interface CoachProfileProps extends RouterProps {
+  route: CoachProfileRouteProp;
+}
+
+const CoachProfile = ({ route, navigation }: CoachProfileProps) => {  const [coachData, setCoachData] = useState<Coach | null>(null);
   const [isProcessingRequest, setIsProcessingRequest] = useState(false);
   const { coachId } = route.params;
   const { userData, updateUserData, isConnectedToCoach } = useUser();
@@ -107,53 +112,56 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
     setShowMessageModal(true);
   }, []);
 
-  // Actually send the request
-  const handleSendConnectionRequest = useCallback(async () => {
-    if (!userData || !coachData) return;
-    setSendingRequest(true);
-    setIsProcessingRequest(true);
-    try {
-      const connectionRequestData = {
-        senderType: 'MEMBER' as const,
-        senderId: userData.id,
-        senderFirebaseId: userData.firebaseId,
-        receiverType: 'COACH' as const,
-        receiverId: parseInt(coachData.id || '0'),
-        receiverFirebaseId: coachId,
-        senderFirstName: userData.firstName,
-        senderLastName: userData.lastName,
-        senderProfilePic: getUnsignedUrl(userData.profilePic),
-        receiverFirstName: coachData.firstName,
-        receiverLastName: coachData.lastName,
-        receiverProfilePic: getUnsignedUrl(coachData.profilePic),
-        message: customMessage,
-        status: 'PENDING' as const
+// Actually send the request
+const handleSendConnectionRequest = useCallback(async () => {
+  if (!userData || !coachData) return;
+  setSendingRequest(true);
+  setIsProcessingRequest(true);
+  try {
+    const connectionRequestData = {
+      senderType: 'MEMBER' as const,
+      senderId: userData.id,
+      senderFirebaseId: userData.firebaseId,
+      receiverType: 'COACH' as const,
+      receiverId: parseInt(coachData.id || '0'),
+      receiverFirebaseId: coachId,
+      senderFirstName: userData.firstName,
+      senderLastName: userData.lastName,
+      senderProfilePic: getUnsignedUrl(userData.profilePic),
+      receiverFirstName: coachData.firstName,
+      receiverLastName: coachData.lastName,
+      receiverProfilePic: getUnsignedUrl(coachData.profilePic),
+      message: customMessage,
+      status: 'PENDING' as const
+    };
+
+    // Send the request and get the response with the actual ID from the database
+    const createdRequest = await createMemberToCoachConnectionRequest(connectionRequestData);
+
+    if (userData.sentConnectionRequests) {
+      // Use the actual response from the API instead of creating a fake one
+      const newRequest = {
+        ...createdRequest, // This contains the real ID from the database
+        // Add any additional fields that might be missing
+        createdAt: createdRequest.createdAt || new Date().toISOString(),
+        updatedAt: createdRequest.updatedAt || new Date().toISOString()
       };
-
-      await createMemberToCoachConnectionRequest(connectionRequestData);
-
-      if (userData.sentConnectionRequests) {
-        const newRequest = {
-          ...connectionRequestData,
-          id: Date.now(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        updateUserData({
-          sentConnectionRequests: [...userData.sentConnectionRequests, newRequest]
-        });
-      }
-
-      setShowMessageModal(false);
-      Alert.alert("Success", "Connection request sent successfully!");
-    } catch (error) {
-      console.error('Error sending connection request:', error);
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to send connection request");
-    } finally {
-      setSendingRequest(false);
-      setIsProcessingRequest(false);
+      updateUserData({
+        sentConnectionRequests: [...userData.sentConnectionRequests, newRequest]
+      });
     }
-  }, [userData, coachData, coachId, updateUserData, customMessage]);
+
+    setShowMessageModal(false);
+    Alert.alert("Success", "Connection request sent successfully!");
+  } catch (error) {
+    console.error('Error sending connection request:', error);
+    Alert.alert("Error", error instanceof Error ? error.message : "Failed to send connection request");
+  } finally {
+    setSendingRequest(false);
+    setIsProcessingRequest(false);
+  }
+}, [userData, coachData, coachId, updateUserData, customMessage]);
+
 
   const handleAcceptRequest = useCallback(async () => {
     if (connectionStatus.pendingIncoming && userData) {
@@ -207,8 +215,21 @@ const CoachProfile = ({ route }: { route: CoachProfileRouteProp }) => {
   }, [connectionStatus.pendingIncoming, userData, updateUserData]);
 
   const handleBookSession = useCallback(() => {
-    Alert.alert("Coming Soon", "Session booking functionality will be available soon!");
-  }, []);
+    console.log("Booking session with coach:", coachData, userData);
+    if (coachData && userData) {
+      navigation.navigate('RequestASession', {
+        recipientId: parseInt(coachData.id || '0'),
+        recipientFirstName: coachData.firstName,
+        recipientLastName: coachData.lastName,
+        recipientProfilePic: coachData.profilePic,
+        recipientFirebaseId: coachData.firebaseID || '',
+        recipientType: 'coach' as const
+      });
+    } else {
+      Alert.alert("Error", "Unable to book session. Please try again later.");
+    }
+
+  }, [userData, coachData, navigation]);
 
   const ActionButton = useMemo(() => {
     switch (buttonState) {
