@@ -2,24 +2,24 @@ import { ApiRoutes } from "../utils/APIRoutes";
 import axios from "axios";
 
 interface SessionEntity {
-  id?: number; // Session_ID (auto-generated)
-  requestId: number; // Request_ID
-  sessionDate: string; // Session_Date
-  sessionTime: string; // Session_Time
-  sessionLocation: string; // Session_Location
-  sessionDescription: string; // Session_Description
-  coachFirebaseId?: string; // Coach_Firebase_ID
-  coachFirstName?: string; // Coach_First_Name
-  coachLastName?: string; // Coach_Last_Name
-  coachProfilePic?: string; // Coach_Profile_Pic
-  coachId: number; // Coach_ID
-  memberFirstName?: string; // Member_First_Name
-  memberLastName?: string; // Member_Last_Name
-  memberProfilePic?: string; // Member_Profile_Pic
-  memberFirebaseId?: string; // Member_Firebase_ID
-  memberId: number; // Member_ID
-  createdAt?: string; // Created_At (auto-generated)
-  updatedAt?: string; // Updated_At (auto-generated)
+  id?: number; 
+  requestId: number; 
+  sessionDate: string; 
+  sessionTime: string; 
+  sessionLocation: string; 
+  sessionDescription: string; 
+  coachFirebaseId?: string; 
+  coachFirstName?: string;
+  coachLastName?: string;
+  coachProfilePic?: string; 
+  coachId: number; 
+  memberFirstName?: string; 
+  memberLastName?: string; 
+  memberProfilePic?: string; 
+  memberFirebaseId?: string;
+  memberId: number; 
+  createdAt?: string; //  (auto-generated)
+  updatedAt?: string; //(auto-generated)
 }
 
 /**
