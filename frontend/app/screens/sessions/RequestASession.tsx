@@ -9,6 +9,7 @@ import { RouterProps } from "../../types/RouterProps"
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { Platform } from 'react-native'
 import { getUnsignedUrl } from '../../../utils/UnsignUrls'
+import { FIREBASE_AUTH } from '../../../firebase_config'
 
 interface RequestASessionProps extends RouterProps {
   route: {
@@ -24,8 +25,11 @@ interface RequestASessionProps extends RouterProps {
 }
 
 const RequestASession = ({navigation, route}: RequestASessionProps) => {
-  const { userData } = useUser()
+  const { userData, updateUserData } = useUser()
   const [processing, setProcessing] = useState(false)
+  // For fetching the firebase Id of the sender
+  const auth = FIREBASE_AUTH;
+  
   
   // Form state
   const [description, setDescription] = useState('')
@@ -142,10 +146,11 @@ const handleSendRequest = async () => {
   setProcessing(true)
 
   try {
+    console.log("Sender's firebase ID:", auth.currentUser?.uid); // Debug log
     const sessionRequestData = {
       senderType: 'MEMBER',
       senderId: userData.id,
-      senderFirebaseId: userData.firebaseId,
+      senderFirebaseId: auth.currentUser?.uid || '', 
       senderFirstName: userData.firstName,
       senderLastName: userData.lastName,
       senderProfilePic: getUnsignedUrl(userData.profilePic),
@@ -177,6 +182,45 @@ const handleSendRequest = async () => {
 
     console.log("Session request created successfully:", response)
 
+    // Update the user context with the new sent session request
+    const newSentRequest = {
+      id: response.id, // Assuming the API returns the created request with an ID
+      senderType: 'MEMBER' as const,
+      senderId: userData.id,
+      senderFirebaseId: auth.currentUser?.uid || '',
+      receiverType: recipientType.toUpperCase() as 'COACH' | 'MEMBER',
+      receiverId: recipientId,
+      receiverFirebaseId: recipientFirebaseId,
+      status: 'PENDING' as const,
+      message: description,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      senderFirstName: userData.firstName,
+      senderLastName: userData.lastName,
+      senderProfilePic: getUnsignedUrl(userData.profilePic),
+      receiverFirstName: recipientFirstName,
+      receiverLastName: recipientLastName,
+      receiverProfilePic: getUnsignedUrl(recipientProfilePic),
+      sessionDate1: formatDateForAPI(dateTime1.date),
+      sessionDate2: formatDateForAPI(dateTime2.date),
+      sessionDate3: formatDateForAPI(dateTime3.date),
+      sessionTime1: formatTimeForAPI(dateTime1.time),
+      sessionTime2: formatTimeForAPI(dateTime2.time),
+      sessionTime3: formatTimeForAPI(dateTime3.time),
+      sessionLocation: location,
+      sessionDescription: description,
+    }
+
+    // Add the new request to the existing sent requests
+    updateUserData({
+      sentSessionRequests: [...userData.sentSessionRequests, newSentRequest]
+    })
+
+    console.log('#####################DEBUG LOG##########################################################################################');
+    userData?.sentSessionRequests.forEach(request => {
+      console.log(`Sent session request: ${request.id}, Receiver Profile Pic: ${request.receiverProfilePic}`);
+    });
+
     Alert.alert(
       "Request Sent!", 
       `Your session request has been sent to ${recipientFirstName} ${recipientLastName}.`,
@@ -194,6 +238,7 @@ const handleSendRequest = async () => {
     setProcessing(false)
   }
 }
+
 
 
   const renderDateTimeOption = (option: number) => {

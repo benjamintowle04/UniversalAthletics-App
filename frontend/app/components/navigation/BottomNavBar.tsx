@@ -18,7 +18,7 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
       
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('ScheduleMonthView')}
+        onPress={() => navigation.navigate('ScheduleContainer')}
       >
         <MaterialIcons name="calendar-month" size={24} className="text-gray-700" />
         <Text className="text-xs mt-1 text-gray-600">Schedule</Text>

@@ -4,7 +4,7 @@ import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
 import { acceptConnectionRequest, declineConnectionRequest } from '../../../controllers/ConnectionRequestController'
-import { acceptSessionRequest, declineSessionRequest } from '../../../controllers/SessionRequestController'
+import {declineSessionRequest } from '../../../controllers/SessionRequestController'
 import "../../../global.css"
 import { RouterProps } from "../../types/RouterProps"
 
@@ -36,7 +36,7 @@ const InboxHome = ({navigation}: RouterProps) => {
   const handleSessionRequestPress = (request: any) => {
     // Navigate to SessionDetails with the sender's Firebase ID
     if (request.senderFirebaseId) {
-      navigation.navigate('SessionDetails', { sessionRequestId: request.id });
+      navigation.navigate('SessionRequestDetails', { sessionRequestId: request.id });
     } else {
       console.error('No sender Firebase ID found in session request:', request);
     }
@@ -102,35 +102,6 @@ const InboxHome = ({navigation}: RouterProps) => {
     }
   };
 
-  const handleAcceptSessionRequest = async (request: any) => {
-    if (!userData) return;
-    
-    setProcessingRequests(prev => new Set(prev).add(request.id));
-    
-    try {
-      await acceptSessionRequest(request.id, userData.id);
-      
-      // Remove the request from the pending list
-      const updatedRequests = userData.pendingSessionRequests.filter(
-        req => req.id !== request.id
-      );
-      
-      updateUserData({
-        pendingSessionRequests: updatedRequests
-      });
-      
-      Alert.alert("Success", "Session request accepted!");
-    } catch (error) {
-      console.error('Error accepting session request:', error);
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept session request");
-    } finally {
-      setProcessingRequests(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(request.id);
-        return newSet;
-      });
-    }
-  };
 
   const handleDeclineSessionRequest = async (request: any) => {
     if (!userData) return;
@@ -295,22 +266,6 @@ const InboxHome = ({navigation}: RouterProps) => {
           
           {/* Action buttons */}
           <View className="flex-row ml-2">
-            <TouchableOpacity 
-              className="px-3 py-1 rounded-md mr-2"
-              style={{ 
-                backgroundColor: isProcessing ? Colors.grey.medium : Colors.uaGreen,
-                opacity: isProcessing ? 0.6 : 1 
-              }}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleAcceptSessionRequest(request);
-              }}
-              disabled={isProcessing}
-            >
-              <Text className="text-white text-xs font-medium">
-                {isProcessing ? "..." : "Accept"}
-              </Text>
-            </TouchableOpacity>
             <TouchableOpacity 
               className="px-3 py-1 rounded-md"
               style={{ 

@@ -528,8 +528,8 @@ INSERT INTO Session_Request (
 
 INSERT INTO Session (Request_ID, Session_Date, Session_Time, Session_Location, Session_Description, Coach_ID, Coach_Firebase_ID, Coach_First_Name, Coach_Last_Name, Coach_Profile_Pic, Member_ID, Member_First_Name, Member_Last_Name, Member_Profile_Pic, Member_Firebase_ID) VALUES
 (1, '2025-06-20', '14:00:00', 'Downtown Tennis Center', 'Advanced tennis techniques and match play', 3, 'xmj9WqDAsNd9Tfrr95Od84w6Ls92', 'David', 'Thompson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2'),
-(2, '2025-06-21', '13:00:00', 'Community Recreation Center', 'Basketball shooting drills and defensive strategies', 10, 'farfshr', 'Ashley', 'Anderson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2');
-
+(2, '2025-06-21', '13:00:00', 'Community Recreation Center', 'Basketball shooting drills and defensive strategies', 10, 'farfshr', 'Ashley', 'Anderson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2'),
+(3, '2025-06-07', '16:00:00', 'Local Sports Complex', 'Tennis match preparation and strategy', 9, 'pGdWihV35TbdydmijyqToZOCkLs2', 'Ben', 'Towle', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2');
 
 INSERT INTO hibernate_sequences (sequence_name, next_val) 
 SELECT 'request_id', COALESCE(MAX(Request_ID), 0) + 1 FROM Connection_Request;

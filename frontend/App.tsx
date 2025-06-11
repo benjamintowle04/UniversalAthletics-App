@@ -22,11 +22,15 @@ import ExploreCoaches from './app/screens/coaches/ExploreCoaches';
 import CoachProfile from './app/screens/coaches/CoachProfile';
 import InboxHome from './app/screens/inbox/InboxHome';
 import SentRequests from './app/screens/inbox/SentRequests';
-import SessionDetails from './app/screens/sessions/SessionDetails';
+import SessionRequestDetails from './app/screens/sessions/SessionRequestDetails';
 import RequestASession from './app/screens/sessions/RequestASession';
+import ScheduleContainer from './app/screens/schedule/ScheduleContainer';
+import SessionDetails from './app/screens/sessions/SessionDetails';
+import { Image } from 'react-native';
+
+
 
 // Create placeholder screens for the tab navigator
-const ScheduleScreen = () => <Text>Schedule Screen</Text>;
 const MerchScreen = () => <Text>Merch Screen</Text>;
 
 const PreLoginStack = createNativeStackNavigator();
@@ -36,6 +40,14 @@ const InboxStack = createNativeStackNavigator();
 const MainStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
+const HeaderLogo = () => (
+  <Image 
+    source={require('./app/images/logo.png')} 
+    style={{ width: 54, height: 54, marginLeft: 18 }}
+    resizeMode="contain"
+  />
+);
 const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
@@ -46,6 +58,7 @@ const createInboxHeaderWithBackButton = (hasNotifications: boolean, notification
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
+  headerLeft: () => <HeaderLogo />,
   headerRight: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
       {/* Sent icon */}
@@ -123,6 +136,7 @@ const createInboxHeaderWithoutBackButton = (hasNotifications: boolean, notificat
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
+  headerLeft: () => <HeaderLogo />,
   headerRight: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
       {/* Sent icon */}
@@ -227,7 +241,7 @@ function MainTabNavigator() {
 
           if (route.name === 'HomeTab') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'ScheduleMonthView') {
+          } else if (route.name === 'ScheduleContainer') {
             iconName = focused ? 'calendar-number' : 'calendar-number-outline';
           } else if (route.name === 'Merch') {
             iconName = focused ? 'cart' : 'cart-outline';
@@ -258,8 +272,8 @@ function MainTabNavigator() {
         })}
       />
       <Tab.Screen 
-        name="ScheduleMonthView" 
-        component={ScheduleScreen} 
+        name="ScheduleContainer" 
+        component={ScheduleContainer} 
         options={({ navigation }) => ({
           ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarLabel: 'Schedule',
@@ -370,8 +384,8 @@ function MainAppNavigator() {
         />
 
       <MainStack.Screen
-        name='SessionDetails'
-        component={SessionDetails as React.ComponentType<any>}                                      
+        name='SessionRequestDetails'
+        component={SessionRequestDetails as React.ComponentType<any>}                                      
         options={({ navigation }) => ({
           ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
@@ -381,6 +395,15 @@ function MainAppNavigator() {
       <MainStack.Screen 
         name="RequestASession" 
         component={RequestASession as React.ComponentType<any>} 
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          tabBarButton: () => null, 
+        })}
+      />
+
+      <MainStack.Screen 
+        name="SessionDetails" 
+        component={SessionDetails as React.ComponentType<any>} 
         options={({ navigation }) => ({
           ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
