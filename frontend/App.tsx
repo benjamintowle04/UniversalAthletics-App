@@ -58,6 +58,8 @@ const createInboxHeaderWithBackButton = (hasNotifications: boolean, notification
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
+  headerBackTitleVisible: false,
+  headerBackVisible: true,
   headerLeft: () => <HeaderLogo />,
   headerRight: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
@@ -136,6 +138,8 @@ const createInboxHeaderWithoutBackButton = (hasNotifications: boolean, notificat
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
+  headerBackTitleVisible: false,
+  headerBackVisible: false,
   headerLeft: () => <HeaderLogo />,
   headerRight: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
@@ -378,7 +382,7 @@ function MainAppNavigator() {
         name = "CoachProfile"
         component={CoachProfile as React.ComponentType<any>}
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
         })}
         />
@@ -387,7 +391,7 @@ function MainAppNavigator() {
         name='SessionRequestDetails'
         component={SessionRequestDetails as React.ComponentType<any>}                                      
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
         })}
       />
@@ -396,7 +400,7 @@ function MainAppNavigator() {
         name="RequestASession" 
         component={RequestASession as React.ComponentType<any>} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
         })}
       />
@@ -405,7 +409,7 @@ function MainAppNavigator() {
         name="SessionDetails" 
         component={SessionDetails as React.ComponentType<any>} 
         options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
           tabBarButton: () => null, 
         })}
       />

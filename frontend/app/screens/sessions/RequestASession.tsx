@@ -11,7 +11,8 @@ import { Platform } from 'react-native'
 import { getUnsignedUrl } from '../../../utils/UnsignUrls'
 import { FIREBASE_AUTH } from '../../../firebase_config'
 
-interface RequestASessionProps extends RouterProps {
+interface RequestASessionProps {
+  navigation: any;
   route: {
     params: {
       recipientId: number;
@@ -19,11 +20,10 @@ interface RequestASessionProps extends RouterProps {
       recipientLastName: string;
       recipientProfilePic?: string;
       recipientFirebaseId: string; 
-      recipientType: 'coach' | 'member'; // Determines if we're sending to a coach or member
+      recipientType: 'coach' | 'member'; 
     }
   }
 }
-
 const RequestASession = ({navigation, route}: RequestASessionProps) => {
   const { userData, updateUserData } = useUser()
   const [processing, setProcessing] = useState(false)
@@ -171,7 +171,6 @@ const handleSendRequest = async () => {
       sessionTime3: formatTimeForAPI(dateTime3.time),
     }
 
-    console.log("Session request data being sent:", sessionRequestData); // Debug log
 
     let response
     if (recipientType === 'coach') {
@@ -197,10 +196,10 @@ const handleSendRequest = async () => {
       updatedAt: new Date().toISOString(),
       senderFirstName: userData.firstName,
       senderLastName: userData.lastName,
-      senderProfilePic: getUnsignedUrl(userData.profilePic),
+      senderProfilePic: userData.profilePic ? userData.profilePic : '',
       receiverFirstName: recipientFirstName,
       receiverLastName: recipientLastName,
-      receiverProfilePic: getUnsignedUrl(recipientProfilePic),
+      receiverProfilePic: recipientProfilePic ? recipientProfilePic : '',
       sessionDate1: formatDateForAPI(dateTime1.date),
       sessionDate2: formatDateForAPI(dateTime2.date),
       sessionDate3: formatDateForAPI(dateTime3.date),
@@ -215,11 +214,6 @@ const handleSendRequest = async () => {
     updateUserData({
       sentSessionRequests: [...userData.sentSessionRequests, newSentRequest]
     })
-
-    console.log('#####################DEBUG LOG##########################################################################################');
-    userData?.sentSessionRequests.forEach(request => {
-      console.log(`Sent session request: ${request.id}, Receiver Profile Pic: ${request.receiverProfilePic}`);
-    });
 
     Alert.alert(
       "Request Sent!", 

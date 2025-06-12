@@ -28,6 +28,7 @@ interface Coach {
 }
 
 import { RouteProp } from '@react-navigation/native';
+import { FIREBASE_AUTH } from '../../../firebase_config'
 
 type CoachProfileRouteProp = RouteProp<{ params: { coachId: string } }, 'params'>;
 
@@ -118,10 +119,16 @@ const handleSendConnectionRequest = useCallback(async () => {
   setSendingRequest(true);
   setIsProcessingRequest(true);
   try {
+    const currentUser = FIREBASE_AUTH.currentUser;
+    if (!currentUser) {
+      throw new Error("User is not authenticated");
+    }
+
+    // Prepare the connection request data to be sent to the backend
     const connectionRequestData = {
       senderType: 'MEMBER' as const,
       senderId: userData.id,
-      senderFirebaseId: userData.firebaseId,
+      senderFirebaseId: currentUser?.uid || '',
       receiverType: 'COACH' as const,
       receiverId: parseInt(coachData.id || '0'),
       receiverFirebaseId: coachId,
@@ -139,13 +146,29 @@ const handleSendConnectionRequest = useCallback(async () => {
     const createdRequest = await createMemberToCoachConnectionRequest(connectionRequestData);
 
     if (userData.sentConnectionRequests) {
-      // Use the actual response from the API instead of creating a fake one
+      // Create the new request object with all necessary fields for local storing
       const newRequest = {
-        ...createdRequest, // This contains the real ID from the database
-        // Add any additional fields that might be missing
+        id: createdRequest.id,
+        senderType: 'MEMBER' as const,
+        senderId: userData.id,
+        senderFirebaseId: currentUser.uid,
+        receiverType: 'COACH' as const,
+        receiverId: parseInt(coachData.id || '0'),
+        receiverFirebaseId: coachId,
+        status: 'PENDING' as const,
+        message: customMessage,
         createdAt: createdRequest.createdAt || new Date().toISOString(),
-        updatedAt: createdRequest.updatedAt || new Date().toISOString()
+        updatedAt: createdRequest.updatedAt || new Date().toISOString(),
+        senderFirstName: userData.firstName,
+        senderLastName: userData.lastName,
+        senderProfilePic: userData.profilePic, // Use the original signed URL for display
+        receiverFirstName: coachData.firstName,
+        receiverLastName: coachData.lastName,
+        receiverProfilePic: coachData.profilePic, // Use the original signed URL for display
       };
+      
+      console.log("New request object:", newRequest); // Debug log
+      
       updateUserData({
         sentConnectionRequests: [...userData.sentConnectionRequests, newRequest]
       });
