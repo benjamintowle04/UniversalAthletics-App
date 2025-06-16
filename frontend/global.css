@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Minimal web-specific styles */
+@media (min-width: 768px) {
+  .web-container {
+    max-width: 1200px;
+    align-self: center;
+  }
+  
+  .web-card {
+    border-radius: 12px;
+    elevation: 5; /* React Native shadow alternative */
+  }
+}

@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Platform } from 'react-native';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase_config';  
 import Login from './app/screens/pre_login/Login';
@@ -27,8 +27,53 @@ import RequestASession from './app/screens/sessions/RequestASession';
 import ScheduleContainer from './app/screens/schedule/ScheduleContainer';
 import SessionDetails from './app/screens/sessions/SessionDetails';
 import { Image } from 'react-native';
+import ChatScreen from './app/screens/inbox/messaging/ChatScreen';
 
-
+// Web-specific imports
+let linking = {};
+if (Platform.OS === 'web') {
+  linking = {
+    prefixes: ['http://localhost:8081', 'https://yourdomain.com'], // Add your actual domain
+    config: {
+      screens: {
+        // Pre-login screens
+        EntryPoint: '',
+        Login: '/login',
+        SignUp: '/signup',
+        
+        // Onboarding screens
+        GenInfo: '/onboarding/general-info',
+        EnterSkills: '/onboarding/skills',
+        AccountSummary: '/onboarding/summary',
+        
+        // Main app screens
+        Home: '/home',
+        MainTabs: {
+          screens: {
+            HomeTab: '/home',
+            ScheduleContainer: '/schedule',
+            Merch: '/merch',
+            MyCoaches: '/coaches',
+            Profile: '/settings',
+          },
+        },
+        
+        // Modal/Detail screens
+        InboxStack: {
+          screens: {
+            Inbox: '/inbox',
+            SentRequests: '/inbox/sent',
+          },
+        },
+        CoachProfile: '/coach/:coachId',
+        SessionRequestDetails: '/session-request/:requestId',
+        RequestASession: '/request-session/:recipientId',
+        SessionDetails: '/session/:sessionId',
+        ChatScreen: '/chat/:conversationId',
+      },
+    },
+  };
+}
 
 // Create placeholder screens for the tab navigator
 const MerchScreen = () => <Text>Merch Screen</Text>;
@@ -40,7 +85,6 @@ const InboxStack = createNativeStackNavigator();
 const MainStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-
 const HeaderLogo = () => (
   <Image 
     source={require('./app/images/logo.png')} 
@@ -48,6 +92,7 @@ const HeaderLogo = () => (
     resizeMode="contain"
   />
 );
+
 const backButtonOnlyHeader = {
     headerShown: true,
     title: '',
@@ -361,6 +406,7 @@ function InboxStackNavigator() {
   );
 }
 
+
 function MainAppNavigator() {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
@@ -379,7 +425,7 @@ function MainAppNavigator() {
       />
 
        <MainStack.Screen
-        name = "CoachProfile"
+        name="CoachProfile"
         component={CoachProfile as React.ComponentType<any>}
         options={({ navigation }) => ({
           ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
@@ -405,6 +451,15 @@ function MainAppNavigator() {
         })}
       />
 
+      <MainStack.Screen
+        name="ChatScreen"
+        component={ChatScreen as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton(hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount, navigation),
+          tabBarButton: () => null, 
+        })}
+      />
+
       <MainStack.Screen 
         name="SessionDetails" 
         component={SessionDetails as React.ComponentType<any>} 
@@ -422,6 +477,10 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState(false);
   const { userData, hasInboxNotifications, inboxNotificationCount, isLoading } = useUser();
+
+  const linking = {
+    prefixes: ['myapp://', 'https://myapp.com'],
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -508,7 +567,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       {user ? (   
         <PostLoginLayout />
       ) : (
@@ -517,7 +576,6 @@ function AppContent() {
     </NavigationContainer>
   );
 }
-
 export default function App() {
   return (
     <UserProvider>

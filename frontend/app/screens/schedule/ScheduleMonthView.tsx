@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import "../../../global.css"
 import { Colors } from '../../themes/colors/Colors';
 import { RouterProps } from '../../types/RouterProps';
+import { Dimensions } from 'react-native';
+
 
 interface SessionEntity {
   id?: number; 
@@ -55,7 +57,9 @@ export default function ScheduleMonthView({ sessions, loading, error, navigation
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [calendarData, setCalendarData] = useState<DayData[]>([]);
-
+  const { width } = Dimensions.get('window');
+  const dayHeight = Math.floor((width - 32) / 7);
+  
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -195,6 +199,11 @@ export default function ScheduleMonthView({ sessions, loading, error, navigation
           ${isSelected ? 'bg-blue-100' : 'bg-white'}
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
         `}
+        style={{ 
+          height: dayHeight, // Dynamic height based on screen width
+          maxHeight: 80,     // Maximum height constraint
+          minHeight: 50,     // Minimum height constraint
+      }}
         onPress={() => handleDatePress(dayData.date, dayData.isCurrentMonth)}
       >
         <View className="flex-1">

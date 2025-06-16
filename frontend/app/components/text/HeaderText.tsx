@@ -1,13 +1,15 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, TextStyle } from 'react-native';
 import { Colors } from '../../themes/colors/Colors';
 import { useFonts } from 'expo-font';
 
 interface HeaderTextProps {
     text: string;
+    style?: TextStyle | TextStyle[];
+    className?: string; // Add className for NativeWind
 }
 
-export const HeaderText = ({ text }: HeaderTextProps) => {
+export const HeaderText = ({ text, style, className }: HeaderTextProps) => {
     const [fontsLoaded] = useFonts({
         Gagalin: require('../../themes/fonts/Gagalin-Regular.otf'),
     });
@@ -18,7 +20,12 @@ export const HeaderText = ({ text }: HeaderTextProps) => {
     }
 
     return (
-        <Text style={styles.title}>{text}</Text>
+        <Text 
+            style={[styles.title, style]} 
+            className={className}
+        >
+            {text}
+        </Text>
     );
 };
 

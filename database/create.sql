@@ -459,7 +459,8 @@ INSERT INTO Coach_Skill (Coach_ID, Skill_ID) VALUES
 
 INSERT INTO Member_Coach (Member_ID, Coach_ID) VALUES
     (1, 9),
-    (1, 3);
+    (1, 3), 
+    (1, 10);
 
 
 INSERT INTO Connection_Request (
@@ -478,13 +479,13 @@ INSERT INTO Connection_Request (
     Status, 
     Message
 ) VALUES    
-    ('COACH', 1, 'MEMBER', 1, 'Ben', 'Towle', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 'pGdWihV35TbdydmijyqToZOCkLs2', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect'),
+    ('COACH', 1, 'MEMBER', 1, 'Michael', 'Johnson', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 'pGdWihV35TbdydmijyqToZOCkLs2', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect'),
     
-    ('COACH', 2, 'MEMBER', 1, 'Coach', 'San Diego', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'hfjkabfjkabkj', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect again'),
+    ('COACH', 2, 'MEMBER', 1, 'Sarah', 'Martinez', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'hfjkabfjkabkj', 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'PENDING', 'I would like to connect again'),
      
-    ('MEMBER', 1, 'COACH', 3, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'Max', 'Robinson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'xmj9WqDAsNd9Tfrr95Od84w6Ls92', 'PENDING', 'I would like to connect with you'),
+    ('MEMBER', 1, 'COACH', 3, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'David', 'Thompson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'xmj9WqDAsNd9Tfrr95Od84w6Ls92', 'PENDING', 'I would like to connect with you'),
     
-    ('MEMBER', 1, 'COACH', 4, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'Coach', 'Eden Praire1', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'ljkjkjfkdsbjl', 'PENDING', 'Looking forward to working together');
+    ('MEMBER', 1, 'COACH', 4, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2', 'Jessica', 'Williams', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 'ljkjkjfkdsbjl', 'PENDING', 'Looking forward to working together');
 
 
 INSERT INTO Session_Request (
@@ -498,7 +499,7 @@ INSERT INTO Session_Request (
     Session_Location, Session_Description
 ) VALUES ('COACH', 3, 'xmj9WqDAsNd9Tfrr95Od84w6Ls92',
  'MEMBER', 1, 'EFogg1abZOeVRPDxcp541GNzk0o2',
- 'Max', 'Robinson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg',
+ 'David', 'Thompson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg',
  'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg',
  'PENDING', 'Let\'s schedule a tennis session!',
  '2025-06-18', '2025-06-20', '2025-06-22',
@@ -518,7 +519,7 @@ INSERT INTO Session_Request (
 ) VALUES
 ('COACH', 9, 'farfshr',
  'MEMBER', 1, 'EFogg1abZOeVRPDxcp541GNzk0o2',
- 'Coach', 'Keokuk1', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg',
+ 'James', 'Miller', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg',
  'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg',
  'PENDING', 'Ready for a basketball session?',
  '2025-06-19', '2025-06-21', '2025-06-23',
@@ -529,7 +530,7 @@ INSERT INTO Session_Request (
 INSERT INTO Session (Request_ID, Session_Date, Session_Time, Session_Location, Session_Description, Coach_ID, Coach_Firebase_ID, Coach_First_Name, Coach_Last_Name, Coach_Profile_Pic, Member_ID, Member_First_Name, Member_Last_Name, Member_Profile_Pic, Member_Firebase_ID) VALUES
 (1, '2025-06-20', '14:00:00', 'Downtown Tennis Center', 'Advanced tennis techniques and match play', 3, 'xmj9WqDAsNd9Tfrr95Od84w6Ls92', 'David', 'Thompson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2'),
 (2, '2025-06-21', '13:00:00', 'Community Recreation Center', 'Basketball shooting drills and defensive strategies', 10, 'farfshr', 'Ashley', 'Anderson', 'profiles/63658376-ead5-4ed9-a7eb-3e4c19dc59aa-profile-picture-xmj9WqDAsNd9Tfrr95Od84w6Ls92.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2'),
-(3, '2025-06-07', '16:00:00', 'Local Sports Complex', 'Tennis match preparation and strategy', 9, 'pGdWihV35TbdydmijyqToZOCkLs2', 'Ben', 'Towle', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2');
+(3, '2025-06-07', '16:00:00', 'Local Sports Complex', 'Tennis match preparation and strategy', 9, 'pGdWihV35TbdydmijyqToZOCkLs2', 'James', 'Miller', 'profiles/09ea502f-d3d9-4dc0-8d78-bffb2738fa72-profile-picture-pGdWihV35TbdydmijyqToZOCkLs2.jpg', 1, 'TestFirst', 'TestLast', 'profiles/f9ebd5e2-25d4-49ce-97b3-b18c74ee2677-profile-picture-EFogg1abZOeVRPDxcp541GNzk0o2.jpg', 'EFogg1abZOeVRPDxcp541GNzk0o2');
 
 INSERT INTO hibernate_sequences (sequence_name, next_val) 
 SELECT 'request_id', COALESCE(MAX(Request_ID), 0) + 1 FROM Connection_Request;

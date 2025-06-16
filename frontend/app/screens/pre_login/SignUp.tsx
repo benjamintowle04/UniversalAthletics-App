@@ -1,14 +1,14 @@
 import React, { useState, useContext } from "react";
 import { FIREBASE_AUTH } from "../../../firebase_config";
-import { TextInput, ActivityIndicator, KeyboardAvoidingView, StyleSheet, Text, View, Alert } from "react-native";
+import { TextInput, ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, Alert, ScrollView, Dimensions } from "react-native";
 import { createUserWithEmailAndPassword} from "firebase/auth";
 import { PrimaryButton } from "../../components/buttons/PrimaryButton";
-import { Colors } from "../../themes/colors/Colors";
 import { HeaderText } from "../../components/text/HeaderText";
 import { LogoImageContainer } from "../../components/image_holders/LogoImageContainer";
 import { UserContext } from "../../contexts/UserContext";
+import { Platform } from "react-native";
+import { Image } from "react-native";
 import "../../../global.css"
-
 
 const SignUp = () => {
     const [email, setEmail] = useState("");
@@ -16,7 +16,9 @@ const SignUp = () => {
     const [secondPassword, setSecondPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
-
+    const { width, height } = Dimensions.get('window');
+    const isWeb = Platform.OS === 'web';
+    const isLargeScreen = width > 768;
 
     const userContext = useContext(UserContext);
     if (!userContext) {
@@ -25,19 +27,11 @@ const SignUp = () => {
     }
     const { userData, setUserData } = userContext;
 
-
     const signUp = async (email: string, password: string) => {  
         setLoading(true);
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(response);
-
-            setUserData({
-                ...userData,
-                email: response.user.email,
-                firebaseID: response.user.uid
-            });
-            console.log("User data after sign up:", userData);
+            console.log("Signed Up: ", response);
         } catch (error: any) {
             console.log(error);
             alert("Sign up failed: " + error.message);
@@ -67,92 +61,150 @@ const SignUp = () => {
         signUp(email, firstPassword);
     };
 
-    return (
-        <View style={styles.container}>
-            <KeyboardAvoidingView behavior="padding">
-                <View className="items-center">
-                    <LogoImageContainer />
+    if (isWeb && isLargeScreen) {
+        // Web Desktop Layout
+        return (
+            <ScrollView 
+                className="flex-1 bg-ua-green"
+                contentContainerStyle={{ minHeight: height }}
+            >
+                <View className="flex-1 justify-center items-center p-8">
+                    <View className="bg-white rounded-lg p-8 w-full max-w-md shadow-lg">
+                        <View className="items-center mb-8">
+                            <Image
+                                source={require('../../images/logo.png')}
+                                style={{ width: 64, height: 64, marginBottom: 16 }} // Use inline styles instead of className
+                                resizeMode="contain"
+                            />
+                            <HeaderText text="Join UA Today" />
+                        </View>
+
+
+                        <KeyboardAvoidingView behavior="padding">
+                            <View className="mb-4">
+                                <TextInput 
+                                    value={email} 
+                                    className="border border-gray-300 rounded-lg p-4 text-base"
+                                    autoCapitalize="none" 
+                                    placeholder="Enter Email"
+                                    onChangeText={(text) => setEmail(text)}
+                                    returnKeyType="next"
+                                />
+                            </View>
+
+                            <View className="mb-4">
+                                <TextInput 
+                                    value={firstPassword} 
+                                    className="border border-gray-300 rounded-lg p-4 text-base"
+                                    autoCapitalize="none" 
+                                    placeholder="Enter Password"
+                                    secureTextEntry={true}
+                                    textContentType="oneTimeCode"                    
+                                    autoComplete="off"  
+                                    onChangeText={(text) => setFirstPassword(text)}
+                                    returnKeyType="next"
+                                    autoCorrect={false}
+                                />
+                            </View>
+
+                            <View className="mb-6">
+                                <TextInput 
+                                    value={secondPassword} 
+                                    className="border border-gray-300 rounded-lg p-4 text-base"
+                                    autoCapitalize="none" 
+                                    placeholder="Confirm Password"
+                                    secureTextEntry={true}
+                                    textContentType="oneTimeCode"                    
+                                    autoComplete="off"    
+                                    onChangeText={(text) => setSecondPassword(text)}
+                                    returnKeyType="done"
+                                    autoCorrect={false}
+                                />
+                            </View>
+
+                            {loading ? (
+                                <View className="py-4">
+                                    <ActivityIndicator size="large" color="#7ED957" /> 
+                                </View>
+                            ) : (
+                                <PrimaryButton title="Create Account" onPress={handleSignUp}/>
+                            )}
+                        </KeyboardAvoidingView>
+                    </View>
                 </View>
-                <HeaderText text="Sign Up"/>
-                <TextInput 
-                    value={email} 
-                    style={styles.input} 
-                    autoCapitalize="none" 
-                    placeholder="Enter Email"
-                    onChangeText={(text) => setEmail(text)}
-                    returnKeyType="done"
-                    className="rounded-md">
-                </TextInput>
-                <TextInput 
-                    value={firstPassword} 
-                    style={styles.input} 
-                    autoCapitalize="none" 
-                    placeholder="Enter Password"
-                    secureTextEntry={true}
-                    textContentType="oneTimeCode"                    
-                    autoComplete="off"  
-                    onChangeText={(text) => setFirstPassword(text)}
-                    returnKeyType="done"
-                    autoCorrect={false}
-                    className="rounded-md">
-                </TextInput> 
-                <TextInput 
-                    value={secondPassword} 
-                    style={styles.input} 
-                    autoCapitalize="none" 
-                    placeholder="Confirm Password"
-                    secureTextEntry={true}
-                    textContentType="oneTimeCode"                    
-                    autoComplete="off"    
-                    onChangeText={(text) => setSecondPassword(text)}
-                    returnKeyType="done"
-                    autoCorrect={false}
-                    className="rounded-md">
-                </TextInput>
-                {
-                    loading ? 
-                    (
-                        <ActivityIndicator size="large" color="#0000ff" /> 
-                    ) 
-                    : 
-                    (
-                        <>
-                            <PrimaryButton title="Create Account" onPress={handleSignUp}/>
-                        </>
-                    )
-                }
+            </ScrollView>
+        );
+    }
+
+    // Mobile Layout
+    return (
+        <View className="flex-1 bg-white justify-center items-center px-4">
+            <KeyboardAvoidingView behavior="padding" className="w-full max-w-sm">
+                <View className="items-center mb-8">
+                    <LogoImageContainer />
+                    <HeaderText text="Sign Up"/>
+                </View>
+
+                <View className="mb-4">
+                    <TextInput 
+                        value={email} 
+                        style={styles.input} 
+                        autoCapitalize="none" 
+                        placeholder="Enter Email"
+                        onChangeText={(text) => setEmail(text)}
+                        returnKeyType="next"
+                        className="rounded-md border border-gray-300"
+                    />
+                </View>
+
+                <View className="mb-4">
+                    <TextInput 
+                        value={firstPassword} 
+                        style={styles.input} 
+                        autoCapitalize="none" 
+                        placeholder="Enter Password"
+                        secureTextEntry={true}
+                        textContentType="oneTimeCode"                    
+                        autoComplete="off"  
+                        onChangeText={(text) => setFirstPassword(text)}
+                        returnKeyType="next"
+                        autoCorrect={false}
+                        className="rounded-md border border-gray-300"
+                    />
+                </View>
+
+                <View className="mb-6">
+                    <TextInput 
+                        value={secondPassword} 
+                        style={styles.input} 
+                        autoCapitalize="none" 
+                        placeholder="Confirm Password"
+                        secureTextEntry={true}
+                        textContentType="oneTimeCode"                    
+                        autoComplete="off"    
+                        onChangeText={(text) => setSecondPassword(text)}
+                        returnKeyType="done"
+                        autoCorrect={false}
+                        className="rounded-md border border-gray-300"
+                    />
+                </View>
+
+                {loading ? (
+                    <ActivityIndicator size="large" color="#7ED957" /> 
+                ) : (
+                    <PrimaryButton title="Create Account" onPress={handleSignUp}/>
+                )}
             </KeyboardAvoidingView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
-    },
     input: {
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        padding: 10,
+        height: 50,
+        padding: 15,
+        fontSize: 16,
     },
-    uaLogo: {
-        alignSelf: 'center',
-        width: 200,
-        height: 100,
-        resizeMode: 'contain',
-        marginBottom: 20,
-    }, 
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: Colors.uaRed,
-        textAlign: 'center',
-        marginBottom: 20,
-    }
 });
 
 export default SignUp;

@@ -1,15 +1,20 @@
-import { View, Image } from 'react-native'
-import React from 'react'
-import "../../../global.css"
+import { View, Image, Platform, Dimensions } from 'react-native';
+import React from 'react';
 
 export const LogoImageContainer = () => {
+  const { width } = Dimensions.get('window');
+  const isWeb = Platform.OS === 'web';
+  const isLargeScreen = width > 768;
+
   return (
-    <View>
-        <Image
-            source={require('../../images/logo.png')}
-            className="w-32 h-32"
-            resizeMode="contain"
-        />    
+    <View className="items-center mb-8">
+      <Image 
+        source={require('../../images/logo.png')}
+        className={`
+          ${isWeb && isLargeScreen ? 'w-32 h-32' : 'w-24 h-24'}
+        `}
+        resizeMode="contain"
+      />
     </View>
-  )
-}
+  );
+};

@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getMembersIncomingPendingConnectionRequests, getMembersSentPendingConnectionRequests } from '../../controllers/ConnectionRequestController';
 import { getMembersIncomingPendingSessionRequests, getMembersSentPendingSessionRequests } from '../../controllers/SessionRequestController';
 import { getMembersCoaches } from '../../controllers/MemberInfoController';
+import { Conversation } from '../types/MessageTypes';
 
 interface ConnectionRequest {
   id: number;
@@ -90,6 +91,9 @@ interface UserData {
   // Connected coaches
   connectedCoaches: ConnectedCoach[];
   isLoadingConnectedCoaches: boolean;
+  // Messaging
+  conversations?: Conversation[];
+  unreadMessageCount?: number;
 }
 
 interface UserContextType {
@@ -276,12 +280,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isConnectedToCoach,
   };
 
+  // Add to your UserContext
+  const updateConversations = (conversations: Conversation[]) => {
+    const unreadCount = conversations.reduce((total, conv) => total + conv.unreadCount, 0);
+    setUserData(prev => prev ? {
+      ...prev,
+      conversations,
+      unreadMessageCount: unreadCount
+    } : null);
+  };      
+
   return (
     <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
 };
+
+
 
 export const useUser = (): UserContextType => {
   const context = useContext(UserContext);

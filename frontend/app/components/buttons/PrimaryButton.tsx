@@ -1,39 +1,33 @@
+import { TouchableOpacity, Text, Platform, Dimensions } from 'react-native';
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../themes/colors/Colors';
 
-interface ButtonProps {
-    title: string;
-    onPress: () => void;
+interface PrimaryButtonProps {
+  title: string;
+  onPress: () => void;
 }
 
-export const PrimaryButton = ({ title, onPress }: ButtonProps) => {
-    return (
-        <TouchableOpacity style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={onPress}>
-                <Text style={styles.buttonText}>{title}</Text>
-            </TouchableOpacity>
-        </TouchableOpacity>
-    );
-};
+export const PrimaryButton: React.FC<PrimaryButtonProps> = ({ title, onPress }) => {
+  const { width } = Dimensions.get('window');
+  const isWeb = Platform.OS === 'web';
+  const isLargeScreen = width > 768;
 
-const styles = StyleSheet.create({
-    buttonContainer: {
-        alignSelf: 'center',
-        width: '100%',
-        paddingTop: 20
-    },
-    button: {
-        backgroundColor: Colors.uaBlue,
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginVertical: 5,
-        width: '80%', // This controls button width relative to container
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});
+  return (
+    <TouchableOpacity
+      className={`
+        bg-ua-blue rounded-lg py-4 px-6 w-full
+        ${isWeb ? 'hover:bg-blue-700 transition-colors duration-200' : ''}
+        ${isWeb && isLargeScreen ? 'py-5 text-lg' : ''}
+      `}
+      onPress={onPress}
+    >
+      <Text 
+        className={`
+          text-white font-bold text-center
+          ${isWeb && isLargeScreen ? 'text-lg' : 'text-base'}
+        `}
+      >
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+};

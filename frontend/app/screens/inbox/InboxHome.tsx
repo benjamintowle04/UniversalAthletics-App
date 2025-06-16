@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
@@ -7,6 +7,8 @@ import { acceptConnectionRequest, declineConnectionRequest } from '../../../cont
 import {declineSessionRequest } from '../../../controllers/SessionRequestController'
 import "../../../global.css"
 import { RouterProps } from "../../types/RouterProps"
+import { getConversationsForUser } from '../../../controllers/MessageController';
+import { populateDummyMessages } from '../../../utils/PopulateDummyMessages'
 
 const InboxHome = ({navigation}: RouterProps) => {
   const { userData, updateUserData } = useUser()
@@ -21,8 +23,20 @@ const InboxHome = ({navigation}: RouterProps) => {
     return userData?.pendingSessionRequests || []
   }, [userData?.pendingSessionRequests])
   
-  // Placeholder data for other categories
-  const regularMessages: any[] = [] // Will be populated later
+  const [conversations, setConversations] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!userData) return;
+
+    const unsubscribe = getConversationsForUser(
+      userData.id.toString(),
+      'MEMBER',
+      setConversations
+    );
+
+    return () => unsubscribe();
+
+  }, [userData]);
 
   const handleConnectionRequestPress = (request: any) => {
     // Navigate to CoachProfile with the sender's Firebase ID
@@ -288,32 +302,53 @@ const InboxHome = ({navigation}: RouterProps) => {
     );
   };
 
-  const renderRegularMessage = (message: any, index: number) => (
+  // Update the renderRegularMessage function:
+  const renderRegularMessage = (conversation: any, index: number) => (
     <TouchableOpacity 
-      key={index}
+      key={conversation.id}
       className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
+      onPress={() => navigation.navigate('ChatScreen', {
+        conversationId: conversation.id,
+        otherParticipant: conversation.participants.find(
+          (p: any) => p.id !== userData?.id.toString()
+        )
+      })}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
           <View 
             className="w-12 h-12 rounded-full items-center justify-center mr-3"
-            style={{ backgroundColor: Colors.uaGreen + '20' }} // 20% opacity
+            style={{ backgroundColor: Colors.uaGreen + '20' }}
           >
             <Ionicons name="chatbubble" size={24} color={Colors.uaGreen} />
           </View>
           
           <View className="flex-1">
             <Text className="text-gray-900 font-semibold text-base">
-              Message
+              {conversation.participants.find((p: any) => p.id !== userData?.id.toString())?.name}
             </Text>
-            <Text className="text-gray-600 text-sm mt-1">
-              Coming soon...
+            <Text className="text-gray-600 text-sm mt-1" numberOfLines={1}>
+              {conversation.lastMessage?.content || "Start a conversation"}
+            </Text>
+            <Text className="text-gray-400 text-xs mt-1">
+              {conversation.lastMessage?.timestamp ? 
+                new Date(conversation.lastMessage.timestamp.toDate()).toLocaleDateString() : 
+                'New'
+              }
             </Text>
           </View>
         </View>
+        
+        {conversation.unreadCount > 0 && (
+          <View className="bg-red-500 rounded-full px-2 py-1 min-w-[20px] items-center">
+            <Text className="text-white text-xs font-bold">
+              {conversation.unreadCount}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
-  )
+  );
 
   const renderCategorySection = (
     title: string, 
@@ -376,6 +411,23 @@ const InboxHome = ({navigation}: RouterProps) => {
           </Text>
         </View>
 
+                
+        {__DEV__ && (
+          <TouchableOpacity 
+            className="bg-purple-500 p-3 rounded-lg mb-4"
+            onPress={() => {
+              if (userData) {
+                populateDummyMessages(userData.id.toString());
+              }
+            }}
+          >
+            <Text className="text-white text-center font-bold">
+              🧪 Populate Dummy Messages (Dev Only)
+            </Text>
+          </TouchableOpacity>
+        )}
+
+
         {/* Connection Requests Section */}
         {renderCategorySection(
           "Connection Requests",
@@ -399,15 +451,15 @@ const InboxHome = ({navigation}: RouterProps) => {
         {/* Regular Messages Section */}
         {renderCategorySection(
           "Messages",
-          regularMessages.length,
+          conversations.length,
           "chatbubble",
           Colors.uaGreen,
-          regularMessages,
+          conversations,
           renderRegularMessage
         )}
 
         {/* Overall Empty State */}
-        {connectionRequests.length === 0 && sessionRequests.length === 0 && regularMessages.length === 0 && (
+        {connectionRequests.length === 0 && sessionRequests.length === 0 && conversations.length === 0 && (
           <View className="bg-white rounded-lg p-8 items-center mt-4">
             <Ionicons name="mail-open" size={64} color={Colors.grey.medium} />
             <Text className="text-gray-900 text-xl font-bold mt-4 text-center">

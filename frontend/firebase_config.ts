@@ -1,10 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { initializeAuth, getReactNativePersistence} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import type { Auth } from "firebase/auth";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAURmqWNNl44tW7GSiOc5PeZ0UJT-2xpfY",
   authDomain: "universal-athletics-e21fd.firebaseapp.com",
@@ -18,9 +16,23 @@ const firebaseConfig = {
 // Initialize Firebase
 export const FIREBASE_APP = initializeApp(firebaseConfig);
 
-// Initialize Auth with AsyncStorage persistence
-export const FIREBASE_AUTH = initializeAuth(FIREBASE_APP, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-});
+// Platform-specific auth initialization with proper typing
+let FIREBASE_AUTH: Auth;
 
+if (Platform.OS === 'web') {
+  // Web version - uses browser's built-in persistence
+  const { getAuth, browserLocalPersistence, setPersistence } = require("firebase/auth");
+  FIREBASE_AUTH = getAuth(FIREBASE_APP);
+  setPersistence(FIREBASE_AUTH, browserLocalPersistence).catch(console.error);
+} else {
+  // Native version - uses AsyncStorage persistence
+  const { initializeAuth, getReactNativePersistence } = require("firebase/auth");
+  const ReactNativeAsyncStorage = require('@react-native-async-storage/async-storage').default;
+  
+  FIREBASE_AUTH = initializeAuth(FIREBASE_APP, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  });
+}
+
+export { FIREBASE_AUTH };
 export const FIREBASE_DB = getFirestore(FIREBASE_APP);
