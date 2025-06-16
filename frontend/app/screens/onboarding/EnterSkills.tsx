@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Alert} from 'react-native';
+import { View, ScrollView, Alert, Dimensions, Platform, Image} from 'react-native';
 import { useState, useContext, useEffect} from 'react';
 import { SkillInputButton } from '../../components/buttons/SkillInputButton';
 import { HeaderText } from '../../components/text/HeaderText';
@@ -10,7 +10,24 @@ import { LogoImageContainer } from '../../components/image_holders/LogoImageCont
 import { UserContext } from '../../contexts/UserContext';
 import { fetchSkills } from '../../../controllers/SkillsController';
 
-const EnterSkills = ({ navigation }: RouterProps) => {
+interface EnterSkillsProps extends RouterProps {
+    tempUserData?: {
+        firstName: string;
+        lastName: string;
+        phone: string;
+        biography: string;
+        location: string | null;
+    }
+}
+
+const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
+    const { width, height } = Dimensions.get('window');
+    const isWeb = Platform.OS === 'web';
+    const isLargeScreen = width > 768;
+
+    // Get the temporary data from the previous screen
+    const tempUserData = route?.params?.tempUserData;
+
     const userContext = useContext(UserContext);
      if (!userContext) {
             Alert.alert("Error Fetching User Context");
@@ -32,6 +49,7 @@ const EnterSkills = ({ navigation }: RouterProps) => {
     useEffect(() => {
         const loadSkills = async () => {
             console.log("Loading Skills. User Data: ", userData);
+            console.log("Temp User Data from GenInfo: ", tempUserData);
             const skillsData = await fetchSkills();
             console.log(skillsData);
             if (!skillsData) {
@@ -94,14 +112,71 @@ const EnterSkills = ({ navigation }: RouterProps) => {
     };
 
     const moveToAccountSummary = () => {
-        setUserData((prevData: typeof userData) => {
-            const updatedData = { ...prevData, skills: skills };
-            console.log("Updated User Data:", updatedData);
-            return updatedData;
-        });
-        navigation.navigate("AccountSummary");
+        // Combine the temp user data with skills
+        const combinedData = {
+            ...tempUserData,
+            skills: skills
+        };
+        
+        console.log("Combined User Data:", combinedData);
+        navigation.navigate("AccountSummary", { combinedUserData: combinedData });
     }
 
+    if (isWeb && isLargeScreen) {
+        // Web Desktop Layout
+        return (
+            <ScrollView 
+                className="flex-1 bg-gradient-to-br from-ua-blue to-blue-600"
+                contentContainerStyle={{ minHeight: height }}
+            >
+                <View className="flex-1 justify-center items-center p-8">
+                    <View className="bg-white rounded-lg p-8 w-full max-w-2xl shadow-lg">
+                        {/* Header Section */}
+                        <View className="items-center mb-8">
+                        <Image
+                            source={require('../../images/logo.png')}
+                            style={{ width: 64, height: 64, marginBottom: 16 }} // Use inline styles instead of className
+                            resizeMode="contain"
+                        />
+                            <HeaderText text="What Are You Interested In?" />
+                            <View className="w-16 h-1 bg-ua-blue rounded-full mt-4"></View>
+                        </View>
+
+                        {/* Skills Grid */}
+                        <View className="mb-8">
+                            <View className="grid grid-cols-3 gap-4">
+                                {checkedSkills.map(({ key, value }) => (
+                                    <View key={key} className="mb-4">
+                                        <SkillInputButton
+                                            skill={formatSkill(key)}
+                                            checked={value}
+                                            onChange={() => onSkillSelected(key)}
+                                        />
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+
+                        {/* Continue Button */}
+                        <View className="items-center">
+                            <View className="w-full max-w-sm">
+                                <PrimaryButton title="Continue" onPress={moveToAccountSummary} />
+                            </View>
+                        </View>
+
+                        {/* Progress Indicator */}
+                        <View className="flex-row justify-center items-center mt-6 space-x-2">
+                            <View className="w-3 h-3 bg-ua-green rounded-full"></View>
+                            <View className="w-3 h-3 bg-ua-blue rounded-full"></View>
+                            <View className="w-3 h-3 bg-gray-300 rounded-full"></View>
+                        </View>
+                    </View>
+                </View>
+            </ScrollView>
+        );
+    }
+
+    // Mobile Layout (Original)
     return (
         <ScrollView className="flex-1 bg-white p-4">
             <View className="items-center">

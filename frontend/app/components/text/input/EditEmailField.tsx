@@ -6,9 +6,10 @@ import "../../../../global.css"
 interface EditEmailFieldProps {
   value: string;
   onChange: (text: string) => void;
+  placeholder?: string;
 }
 
-export const EditEmailField: React.FC<EditEmailFieldProps> = ({ value, onChange }) => {
+export const EditEmailField: React.FC<EditEmailFieldProps> = ({ value, onChange, placeholder = "Enter email..." }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(value);
 
@@ -29,9 +30,13 @@ export const EditEmailField: React.FC<EditEmailFieldProps> = ({ value, onChange 
           onBlur={handleSave}
           returnKeyType="done"
           onSubmitEditing={handleSave}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">{text}</Text>
+        <Text className="flex-1 text-gray-700 text-xs">
+          {text || placeholder}
+        </Text>
       )}
 
       <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">

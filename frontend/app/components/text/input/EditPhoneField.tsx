@@ -6,9 +6,10 @@ import "../../../../global.css";
 interface EditPhoneFieldProps {
   value: string;
   onChange: (text: string) => void;
+  placeholder?: string;
 }
 
-export const EditPhoneField: React.FC<EditPhoneFieldProps> = ({ value, onChange }) => {
+export const EditPhoneField: React.FC<EditPhoneFieldProps> = ({ value, onChange, placeholder = "Enter phone..." }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(formatPhoneNumber(value));
 
@@ -42,9 +43,13 @@ export const EditPhoneField: React.FC<EditPhoneFieldProps> = ({ value, onChange 
           onBlur={handleSave}
           returnKeyType="done"
           onSubmitEditing={handleSave}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">{text || ""}</Text>
+        <Text className="flex-1 text-gray-700 text-xs">
+          {text || placeholder}
+        </Text>
       )}
 
       <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">

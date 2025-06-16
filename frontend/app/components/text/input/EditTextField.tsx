@@ -6,9 +6,10 @@ import "../../../../global.css"
 interface EditTextFieldProps {
   value: string;
   onChange: (text: string) => void;
+  placeholder?: string;
 }
 
-export const EditTextField: React.FC<EditTextFieldProps> = ({ value, onChange }) => {
+export const EditTextField: React.FC<EditTextFieldProps> = ({ value, onChange, placeholder = "Enter text..." }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(value);
 
@@ -28,9 +29,13 @@ export const EditTextField: React.FC<EditTextFieldProps> = ({ value, onChange })
           onBlur={handleSave}
           returnKeyType="done"
           onSubmitEditing={handleSave}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">{text}</Text>
+        <Text className="flex-1 text-gray-700 text-xs">
+          {text || placeholder}
+        </Text>
       )}
 
       <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">

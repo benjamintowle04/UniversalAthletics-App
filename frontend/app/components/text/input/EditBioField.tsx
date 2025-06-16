@@ -6,9 +6,10 @@ import "../../../../global.css"
 interface EditBioFieldProps {
   value: string;
   onChange: (text: string) => void;
+  placeholder?: string;
 }
 
-export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange }) => {
+export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange, placeholder = "Enter bio..." }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(value);
 
@@ -25,15 +26,19 @@ export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange }) =
           onChangeText={setText}
           autoFocus
           className="flex-1 text-gray-800 text-xs"
-          keyboardType="email-address"
+          keyboardType="default"
           onBlur={handleSave}
           returnKeyType="done"
           onSubmitEditing={handleSave}
           multiline={true}
           numberOfLines={5}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">{text}</Text>
+        <Text className="flex-1 text-gray-700 text-xs">
+          {text || placeholder}
+        </Text>
       )}
 
       <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">
