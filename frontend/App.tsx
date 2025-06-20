@@ -28,6 +28,7 @@ import ScheduleContainer from './app/screens/schedule/ScheduleContainer';
 import SessionDetails from './app/screens/sessions/SessionDetails';
 import { Image } from 'react-native';
 import ChatScreen from './app/screens/inbox/messaging/ChatScreen';
+import { getMemberByFirebaseId } from './controllers/MemberInfoController';
 
 // Web-specific imports
 let linking = {};
@@ -405,8 +406,6 @@ function InboxStackNavigator() {
     </InboxStack.Navigator>
   );
 }
-
-
 function MainAppNavigator() {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
@@ -475,7 +474,7 @@ function MainAppNavigator() {
 // Component uses UserContext - must be inside UserProvider
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const { userData, hasInboxNotifications, inboxNotificationCount, isLoading } = useUser();
 
   const linking = {
@@ -483,14 +482,28 @@ function AppContent() {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       console.log('User', user);
       setUser(user);
 
-      if (user?.metadata.creationTime === user?.metadata.lastSignInTime) {
-        setNewUser(true);
+      if (user) {
+        try {
+          // Check if user has completed onboarding by fetching their profile
+          const memberData = await getMemberByFirebaseId(user.uid);
+          
+          // If we can fetch member data successfully, user has completed onboarding
+          if (memberData && memberData.firstName) {
+            setNeedsOnboarding(false);
+          } else {
+            setNeedsOnboarding(true);
+          }
+        } catch (error) {
+          console.error('Error checking user onboarding status:', error);
+          // If we can't fetch member data, assume they need onboarding
+          setNeedsOnboarding(true);
+        }
       } else {
-        setNewUser(false);  
+        setNeedsOnboarding(null);
       }
     });
 
@@ -510,7 +523,16 @@ function AppContent() {
   }, [hasInboxNotifications, inboxNotificationCount, userData]);
 
   function PostLoginLayout() {
-    if (newUser) {
+    // Show loading while we determine onboarding status
+    if (needsOnboarding === null) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
+
+    if (needsOnboarding) {
       return (
         <PostLoginStack.Navigator initialRouteName='GenInfo'>
           <PostLoginStack.Screen 
@@ -576,6 +598,7 @@ function AppContent() {
     </NavigationContainer>
   );
 }
+
 export default function App() {
   return (
     <UserProvider>
@@ -583,3 +606,5 @@ export default function App() {
     </UserProvider>
   );
 }
+
+

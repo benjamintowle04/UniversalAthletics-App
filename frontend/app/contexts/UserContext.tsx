@@ -7,6 +7,11 @@ import { getMembersIncomingPendingSessionRequests, getMembersSentPendingSessionR
 import { getMembersCoaches } from '../../controllers/MemberInfoController';
 import { Conversation } from '../types/MessageTypes';
 
+interface Skill {
+  skill_id: number;
+  title: string;
+}
+
 interface ConnectionRequest {
   id: number;
   senderType: 'COACH' | 'MEMBER';
@@ -94,6 +99,7 @@ interface UserData {
   // Messaging
   conversations?: Conversation[];
   unreadMessageCount?: number;
+  skills?: Skill[];
 }
 
 interface UserContextType {

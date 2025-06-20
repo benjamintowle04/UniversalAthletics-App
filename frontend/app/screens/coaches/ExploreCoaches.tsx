@@ -9,6 +9,7 @@ import { HeaderText } from '../../components/text/HeaderText'
 import { RouterProps } from "../../types/RouterProps";
 
 
+
 const MyCoaches = ({navigation}: RouterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -34,8 +35,11 @@ const MyCoaches = ({navigation}: RouterProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //Change to get coaches instead once they are in the database
-        const coaches = await getAllCoaches(userData.location, userData.skills);
+        if (!userData || !userData.location) {
+          console.error('User data is not available or incomplete');
+          return;
+        }
+        const coaches = await getAllCoaches(userData.location, userData.skills || []);
         setCoaches(coaches);
       } catch (error) {
         console.error('Error fetching members:', error);

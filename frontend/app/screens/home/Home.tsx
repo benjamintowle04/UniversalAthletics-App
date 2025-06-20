@@ -4,7 +4,7 @@ import { FIREBASE_AUTH } from '../../../firebase_config';
 import { RouterProps } from '../../types/RouterProps';
 import { useUser } from '../../contexts/UserContext';
 import { getMemberByFirebaseId } from '../../../controllers/MemberInfoController';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import '../../../global.css';
 
 const Home = ({ navigation }: RouterProps) => {    
@@ -13,6 +13,7 @@ const Home = ({ navigation }: RouterProps) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [localLoading, setLocalLoading] = useState(false); // Add local loading state
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const hasAttemptedSignIn = useRef(false);
   const hasAttemptedDataFetch = useRef(false);
 
@@ -67,6 +68,49 @@ const Home = ({ navigation }: RouterProps) => {
       fetchUserData();
     }
   }, [auth.currentUser, userData, isLoading, setUserData, localLoading]); 
+
+  // Logout function
+  const handleLogout = useCallback(async () => {
+    if (isWeb) {
+      const confirmed = window.confirm('Are you sure you want to logout?');
+      if (!confirmed) return;
+    } else {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Logout', style: 'destructive', onPress: performLogout }
+        ]
+      );
+      return;
+    }
+    
+    performLogout();
+  }, [isWeb]);
+
+  const performLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut(auth);
+      setUserData(null);
+      hasAttemptedSignIn.current = false;
+      hasAttemptedDataFetch.current = false;
+      console.log('User logged out successfully');
+      
+      // Navigate to login screen if available, or just let auth state handle it
+      // navigation.navigate('Login'); // Uncomment if you have a login screen
+    } catch (error) {
+      console.error('Error logging out:', error);
+      if (isWeb) {
+        alert('Failed to logout. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to logout. Please try again.');
+      }
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   // Memoize image handlers
   const handleImageLoadStart = useCallback(() => {
@@ -124,14 +168,41 @@ const Home = ({ navigation }: RouterProps) => {
       <ScrollView className="flex-1 bg-gray-100">
         <View className="web-container py-8 px-4">
           <View className="web-card bg-white p-8 max-w-4xl mx-auto">
-            {/* Header */}
-            <View className="mb-8">
-              <Text className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome, {userData.firstName}!
-              </Text>
-              <Text className="text-gray-600 text-lg">
-                Here's your profile information
-              </Text>
+            {/* Header with Logout Button */}
+            <View className="mb-8 flex-row justify-between items-start">
+              <View className="flex-1">
+                <Text className="text-3xl font-bold text-gray-900 mb-2">
+                  Welcome, {userData.firstName}!
+                </Text>
+                <Text className="text-gray-600 text-lg">
+                  Here's your profile information
+                </Text>
+              </View>
+              <View className="ml-4">
+                {isWeb ? (
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2"
+                  >
+                    {isLoggingOut ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Logging out...
+                      </>
+                    ) : (
+                      'Logout'
+                    )}
+                  </button>
+                ) : (
+                  <Button
+                    title={isLoggingOut ? "Logging out..." : "Logout"}
+                    onPress={handleLogout}
+                    disabled={isLoggingOut}
+                    color="#EF4444"
+                  />
+                )}
+              </View>
             </View>
 
             {/* Profile Section */}
@@ -293,11 +364,21 @@ const Home = ({ navigation }: RouterProps) => {
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="p-5">
-        {/* Header */}
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome, {userData.firstName}!
-          </Text>
+        {/* Header with Logout Button */}
+        <View className="mb-6 flex-row justify-between items-start">
+          <View className="flex-1">
+            <Text className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome, {userData.firstName}!
+            </Text>
+          </View>
+                    <View className="ml-4">
+            <Button
+              title={isLoggingOut ? "Logging out..." : "Logout"}
+              onPress={handleLogout}
+              disabled={isLoggingOut}
+              color="#EF4444"
+            />
+          </View>
         </View>
 
         {/* Profile Picture */}
@@ -387,3 +468,4 @@ const Home = ({ navigation }: RouterProps) => {
 }
 
 export default Home
+
