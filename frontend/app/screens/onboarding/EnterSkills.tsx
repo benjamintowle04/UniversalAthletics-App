@@ -11,12 +11,13 @@ import { UserContext } from '../../contexts/UserContext';
 import { fetchSkills } from '../../../controllers/SkillsController';
 
 interface EnterSkillsProps extends RouterProps {
-    tempUserData?: {
+    userData?: {
         firstName: string;
         lastName: string;
         phone: string;
         biography: string;
         location: string | null;
+        profilePic?: string | null;
     }
 }
 
@@ -25,8 +26,8 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
     const isWeb = Platform.OS === 'web';
     const isLargeScreen = width > 768;
 
-    // Get the temporary data from the previous screen
-    const tempUserData = route?.params?.tempUserData;
+    // Get data from previous screen
+    const previousUserData = route?.params?.userData;
 
     const userContext = useContext(UserContext);
      if (!userContext) {
@@ -49,7 +50,6 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
     useEffect(() => {
         const loadSkills = async () => {
             console.log("Loading Skills. User Data: ", userData);
-            console.log("Temp User Data from GenInfo: ", tempUserData);
             const skillsData = await fetchSkills();
             console.log(skillsData);
             if (!skillsData) {
@@ -112,15 +112,21 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
     };
 
     const moveToAccountSummary = () => {
-        // Combine the temp user data with skills
-        const combinedData = {
-            ...tempUserData,
-            skills: skills
+        // Combine all user data including any previous data and current skills
+        const combinedUserData = {
+            firstName: previousUserData?.firstName || userData?.firstName || '',
+            lastName: previousUserData?.lastName || userData?.lastName || '',
+            phone: previousUserData?.phone || userData?.phone || '',
+            biography: previousUserData?.biography || userData?.biography || '',
+            location: previousUserData?.location || userData?.location || null,
+            skills: skills,
+            profilePic: previousUserData?.profilePic || null, // Preserve profile pic
         };
-        
-        console.log("Combined User Data:", combinedData);
-        navigation.navigate("AccountSummary", { combinedUserData: combinedData });
-    }
+
+        navigation.navigate("AccountSummary", { 
+            combinedUserData 
+        });
+    };
 
     if (isWeb && isLargeScreen) {
         // Web Desktop Layout
@@ -133,11 +139,13 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
                     <View className="bg-white rounded-lg p-8 w-full max-w-2xl shadow-lg">
                         {/* Header Section */}
                         <View className="items-center mb-8">
-                        <Image
-                            source={require('../../images/logo.png')}
-                            style={{ width: 64, height: 64, marginBottom: 16 }} // Use inline styles instead of className
-                            resizeMode="contain"
-                        />
+                            <View className="items-center mb-8">
+                                <Image
+                                    source={require('../../images/logo.png')}
+                                    style={{ width:64, height: 64, marginBottom: 16 }} // 8px = very small
+                                    resizeMode="contain"
+                                />
+                            </View>
                             <HeaderText text="What Are You Interested In?" />
                             <View className="w-16 h-1 bg-ua-blue rounded-full mt-4"></View>
                         </View>
@@ -176,7 +184,7 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
         );
     }
 
-    // Mobile Layout (Original)
+    // Mobile Layout 
     return (
         <ScrollView className="flex-1 bg-white p-4">
             <View className="items-center">

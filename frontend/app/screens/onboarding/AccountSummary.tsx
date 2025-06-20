@@ -1,7 +1,7 @@
-import React, { useState, useContext } from "react";
-import { View, Alert, ScrollView, Text, Dimensions, Platform } from "react-native";
+import React, { useState, useContext, useEffect} from "react";
+import { View, Alert, Text, Dimensions, Platform, Image, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { ProfilePictureContainer } from "../../components/image_holders/ProfilePictureContainerEdit";
+import { PencilIcon } from "lucide-react-native";
 import { HeaderText } from "../../components/text/HeaderText";
 import { PrimaryButton } from "../../components/buttons/PrimaryButton";
 import { LogoImageContainer } from "../../components/image_holders/LogoImageContainer";
@@ -15,16 +15,18 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { RouterProps } from "../../types/RouterProps";
 import { EditBioField } from "../../components/text/input/EditBioField";
 import { postUserOnboarding } from "../../../controllers/OnboardingController";
+import { Colors } from "../../themes/colors/Colors";
+import { FIREBASE_AUTH } from "../../../firebase_config";
 
 interface AccountSummaryProps extends RouterProps {
-      combinedUserData?: {
-        firstName: string;
-        lastName: string;
-        phone: string;
-        biography: string;
-        location: string | null;
-        skills: { skill_id: number, title: string }[];
-      }
+  combinedUserData?: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    biography: string;
+    location: string | null;
+    skills: { skill_id: number, title: string }[];
+  }
 }
 
 const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
@@ -43,6 +45,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
   }
 
   const { userData, setUserData } = userContext;
+  const auth = FIREBASE_AUTH;
 
   // Initialize state with combined data from previous screens or existing userData
   const [firstName, setFirstName] = useState<string>(
@@ -52,7 +55,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     combinedUserData?.lastName || userData?.lastName || ''
   );
   const [email, setEmail] = useState<string>(
-    userData?.email || ''
+    auth.currentUser?.email || ''
   );
   const [phone, setPhone] = useState<string>(
     combinedUserData?.phone || userData?.phone || ''
@@ -64,18 +67,123 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     userData?.profilePic || null
   );
 
-  const pickImage = async () => {
+
+useEffect(() => {
+  const unsubscribe = navigation.addListener('focus', () => {
+    // When returning to this screen, restore any data that might have been passed back
+    if (route?.params?.combinedUserData) {
+      const data = route.params.combinedUserData;
+      setFirstName(data.firstName || '');
+      setLastName(data.lastName || '');
+      setPhone(data.phone || '');
+      setBiography(data.biography || '');
+    }
+  });
+
+  return unsubscribe;
+}, [navigation, route?.params?.combinedUserData]);
+
+const pickImage = async () => {
+  try {
+    // Request permissions for mobile
+    if (!isWeb) {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant permission to access your photos');
+        return;
+      }
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.8,
+      allowsMultipleSelection: false,
     });
   
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const selectedImageUri = result.assets[0].uri;
+
+      console.log('Selected image URI:', selectedImageUri);
+
+      setImageUri(selectedImageUri);
+      
+      // Update the navigation params to preserve the image
+      navigation.setParams({
+        combinedUserData: {
+          ...combinedUserData,
+          firstName,
+          lastName,
+          phone,
+          biography,
+          profilePic: selectedImageUri
+        }
+      });
+      
+      console.log('Image selected:', selectedImageUri);
     }
-  };
+  } catch (error) {
+    console.error('Error picking image:', error);
+    Alert.alert('Error', 'Failed to select image. Please try again.');
+  }
+};
+
+
+  // Custom Profile Picture Component
+  const CustomProfilePicture = () => (
+    <View className="relative">
+      {/* Main Profile Picture Circle */}
+      <TouchableOpacity
+        onPress={pickImage}
+        className="relative"
+        style={{
+          width: 120,
+          height: 120,
+          borderRadius: 60,
+          overflow: 'hidden',
+          borderWidth: 3,
+          borderColor: Colors.uaBlue,
+          backgroundColor: '#F3F4F6',
+        }}
+      >
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+        ) : (
+          <View 
+            className="flex-1 items-center justify-center"
+            style={{ backgroundColor: Colors.uaBlue + '20' }}
+          >
+            <Text className="text-gray-500 text-sm font-medium text-center">
+              Tap to add{'\n'}photo
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {/* Edit Button */}
+      <TouchableOpacity
+        onPress={pickImage}
+        className="absolute -bottom-1 -right-1 rounded-full border-2 border-white shadow-lg"
+        style={{
+          backgroundColor: Colors.uaBlue,
+          width: 36,
+          height: 36,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <PencilIcon size={18} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
 
   const handleButtonPress = async () => {
     if (!firstName || !lastName || !email || !phone) {
@@ -93,8 +201,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
         biography,
         location: combinedUserData?.location || userData?.location,
         skills: combinedUserData?.skills || [],
-        profilePic: imageUri,
-        firebaseId: userData?.firebaseId || '' // Make sure we have the Firebase ID
+        firebaseId: userData?.firebaseId || '' 
       };
 
       console.log("Complete User Data for onboarding:", completeUserData);
@@ -102,11 +209,6 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
       // Call the backend API first to get the complete user data with ID
       const response = await postUserOnboarding(completeUserData, imageUri);
       console.log("User Data response from backend:", response);
-      
-      // Now set the complete user data in context (response should include the ID)
-      if (response && response.id) {
-        setUserData(response);
-      }
       
       navigation.navigate("Home");
     } catch (error) {
@@ -150,13 +252,10 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
                     Profile Picture
                   </Text>
                   <View className="items-center">
-                    <ProfilePictureContainer 
-                      imageUri={imageUri} 
-                      onPickImage={pickImage} 
-                    />
+                    <CustomProfilePicture />
                   </View>
-                  <Text className="text-sm text-gray-500 text-center mt-2">
-                    Click to upload a photo
+                  <Text className="text-sm text-gray-500 text-center mt-3">
+                    {imageUri ? 'Tap to change photo' : 'Click to upload a photo'}
                   </Text>
                 </View>
               </View>
@@ -276,7 +375,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
       <HeaderText text="Thank you for Joining UA!" />
       <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={80} extraHeight={120}>
         <View className="flex-row items-center justify-between w-full">
-          <ProfilePictureContainer imageUri={imageUri} onPickImage={pickImage} />
+          <CustomProfilePicture />
           <View className="mt-8 px-6">
             <SubHeaderText1 text="Account Summary" />
             <View className="flex-row items-start">
@@ -344,3 +443,4 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
 };
 
 export default AccountSummary;
+

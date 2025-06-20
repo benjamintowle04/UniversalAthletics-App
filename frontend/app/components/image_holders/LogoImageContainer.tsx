@@ -11,7 +11,7 @@ export const LogoImageContainer = () => {
       <Image 
         source={require('../../images/logo.png')}
         className={`
-          ${isWeb && isLargeScreen ? 'w-32 h-32' : 'w-24 h-24'}
+          ${isWeb && isLargeScreen ? 'w-28 h-28' : 'w-24 h-24'}
         `}
         resizeMode="contain"
       />

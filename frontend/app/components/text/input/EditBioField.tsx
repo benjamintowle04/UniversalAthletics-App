@@ -18,8 +18,12 @@ export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange, pla
     onChange(text);
   };
 
+  const handleStartEditing = () => {
+    setIsEditing(true);
+  };
+
   return (
-    <View className="flex-rows border border-gray-300 rounded-md px-1 py-0.5 w-2/3 h-24 bg-white">
+    <View className="flex-row border border-gray-300 rounded-md px-1 py-0.5 w-2/3 h-24 bg-white">
       {isEditing ? (
         <TextInput
           value={text}
@@ -36,12 +40,18 @@ export const EditBioField: React.FC<EditBioFieldProps> = ({ value, onChange, pla
           placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">
-          {text || placeholder}
-        </Text>
+        <TouchableOpacity 
+          className="flex-1" 
+          onPress={handleStartEditing}
+          activeOpacity={0.7}
+        >
+          <Text className="flex-1 text-gray-700 text-xs p-1">
+            {text || placeholder}
+          </Text>
+        </TouchableOpacity>
       )}
 
-      <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">
+      <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1 self-start mt-1">
         {isEditing ? (
           <CheckIcon size={14} color="green" />
         ) : (

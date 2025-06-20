@@ -5,9 +5,9 @@ export const getMemberByFirebaseId = async (firebaseId: string) => {
     
     // This hardcoded ID will allow you to have test data automatically populated in the home page
     // Before merging to main, be sure to reset this so that we use the actual parameter instead
-    const HARDCODED_FIREBASE_ID : string = "EFogg1abZOeVRPDxcp541GNzk0o2";
+    //const HARDCODED_FIREBASE_ID : string = "EFogg1abZOeVRPDxcp541GNzk0o2";
 
-    const url = `${ApiRoutes.MEMBERS}/${HARDCODED_FIREBASE_ID}`;
+    const url = `${ApiRoutes.MEMBERS}/${firebaseId}`;
     console.log("Fetching member data from:", url);
 
     const response = await fetch(url);

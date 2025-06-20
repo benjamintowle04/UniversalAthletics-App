@@ -73,13 +73,11 @@ const SignUp = () => {
                         <View className="items-center mb-8">
                             <Image
                                 source={require('../../images/logo.png')}
-                                style={{ width: 64, height: 64, marginBottom: 16 }} // Use inline styles instead of className
+                                style={{ width: 64, height: 64, marginBottom: 16 }} 
                                 resizeMode="contain"
                             />
                             <HeaderText text="Join UA Today" />
                         </View>
-
-
                         <KeyboardAvoidingView behavior="padding">
                             <View className="mb-4">
                                 <TextInput 

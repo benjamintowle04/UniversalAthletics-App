@@ -18,6 +18,10 @@ export const EditEmailField: React.FC<EditEmailFieldProps> = ({ value, onChange,
     onChange(text);
   };
 
+  const handleStartEditing = () => {
+    setIsEditing(true);
+  };
+
   return (
     <View className="flex-row items-center border border-gray-300 rounded-md px-1 py-0.5 w-2/3 h-7 bg-white">
       {isEditing ? (
@@ -34,9 +38,15 @@ export const EditEmailField: React.FC<EditEmailFieldProps> = ({ value, onChange,
           placeholderTextColor="#9CA3AF"
         />
       ) : (
-        <Text className="flex-1 text-gray-700 text-xs">
-          {text || placeholder}
-        </Text>
+        <TouchableOpacity 
+          className="flex-1" 
+          onPress={handleStartEditing}
+          activeOpacity={0.7}
+        >
+          <Text className="flex-1 text-gray-700 text-xs">
+            {text || placeholder}
+          </Text>
+        </TouchableOpacity>
       )}
 
       <TouchableOpacity onPress={() => setIsEditing(!isEditing)} className="ml-1">
