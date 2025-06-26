@@ -44,3 +44,22 @@ export const getCoachByFirebaseId = async (firebaseId: string) => {
   }
 }
 
+export const getCoachesMembers = async (id: number) => {
+  try {
+    const url = `${ApiRoutes.COACHES}/${id}/members`;
+    console.log("Fetching members for coach with ID:", id);
+    const response = await fetch(url);
+    console.log("Response status:", response.status);
+    if (!response.ok) {
+      console.log("Response not OK. Status:", response.status);
+      throw new Error("Failed to fetch members");
+    }
+    const data = await response.json();
+    console.log("Fetched members:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching members:", error);
+    throw new Error("Failed to fetch members");
+  }
+};
+

@@ -9,6 +9,8 @@ import { PrimaryButton } from "../../components/buttons/PrimaryButton";
 import { HeaderText } from "../../components/text/HeaderText";
 import { UserContext } from "../../contexts/UserContext";
 import { Platform } from "react-native";
+import { getMemberByFirebaseId } from "../../../controllers/MemberInfoController";
+import { getCoachByFirebaseId } from "../../../controllers/CoachController";
 import "../../../global.css"
 
 const Login = ({ navigation }: RouterProps) => {
@@ -33,6 +35,69 @@ const Login = ({ navigation }: RouterProps) => {
         try {
             const response = await signInWithEmailAndPassword(auth, email, password);
             console.log("Logged in: ", response);
+            
+            // After successful Firebase authentication, determine user type and fetch data
+            const firebaseUser = response.user;
+            
+            try {
+                // First try to fetch as member
+                const memberData = await getMemberByFirebaseId(firebaseUser.uid);
+                if (memberData && memberData.firstName) {
+                    // User is a member
+                    const userData = {
+                        id: memberData.id,
+                        firstName: memberData.firstName,
+                        lastName: memberData.lastName,
+                        email: memberData.email,
+                        phone: memberData.phone,
+                        biography: memberData.biography,
+                        profilePic: memberData.profilePic,
+                        location: memberData.location,
+                        firebaseId: memberData.firebaseId,
+                        userType: 'MEMBER' as const,
+                        skills: memberData.skills
+                    };
+                    await setUserData(userData);
+                    console.log("Member logged in successfully");
+                    return;
+                }
+            } catch (memberError) {
+                console.log("Not a member, checking if coach...");
+            }
+
+            // If not a member, try to fetch as coach
+            try {
+                const coachData = await getCoachByFirebaseId(firebaseUser.uid);
+                if (coachData && coachData.firstName) {
+                    // User is a coach
+                    const userData = {
+                        id: coachData.id,
+                        firstName: coachData.firstName,
+                        lastName: coachData.lastName,
+                        email: coachData.email,
+                        phone: coachData.phone,
+                        biography1: coachData.biography1,
+                        biography2: coachData.biography2,
+                        profilePic: coachData.profilePic,
+                        bioPic1: coachData.bioPic1,
+                        bioPic2: coachData.bioPic2,
+                        location: coachData.location,
+                        firebaseId: coachData.firebaseId,
+                        userType: 'COACH' as const,
+                        skills: coachData.skills
+                    };
+                    await setUserData(userData);
+                    console.log("Coach logged in successfully");
+                    return;
+                }
+            } catch (coachError) {
+                console.error("Error checking coach status:", coachError);
+            }
+
+            // If neither member nor coach found
+            console.log("User not found in member or coach tables");
+            alert("User account not found. Please contact support.");
+            
         } catch (error: any) {
             console.log(error);
             alert("Sign in failed: " + error.message);
@@ -53,12 +118,11 @@ const Login = ({ navigation }: RouterProps) => {
                         <View className="items-center mb-8">
                             <Image
                                 source={require('../../images/logo.png')}
-                                style={{ width: 64, height: 64, marginBottom: 16 }} // Use inline styles instead of className
+                                style={{ width: 64, height: 64, marginBottom: 16 }}
                                 resizeMode="contain"
                             />
                             <HeaderText text="Welcome Back" />
                         </View>
-
 
                         <KeyboardAvoidingView behavior="padding">
                             <View className="mb-4">

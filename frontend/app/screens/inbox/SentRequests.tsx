@@ -340,19 +340,6 @@ const SentRequests = ({navigation}: RouterProps) => {
           renderSentSessionRequest
         )}
 
-        {/* Overall Empty State */}
-        {sentConnectionRequests.length === 0 && sentSessionRequests.length === 0 && (
-          <View className="bg-white rounded-lg p-8 items-center mt-4">
-            <Ionicons name="send" size={64} color={Colors.grey.medium} />
-            <Text className="text-gray-900 text-xl font-bold mt-4 text-center">
-              No Sent Requests
-            </Text>
-            <Text className="text-gray-500 text-center mt-2 text-base">
-              You haven't sent any requests yet.{'\n'}
-              Start connecting with coaches to see your sent requests here.
-            </Text>
-          </View>
-        )}
       </View>
     </ScrollView>
   )

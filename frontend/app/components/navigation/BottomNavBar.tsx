@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { Router } from '@react-navigation/native';
 import { RouterProps } from '../../types/RouterProps';
 import "../../../global.css"
 
@@ -34,10 +33,10 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
 
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('MyCoaches')}
+        onPress={() => navigation.navigate('MyConnections')}
       >
         <Ionicons name="people-outline" size={24} className="text-gray-700" />
-        <Text className="text-xs mt-1 text-gray-600">My Coaches</Text>
+        <Text className="text-xs mt-1 text-gray-600">My Connections</Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
