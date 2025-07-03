@@ -11,17 +11,18 @@ import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
 import com.universalathletics.modules.coach.model.CoachSortDTO;
 import com.universalathletics.service.geocoding.GeocodingService;
 import com.universalathletics.service.sorting.CoachSortingService;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import com.universalathletics.modules.coach.entity.CoachEntity;
 import com.universalathletics.modules.coach.service.CoachService;
 import com.universalathletics.modules.memberInfo.controller.MemberInfoController;
-
+import com.universalathletics.modules.memberInfo.entity.MemberInfoEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-
-
 
 /**
  * REST Controller for handling member information operations.
@@ -34,8 +35,6 @@ import java.util.List;
  * - Process and return appropriate responses
  */
 
-
- 
 @RestController
 @RequestMapping("/api/coaches")
 @CrossOrigin(origins = "*")
@@ -60,7 +59,6 @@ public class CoachController {
     @Autowired
     private GoogleCloudStorageService storageService;
 
-
     /**
      * Autowired instance of GeocodingService for handling geocoding operations.
      */
@@ -73,7 +71,6 @@ public class CoachController {
     @Autowired
     private CoachSortingService coachSortingService;
 
-    
     /**
      * Creates a new member in the system.
      *
@@ -116,16 +113,17 @@ public class CoachController {
             System.err.println("Error in getAllCoaches: " + e.getMessage());
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        } 
+        }
     }
 
-
     /**
-     * Retrieves a specific member by ID and converts coordinates to city, state format.
+     * Retrieves a specific member by ID and converts coordinates to city, state
+     * format.
      *
      * @param firebaseID The Firebase ID of the member to be retrieved
      * @return ResponseEntity<CoachEntity> with status 200 (OK) and the member
-     *         information with location converted to city, state format, or 404 (NOT FOUND) if not found
+     *         information with location converted to city, state format, or 404
+     *         (NOT FOUND) if not found
      */
     @GetMapping("/{firebaseID}")
     public ResponseEntity<CoachEntity> getCoachById(@PathVariable String firebaseID) {
@@ -142,17 +140,36 @@ public class CoachController {
                     }
                 }
 
+                if (coach.getBioPic1() != null) {
+                    try {
+                        String signedUrl = storageService.getSignedFileUrl(coach.getBioPic1());
+                        coach.setBioPic1(signedUrl);
+                    } catch (Exception e) {
+                        logger.error("Error signing URL for coach " + coach.getId() + ": " + e.getMessage(), e);
+                    }
+                }
+
+                if (coach.getBioPic2() != null) {
+                    try {
+                        String signedUrl = storageService.getSignedFileUrl(coach.getBioPic2());
+                        coach.setBioPic2(signedUrl);
+                    } catch (Exception e) {
+                        logger.error("Error signing URL for coach " + coach.getId() + ": " + e.getMessage(), e);
+                    }
+                }
+
                 // Handle location conversion from coordinates to city, state
                 if (coach.getLocation() != null && isCoordinateFormat(coach.getLocation())) {
                     try {
                         double latitude = geocodingService.parseLatitude(coach.getLocation());
                         double longitude = geocodingService.parseLongitude(coach.getLocation());
-                        
+
                         if (latitude != 0.0 || longitude != 0.0) { // Check if parsing was successful
-                            String cityStateLocation = geocodingService.getCityStateFromCoordinates(latitude, longitude);
-                            if (cityStateLocation != null && !cityStateLocation.isEmpty() && 
-                                !cityStateLocation.equals("Location not found") && 
-                                !cityStateLocation.equals("Error retrieving location")) {
+                            String cityStateLocation = geocodingService.getCityStateFromCoordinates(latitude,
+                                    longitude);
+                            if (cityStateLocation != null && !cityStateLocation.isEmpty() &&
+                                    !cityStateLocation.equals("Location not found") &&
+                                    !cityStateLocation.equals("Error retrieving location")) {
                                 coach.setLocation(cityStateLocation);
                                 logger.info("Successfully converted coordinates to: {}", cityStateLocation);
                             } else {
@@ -160,8 +177,8 @@ public class CoachController {
                             }
                         }
                     } catch (Exception e) {
-                        logger.error("Error converting coordinates to city, state for coach " + coach.getId() + ": " + e.getMessage(), e);
-                        // Keep original location if conversion fails
+                        logger.error("Error converting coordinates to city, state for coach " + coach.getId() + ": "
+                                + e.getMessage(), e);
                     }
                 }
 
@@ -186,26 +203,51 @@ public class CoachController {
         if (location == null || location.trim().isEmpty()) {
             return false;
         }
-        
+
         // Check for "Latitude: X, Longitude: Y" format (your existing format)
         if (location.contains("Latitude:") && location.contains("Longitude:")) {
             return true;
         }
-        
+
         // Check for simple "lat,lng" format
         String[] parts = location.split(",");
         if (parts.length == 2) {
             try {
                 double lat = Double.parseDouble(parts[0].trim());
                 double lng = Double.parseDouble(parts[1].trim());
-                
+
                 // Basic validation for valid latitude and longitude ranges
                 return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
             } catch (NumberFormatException e) {
                 return false;
             }
         }
-        
+
         return false;
+    }
+
+    /**
+     * Endpoint to retrieve all members associated with a specific coach.
+     * 
+     * @param memberId The unique identifier of the member
+     * @return ResponseEntity containing a list of members or appropriate error
+     *         response
+     */
+    @GetMapping("/{coachId}/members")
+    public ResponseEntity<List<MemberInfoEntity>> getCoachesMembers(@PathVariable Integer coachId) {
+        try {
+            List<MemberInfoEntity> members = coachservice.getCoachMembers(coachId);
+            for (MemberInfoEntity member : members) {
+                if (member.getProfilePic() != null) {
+                    String signedUrl = storageService.getSignedFileUrl(member.getProfilePic());
+                    member.setProfilePic(signedUrl);
+                }
+            }
+            return ResponseEntity.ok(members);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

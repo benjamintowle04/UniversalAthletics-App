@@ -34,8 +34,8 @@ interface ProfileData {
   email?: string;
   phone?: string;
   profilePic?: string;
-  bio1?: string; // For coaches
-  bio2?: string; // For coaches
+  biography1?: string; // For coaches
+  biography2?: string; // For coaches
   biography?: string; // For members
   bioPic1?: string; // For coaches
   bioPic2?: string; // For coaches
@@ -51,6 +51,7 @@ type ConnectionProfileRouteProp = RouteProp<{
   params?: { 
     profileId?: string; 
     profileType?: 'COACH' | 'MEMBER';
+    profileFirebaseId?: string;
     // Legacy support for existing navigation calls
     coachId?: string;
     memberId?: string;
@@ -71,49 +72,60 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
   const { userData, updateUserData } = useUser();
 
   // Extract and validate route parameters with fallbacks
-  const { profileId, profileType } = useMemo(() => {
+  const { profileId, profileType, profileFirebaseId} = useMemo(() => {
     const params = route.params || {};
     
     // Handle legacy navigation calls
     let id: string | undefined;
     let type: 'COACH' | 'MEMBER' | undefined;
+    let firebaseId: string | undefined;
     
     if (params.profileId && params.profileType) {
-      // New format
       id = params.profileId;
       type = params.profileType;
+      firebaseId = params.profileFirebaseId;
     } else if (params.coachId) {
-      // Legacy coach navigation
       id = params.coachId;
       type = 'COACH';
     } else if (params.memberId) {
-      // Legacy member navigation
       id = params.memberId;
       type = 'MEMBER';
     }
     
     return {
       profileId: id,
-      profileType: type
+      profileType: type,
+      profileFirebaseId: firebaseId
     };
   }, [route.params]);
 
   // Determine connection status based on user types
   const isConnected = useMemo(() => {
-    if (!userData || !profileData || !profileId) return false;
+    console.log("Use memo triggered")
+    if (!userData || !profileData || !profileId || !profileFirebaseId) return false;
     
     if (userData.userType === 'MEMBER' && profileType === 'COACH') {
+      console.log("Checking if member is connected to coach")
+      console.log("Connections: ", userData.connections)
+      console.log("Profile Firebase ID: ", profileFirebaseId)
+    
       return userData.connections?.some(conn => 
-        conn.firebaseID === profileId && conn.userType === 'COACH'
+        conn.firebaseID === profileFirebaseId
       ) || false;
+      
+
     } else if (userData.userType === 'COACH' && profileType === 'MEMBER') {
+      console.log("Checking if coach is connected to member")
+      console.log("Connections: ", userData.connections)
+      console.log("Profile Firebase ID: ", profileFirebaseId)
+
       return userData.connections?.some(conn => 
-        conn.firebaseID === profileId && conn.userType === 'MEMBER'
+        conn.firebaseID === profileFirebaseId
       ) || false;
     }
     
     return false;
-  }, [userData?.connections, profileId, profileType, profileData]);
+  }, [userData?.connections, profileId, profileFirebaseId, profileType, profileData]);
 
   const isLoadingConnectionStatus = userData?.isLoadingConnections ?? true;
 
@@ -121,11 +133,11 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     if (!userData || !profileId) return { pendingIncoming: null, pendingSent: null, hasPending: false };
 
     const pendingIncoming = userData.pendingConnectionRequests?.find(
-      request => request.senderFirebaseId === profileId
+      request => request.senderFirebaseId === profileFirebaseId && request.status === 'PENDING'
     ) || null;
 
     const pendingSent = userData.sentConnectionRequests?.find(
-      request => request.receiverFirebaseId === profileId && request.status === 'PENDING'
+      request => request.receiverFirebaseId === profileFirebaseId && request.status === 'PENDING'
     ) || null;
 
     return {
@@ -133,7 +145,7 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       pendingSent,
       hasPending: !!(pendingIncoming || pendingSent)
     };
-  }, [userData?.pendingConnectionRequests, userData?.sentConnectionRequests, profileId]);
+  }, [userData?.pendingConnectionRequests, userData?.sentConnectionRequests, profileId, profileFirebaseId]);
 
   const skillIcons = useMemo(() => {
     return profileData?.skills ? getIconsFromSkills(profileData.skills) : [];
@@ -156,9 +168,10 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     
     return {
       // Biography handling
-      primaryBio: isViewingCoach ? profileData.bio1 : profileData.biography,
-      secondaryBio: isViewingCoach ? profileData.bio2 : null,
-      bioPic: isViewingCoach ? profileData.bioPic1 : null,
+      biography1: isViewingCoach ? profileData.biography1 : profileData.biography,
+      biography2: isViewingCoach ? profileData.biography2 : null,
+      bioPic1: isViewingCoach ? profileData.bioPic1 : null,
+      bioPic2: isViewingCoach ? profileData.bioPic2 : null,
       
       // Action labels
       connectButtonText: isViewingCoach ? 'Connect with Coach' : 'Connect with Member',
@@ -166,8 +179,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       messageButtonText: isViewingCoach ? 'Message Coach' : 'Message Member',
       
       // Section titles
-      aboutSectionTitle: 'About',
-      secondaryBioTitle: isViewingCoach ? 'What UA Means to me' : null,
+      aboutSectionTitle: isViewingCoach ? 'About Me' : 'About',
+      secondaryBioTitle: isViewingCoach ? 'What UA Means to Me' : null,
       
       // Connection request labels
       requestSentText: isViewingCoach ? 'Request Sent to Coach' : 'Request Sent to Member',
@@ -182,7 +195,7 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
   useEffect(() => {
     const fetchProfileData = async () => {
       // Validate required parameters
-      if (!profileId || !profileType) {
+      if (!profileId || !profileType || !profileFirebaseId) {
         setError('Missing profile information. Please try navigating here again.');
         return;
       }
@@ -190,14 +203,15 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       try {
         setError(null);
         let fetchedData;
+        console.log("Fetching profile data with firebase id of ", profileFirebaseId)
         
         if (profileType === 'COACH') {
-          fetchedData = await getCoachByFirebaseId(profileId);
+          fetchedData = await getCoachByFirebaseId(profileFirebaseId);
           if (fetchedData) {
             fetchedData.userType = 'COACH';
           }
         } else {
-          fetchedData = await getMemberByFirebaseId(profileId);
+          fetchedData = await getMemberByFirebaseId(profileFirebaseId);
           if (fetchedData) {
             fetchedData.userType = 'MEMBER';
           }
@@ -236,11 +250,31 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     }
   }, [profileData?.email]);
 
+  const handlePhonePress = useCallback(() => {
+    if (profileData?.phone) {
+      const phoneUrl = `tel:${profileData.phone}`;
+      Linking.canOpenURL(phoneUrl)
+        .then((supported) => {
+          if (supported) {
+            Linking.openURL(phoneUrl);
+          } else {
+            Alert.alert("Error", "Phone app is not available on this device");
+          }
+        })
+        .catch((err) => {
+          console.error('Error opening phone:', err);
+          Alert.alert("Error", "Failed to open phone app");
+        });
+    }
+  }, [profileData?.phone]);
+
   const handleMessageProfile = useCallback(async () => {
     if (!profileData || !userData || !getProfileSpecificData || !profileId) {
       Alert.alert("Error", "Unable to start conversation. Please try again later.");
       return;
     }
+
+    console.log("Handling Message Profile")
 
     try {
       const currentUserFirebaseId = FIREBASE_AUTH.currentUser?.uid;
@@ -257,23 +291,31 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       );
       
       const querySnapshot = await getDocs(q);
-      let existingConversation = {} as {id: string, participants?: []};
+      let existingConversation = {} as {id: string, participants?: []} | null;
       
-      // Look for existing conversation with this specific participant
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.participantIds.includes(profileData.firebaseID || profileId)) {
-          existingConversation = {
-            id: doc.id,
-            ...data
-          };
-        }
-      });
+      if (querySnapshot.size > 0) {
+        // Look for existing conversation with this specific participant
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.participantIds.includes(profileData.firebaseID || profileId)) {
+            existingConversation = {
+              id: doc.id,
+              ...data
+            };
+          }
+        });
+      }
+
+      else {
+        existingConversation = null
+      }
 
       let conversationId;
       let otherParticipant;
 
-      if (existingConversation) {
+      if (existingConversation != null) {
+        console.log("Conversation Exists, navigating to existing convo")
+
         // Use existing conversation
         conversationId = existingConversation.id;
         
@@ -282,8 +324,10 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
           (p: any) => p.firebaseId !== currentUserFirebaseId
         );
       } else {
+        console.log("Conversation doesnt exist, creating new one")
         // Create new conversation
         conversationId = `conv_${userData.id}_${profileData.id}`;
+        console.log("Conversation ID: ", conversationId)
         
         otherParticipant = {
           id: profileData.id,
@@ -327,99 +371,23 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
   
   // Replace the handleConnectWithProfile function:
   const handleConnectWithProfile = useCallback(() => {
-  if (!profileData || !profileId || !profileType) return;
-  
-  navigation.navigate('SendConnectionRequest', {
-    profileId,
-    profileType,
-    profileData: {
-      id: profileData.id || profileId,
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      profilePic: profileData.profilePic
-    }
-  });
-}, [profileData, profileId, profileType, navigation]);
-
-  // Send connection request based on user types
-  const handleSendConnectionRequest = useCallback(async () => {
-    if (!userData || !profileData || !getProfileSpecificData || !profileId || !profileType) return;
+    if (!profileData || !profileId || !profileType || !profileFirebaseId) return;
+    console.log("Going to send a connection request from connection profile screen", profileData)
     
-    setSendingRequest(true);
-    setIsProcessingRequest(true);
-    
-    try {
-      const currentUser = FIREBASE_AUTH.currentUser;
-      if (!currentUser) {
-        throw new Error("User is not authenticated");
+    navigation.navigate('SendConnectionRequest', {
+      profileId: profileFirebaseId,
+      profileType,
+      profileData: {
+        id: profileData.id || profileId,
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        profilePic: profileData.profilePic
       }
+    });
+  }, [profileData, profileId, profileType, navigation]);
 
-      // Prepare the connection request data
-      const connectionRequestData = {
-        senderType: userData.userType,
-        senderId: userData.id,
-        senderFirebaseId: currentUser.uid,
-        receiverType: profileType,
-        receiverId: parseInt(profileData.id || '0'),
-        receiverFirebaseId: profileId,
-        senderFirstName: userData.firstName,
-        senderLastName: userData.lastName,
-        senderProfilePic: getUnsignedUrl(userData.profilePic),
-        receiverFirstName: profileData.firstName,
-        receiverLastName: profileData.lastName,
-        receiverProfilePic: getUnsignedUrl(profileData.profilePic),
-        message: customMessage,
-        status: 'PENDING' as const
-      };
 
-      // Use appropriate controller function based on user types
-      let createdRequest;
-      if (userData.userType === 'MEMBER' && profileType === 'COACH') {
-        createdRequest = await createMemberToCoachConnectionRequest(connectionRequestData);
-      } else if (userData.userType === 'COACH' && profileType === 'MEMBER') {
-        createdRequest = await createCoachToMemberConnectionRequest(connectionRequestData);
-      } else {
-        throw new Error("Invalid user type combination for connection request");
-      }
-
-      if (userData.sentConnectionRequests) {
-        // Create the new request object for local storage
-        const newRequest = {
-          id: createdRequest.id,
-          senderType: userData.userType,
-          senderId: userData.id,
-          senderFirebaseId: currentUser.uid,
-          receiverType: profileType,
-          receiverId: parseInt(profileData.id || '0'),
-          receiverFirebaseId: profileId,
-          status: 'PENDING' as const,
-          message: customMessage,
-          createdAt: createdRequest.createdAt || new Date().toISOString(),
-          updatedAt: createdRequest.updatedAt || new Date().toISOString(),
-          senderFirstName: userData.firstName,
-          senderLastName: userData.lastName,
-          senderProfilePic: userData.profilePic,
-          receiverFirstName: profileData.firstName,
-          receiverLastName: profileData.lastName,
-          receiverProfilePic: profileData.profilePic,
-        };
-        
-        updateUserData({
-          sentConnectionRequests: [...userData.sentConnectionRequests, newRequest]
-        });
-      }
-
-      Alert.alert("Success", "Connection request sent successfully!");
-    } catch (error) {
-      console.error('Error sending connection request:', error);
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to send connection request");
-    } finally {
-      setSendingRequest(false);
-      setIsProcessingRequest(false);
-    }
-  }, [userData, profileData, profileId, profileType, updateUserData, customMessage, getProfileSpecificData]);
-
-    const handleAcceptRequest = useCallback(async () => {
+  const handleAcceptRequest = useCallback(async () => {
     if (connectionStatus.pendingIncoming && userData) {
       setIsProcessingRequest(true);
       try {
@@ -437,10 +405,14 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
           updatedConnections = await getCoachesMembers(userData.id);
         }
 
+        console.log("Updated connections before: ", updatedConnections)
+
         updateUserData({
           pendingConnectionRequests: updatedRequests,
-          connections: updatedConnections || userData.connections
+          connections: updatedConnections
         });
+
+        console.log("User Data After", userData)
 
         Alert.alert("Success", "Connection request accepted! You are now connected.");
       } catch (error) {
@@ -478,8 +450,15 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
 
   const handleBookSession = useCallback(() => {
     if (profileData && profileId) {
+
+      console.log("Sending data from connection profile to request a session: ", profileData)
+      console.log("ProfileId is ", profileId)
       navigation.navigate('RequestASession', { 
-        recipientId: profileData.firebaseID || profileId,
+        recipientId: profileId,
+        recipientFirebaseId: profileFirebaseId,
+        recipientFirstName: profileData.firstName,
+        recipientLastName: profileData.lastName,
+        recipientProfilePic: profileData.profilePic,
         recipientType: profileType
       });
     }
@@ -492,7 +471,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       case 'loading':
         return (
           <TouchableOpacity 
-            className="bg-gray-400 py-3 px-6 rounded-full flex-row items-center justify-center mb-3"
+            className="py-4 px-6 rounded-full flex-row items-center justify-center mb-4"
+            style={{ backgroundColor: Colors.grey.medium }}
             disabled={true}
           >
             <ActivityIndicator size="small" color="white" />
@@ -503,7 +483,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       case 'connected':
         return (
           <TouchableOpacity 
-            className="bg-green-500 py-3 px-6 rounded-full flex-row items-center justify-center mb-3"
+            className="py-4 px-6 rounded-full flex-row items-center justify-center mb-4"
+            style={{ backgroundColor: Colors.uaGreen }}
             disabled={true}
           >
             <Ionicons name="checkmark-circle" size={20} color="white" />
@@ -515,13 +496,14 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
 
       case 'accept_decline':
         return (
-          <View className="mb-3">
-            <Text className="text-center text-gray-600 mb-2">
+          <View className="mb-4">
+            <Text className="text-center text-gray-600 mb-3 text-base">
               {getProfileSpecificData.participantLabel} wants to connect with you
             </Text>
             <View className="flex-row space-x-3">
               <TouchableOpacity 
-                className="bg-green-500 py-3 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                style={{ backgroundColor: Colors.uaGreen }}
                 onPress={handleAcceptRequest}
                 disabled={isProcessingRequest}
               >
@@ -536,7 +518,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                className="bg-red-500 py-3 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                style={{ backgroundColor: Colors.uaRed }}
                 onPress={handleDeclineRequest}
                 disabled={isProcessingRequest}
               >
@@ -556,7 +539,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       case 'request_sent':
         return (
           <TouchableOpacity 
-            className="bg-yellow-500 py-3 px-6 rounded-full flex-row items-center justify-center mb-3"
+            className="py-4 px-6 rounded-full flex-row items-center justify-center mb-4"
+            style={{ backgroundColor: Colors.grey.dark }}
             disabled={true}
           >
             <Ionicons name="time" size={20} color="white" />
@@ -570,7 +554,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
       default:
         return (
           <TouchableOpacity 
-            className="bg-blue-500 py-3 px-6 rounded-full flex-row items-center justify-center mb-3"
+            className="py-4 px-6 rounded-full flex-row items-center justify-center mb-4"
+            style={{ backgroundColor: Colors.uaBlue }}
             onPress={handleConnectWithProfile}
             disabled={isProcessingRequest}
           >
@@ -594,7 +579,7 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center px-6">
-          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Ionicons name="alert-circle-outline" size={64} color={Colors.uaRed} />
           <Text className="text-xl font-semibold text-gray-900 mt-4 text-center">
             Profile Not Found
           </Text>
@@ -602,7 +587,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
             {error || 'The profile you are looking for could not be loaded.'}
           </Text>
           <TouchableOpacity 
-            className="bg-blue-500 py-3 px-6 rounded-full mt-6"
+            className="py-3 px-6 rounded-full mt-6"
+            style={{ backgroundColor: Colors.uaBlue }}
             onPress={() => navigation.goBack()}
           >
             <Text className="text-white font-semibold">Go Back</Text>
@@ -627,44 +613,76 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
-        {/* Profile Header */}
-        <View className="items-center p-6 bg-gray-50">
-          <Image
-            source={
-              profileData.profilePic 
-                ? { uri: profileData.profilePic }
-                : require('../../images/logo.png')
-            }
-            className="w-32 h-32 rounded-full mb-4"
-            resizeMode="cover"
-          />
+        {/* Enhanced Profile Header */}
+        <View className="items-center p-6 bg-white shadow-sm">
+          <View className="relative mb-4">
+            <Image
+              source={
+                profileData.profilePic 
+                  ? { uri: profileData.profilePic }
+                  : require('../../images/logo.png')
+              }
+              className="w-32 h-32 rounded-full border-4"
+              style={{ borderColor: Colors.uaBlue }}
+              resizeMode="cover"
+            />
+            {/* User Type Badge */}
+            <View 
+              className="absolute -bottom-2 -right-2 px-3 py-1 rounded-full"
+              style={{ backgroundColor: profileType === 'COACH' ? Colors.uaRed : Colors.uaGreen }}
+            >
+              <Text className="text-white text-xs font-bold">
+                {profileType === 'COACH' ? 'COACH' : 'MEMBER'}
+              </Text>
+            </View>
+          </View>
           
-          <Text className="text-2xl font-bold text-gray-900 mb-1">
+          <Text className="text-3xl font-bold text-gray-900 mb-2">
             {profileData.firstName} {profileData.lastName}
           </Text>
           
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="location-outline" size={16} color="#666" />
-            <Text className="text-gray-600 ml-1">{profileData.location}</Text>
+          <View className="flex-row items-center mb-4">
+            <Ionicons name="location-outline" size={18} color={Colors.uaBlue} />
+            <Text className="text-gray-600 ml-2 text-base">{profileData.location}</Text>
           </View>
 
-          <Text className="text-sm text-gray-500 mb-4 capitalize">
-            {profileType.toLowerCase()}
-          </Text>
-
+          {/* Skills Section */}
+          {skillIcons.length > 0 && (
+            <View className="mb-4">
+              <Text className="text-lg font-semibold text-gray-900 mb-3">Skills & Interests</Text>
+              <View className="flex-row flex-wrap justify-center">
+                {skillIcons.map((skill, index) => (
+                  <View 
+                    key={index} 
+                    className="flex-row items-center m-1 px-3 py-2 rounded-full"
+                    style={{ backgroundColor: Colors.uaBlue + '20' }}
+                  >
+                    <Text className="mr-2">{skill.icon}</Text>
+                    <Text 
+                      className="text-sm font-medium capitalize"
+                      style={{ color: Colors.uaBlue }}
+                    >
+                      {skill.title.replace('_', ' ')}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Action Buttons */}
-        <View className="p-6">
+        <View className="p-6 bg-white">
           {renderConnectionButton()}
           
           {/* Additional action buttons */}
-          <View className="flex-row space-x-3 mb-6">
-            {isConnected && (
+          {isConnected && (
+            <View className="flex-row space-x-3 mb-6">
               <TouchableOpacity 
-                className="bg-purple-500 py-3 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                style={{ backgroundColor: Colors.uaRed }}
                 onPress={handleBookSession}
               >
                 <Ionicons name="calendar" size={20} color="white" />
@@ -672,11 +690,10 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
                   {getProfileSpecificData.bookButtonText}
                 </Text>
               </TouchableOpacity>
-            )}
-            
-            {isConnected && (
+              
               <TouchableOpacity 
-                className="bg-blue-600 py-3 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
+                style={{ backgroundColor: Colors.uaBlue }}
                 onPress={handleMessageProfile}
               >
                 <Ionicons name="chatbubble" size={20} color="white" />
@@ -684,68 +701,136 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
                   {getProfileSpecificData.messageButtonText}
                 </Text>
               </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Contact Information */}
-          {(profileData.email || profileData.phone) && (
-            <View className="bg-gray-50 p-4 rounded-lg mb-6">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">Contact</Text>
-              
-              {profileData.email && (
-                <TouchableOpacity 
-                  className="flex-row items-center mb-2"
-                  onPress={handleEmailPress}
-                >
-                  <Ionicons name="mail-outline" size={20} color="#666" />
-                  <Text className="text-blue-600 ml-2 underline">{profileData.email}</Text>
-                </TouchableOpacity>
-              )}
-              
-              {profileData.phone && (
-                <View className="flex-row items-center">
-                  <Ionicons name="call-outline" size={20} color="#666" />
-                  <Text className="text-gray-700 ml-2">{profileData.phone}</Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* About Section */}
-          {getProfileSpecificData.primaryBio && (
-            <View className="bg-gray-50 p-4 rounded-lg mb-6">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                {getProfileSpecificData.aboutSectionTitle}
-              </Text>
-              <Text className="text-gray-700 leading-6">
-                {getProfileSpecificData.primaryBio}
-              </Text>
-            </View>
-          )}
-
-          {/* Secondary Bio Section (for coaches) */}
-          {getProfileSpecificData.secondaryBio && getProfileSpecificData.secondaryBioTitle && (
-            <View className="bg-gray-50 p-4 rounded-lg mb-6">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                {getProfileSpecificData.secondaryBioTitle}
-              </Text>
-              <Text className="text-gray-700 leading-6">
-                {getProfileSpecificData.secondaryBio}
-              </Text>
-            </View>
-          )}
-
-          {/* Bio Picture (for coaches) */}
-          {getProfileSpecificData.bioPic && (
-            <View className="mb-6">
-              <Image
-                source={{ uri: getProfileSpecificData.bioPic }}
-                className="w-full h-48 rounded-lg"
-                resizeMode="cover"
-              />
             </View>
           )}
         </View>
+
+        {/* Contact Information */}
+        {(profileData.email || profileData.phone) && (
+          <View className="bg-white mx-4 p-6 rounded-xl shadow-sm border border-gray-100 mb-4">
+            <View className="flex-row items-center mb-4">
+              <View 
+                className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                style={{ backgroundColor: Colors.uaBlue + '20' }}
+              >
+                <Ionicons name="call-outline" size={20} color={Colors.uaBlue} />
+              </View>
+              <Text className="text-lg font-semibold text-gray-900">Contact Information</Text>
+            </View>
+            
+            {profileData.email && (
+              <TouchableOpacity 
+                className="flex-row items-center mb-3 p-3 rounded-lg"
+                style={{ backgroundColor: Colors.grey.light }}
+                onPress={handleEmailPress}
+              >
+                <Ionicons name="mail-outline" size={20} color={Colors.uaBlue} />
+                <Text className="ml-3 text-base" style={{ color: Colors.uaBlue }}>
+                  {profileData.email}
+                </Text>
+              </TouchableOpacity>
+            )}
+            
+            {profileData.phone && isConnected && (
+              <TouchableOpacity 
+                className="flex-row items-center p-3 rounded-lg"
+                style={{ backgroundColor: Colors.grey.light }}
+                onPress={handlePhonePress}
+              >
+                <Ionicons name="call-outline" size={20} color={Colors.uaBlue} />
+                <Text className="text-gray-700 ml-3 text-base">{profileData.phone}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {/* Primary Bio Section with Bio Pic 1 */}
+        {getProfileSpecificData && (
+          <View className="mx-4 mb-4">
+            <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-row">
+              {/* Bio Text - Left Side */}
+              <View className="flex-1 pr-4">
+                <View className="flex-row items-center mb-4">
+                  <View 
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: Colors.uaGreen + '20' }}
+                  >
+                    <Ionicons name="person-outline" size={20} color={Colors.uaGreen} />
+                  </View>
+                  <Text className="text-lg font-semibold text-gray-900 flex-1">
+                    {getProfileSpecificData.aboutSectionTitle}
+                  </Text>
+                </View>
+                <ScrollView 
+                  style={{ maxHeight: 200 }}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled={true}
+                >
+                  <Text className="text-gray-700 leading-6 text-base">
+                    {getProfileSpecificData.biography1}
+                  </Text>
+                </ScrollView>
+              </View>
+              
+              {/* Bio Picture 1 - Right Side */}
+              {getProfileSpecificData.bioPic1 && (
+                <View className="w-32 h-48 ml-2">
+                  <Image
+                    source={{ uri: getProfileSpecificData.bioPic1 }}
+                    className="w-full h-full rounded-xl"
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Secondary Bio Section with Bio Pic 2 (flipped layout) */}
+        {getProfileSpecificData?.biography2 && getProfileSpecificData.secondaryBioTitle && (
+          <View className="mx-4 mb-4">
+            <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-row">
+              {/* Bio Picture 2 - Left Side */}
+              {getProfileSpecificData.bioPic2 && (
+                <View className="w-32 h-48 mr-4">
+                  <Image
+                    source={{ uri: getProfileSpecificData.bioPic2 }}
+                    className="w-full h-full rounded-xl"
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              
+              {/* Bio Text - Right Side */}
+              <View className="flex-1">
+                <View className="flex-row items-center mb-4">
+                  <View 
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: Colors.uaRed + '20' }}
+                  >
+                    <Ionicons name="heart-outline" size={20} color={Colors.uaRed} />
+                  </View>
+                  <Text className="text-lg font-semibold text-gray-900 flex-1">
+                    {getProfileSpecificData.secondaryBioTitle}
+                  </Text>
+                </View>
+                <ScrollView 
+                  style={{ maxHeight: 200 }}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled={true}
+                >
+                  <Text className="text-gray-700 leading-6 text-base">
+                    {getProfileSpecificData.biography2}
+                  </Text>
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        )}
+
+
+        {/* Bottom spacing */}
+        <View className="h-6" />
       </ScrollView>
     </SafeAreaView>
   );

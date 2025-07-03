@@ -73,8 +73,8 @@ const MyConnections = ({ navigation }: RouterProps) => {
 
         let fetchedConnections: Connection[] = [];
         if (userData.userType === 'MEMBER') {
-          console.log('Fetching coaches for member:', userData.id);
           const coaches = await getMembersCoaches(userData.id);
+          console.log("Fetched coaches for member:", coaches);
           fetchedConnections = (coaches || []).map((coach: any): Connection => ({
             firebaseID: coach.firebaseID || coach.firebaseId,
             id: coach.id?.toString(),
@@ -86,8 +86,8 @@ const MyConnections = ({ navigation }: RouterProps) => {
             userType: 'COACH'
           }));
         } else if (userData.userType === 'COACH') {
-          console.log('Fetching members for coach:', userData.id);
           const members = await getCoachesMembers(userData.id);
+          console.log("Fetched members for coach:", members);
           fetchedConnections = (members || []).map((member: any): Connection => ({
             firebaseID: member.firebaseID || member.firebaseId,
             id: member.id?.toString(),
@@ -163,6 +163,10 @@ const MyConnections = ({ navigation }: RouterProps) => {
   };
 
   const renderConnectionCard = (connection: Connection) => {
+    //Debug log
+    console.log('Raw skills data:', connection.skills);
+    console.log('Processed skills:', getIconsFromSkills(connection.skills));
+
     return (
       <View key={connection.firebaseID || connection.id}>
         <CoachCard
@@ -173,8 +177,9 @@ const MyConnections = ({ navigation }: RouterProps) => {
           skills={connection.skills ? getIconsFromSkills(connection.skills) : []}
           onPress={() => {
             navigation.navigate("ConnectionProfile", {
-              profileId: connection.firebaseID,
-              profileType: connection.userType
+              profileId: connection.id,
+              profileType: connection.userType, 
+              profileFirebaseId: connection.firebaseID
             });
           }}
         />

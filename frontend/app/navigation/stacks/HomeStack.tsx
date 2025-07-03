@@ -14,7 +14,7 @@ import ExploreConnections from '../../screens/connections/ExploreConnections';
 
 const Stack = createNativeStackNavigator();
 
-export function HomeStackNavigator() {
+export const HomeStackNavigator = React.forwardRef<any, any>((props, ref) => {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
   const headerProps = {
@@ -24,8 +24,20 @@ export function HomeStackNavigator() {
     sentNotificationCount,
   };
 
+  // Expose navigation methods to parent
+  React.useImperativeHandle(ref, () => ({
+    resetToRoot: () => {
+      // This will be handled by the tab navigator
+    },
+  }));
+
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+      }}
+    >
       <Stack.Screen 
         name="Home" 
         component={Home} 
@@ -42,13 +54,6 @@ export function HomeStackNavigator() {
           animationTypeForReplace: 'push',
         })}
       />
-      <Stack.Screen
-        name='SessionRequestDetails'
-        component={SessionRequestDetails as React.ComponentType<any>}                                      
-        options={({ navigation }) => ({
-          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
-        })}
-      />
       <Stack.Screen 
         name="RequestASession" 
         component={RequestASession as React.ComponentType<any>} 
@@ -59,13 +64,6 @@ export function HomeStackNavigator() {
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen as React.ComponentType<any>}
-        options={({ navigation }) => ({
-          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
-        })}
-      />
-      <Stack.Screen 
-        name="SessionDetails" 
-        component={SessionDetails as React.ComponentType<any>} 
         options={({ navigation }) => ({
           ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
         })}
@@ -86,4 +84,6 @@ export function HomeStackNavigator() {
       />
     </Stack.Navigator>
   );
-}
+});
+
+HomeStackNavigator.displayName = 'HomeStackNavigator';

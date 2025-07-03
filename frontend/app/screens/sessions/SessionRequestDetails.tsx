@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { useUser } from '../../contexts/UserContext'
 import { Ionicons } from '@expo/vector-icons'
@@ -6,21 +6,24 @@ import { Colors } from '../../themes/colors/Colors'
 import { acceptSessionRequest, declineSessionRequest } from '../../../controllers/SessionRequestController'
 import { createSession } from '../../../controllers/SessionController'
 import "../../../global.css"
-import { RouterProps } from "../../types/RouterProps"
 import { getUnsignedUrl } from '../../../utils/UnsignUrls'
 
-interface SessionDetailsProps extends RouterProps {
+interface SessionRequestDetailsProps {
+  navigation: any;
   route: {
     params: {
       sessionRequestId: number;
-    }
+    };
+    key: string;
+    name: string;
+    path?: string;
   }
 }
 
-const SessionDetails = ({navigation, route}: SessionDetailsProps) => {
+const SessionRequestDetails = ({navigation, route}: SessionRequestDetailsProps) => {
   const { userData, updateUserData } = useUser()
   const [processing, setProcessing] = useState(false)
-  const [selectedDateTime, setSelectedDateTime] = useState<number | null>(null) // 1, 2, or 3
+  const [selectedDateTime, setSelectedDateTime] = useState<number | null>(null) 
   const [sessionRequest, setSessionRequest] = useState<any>(null)
 
   const { sessionRequestId } = route.params
@@ -49,13 +52,35 @@ const SessionDetails = ({navigation, route}: SessionDetailsProps) => {
     setSelectedDateTime(option)
   }
 
+  const confirmAcceptSessionRequest = () => {
+    if (!userData || !sessionRequest) return;
+    
+    if (!selectedDateTime) {
+      Alert.alert("Please Select", "Please select a date and time option before accepting the session request.")
+      return
+    }
+
+    const selectedTimeText = getSelectedDateTimeText(selectedDateTime);
+    
+    Alert.alert(
+      "Confirm Accept",
+      `Are you sure you want to accept this session request for ${selectedTimeText}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Accept",
+          style: "default",
+          onPress: handleAcceptSessionRequest
+        }
+      ]
+    );
+  }
+
 const handleAcceptSessionRequest = async () => {
   if (!userData || !sessionRequest) return;
-  
-  if (!selectedDateTime) {
-    Alert.alert("Please Select", "Please select a date and time option before accepting the session request.")
-    return
-  }
   
   setProcessing(true);
   
@@ -106,19 +131,22 @@ const handleAcceptSessionRequest = async () => {
         }
       ]
     );
+
+    navigation.goBack();
   } catch (error) {
     // Inform user on error
     console.error('Error accepting session request or creating session:', error);
     Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept session request");
+    navigation.goBack();
   } finally {
     setProcessing(false);
   }
 };
 
 // Add this helper function to extract the selected date/time data:
-const getSelectedDateTimeData = (option: number) => {
+const getSelectedDateTimeData = (option: number | null) => {
   if (!sessionRequest) return { date: '', time: '' }
-  
+  if (!option) return {date:'', time: ''}
   const dates = [sessionRequest.sessionDate1, sessionRequest.sessionDate2, sessionRequest.sessionDate3]
   const times = [sessionRequest.sessionTime1, sessionRequest.sessionTime2, sessionRequest.sessionTime3]
   
@@ -127,6 +155,30 @@ const getSelectedDateTimeData = (option: number) => {
     time: times[option - 1]
   }
 }
+
+  const confirmDeclineSessionRequest = () => {
+    if (!userData || !sessionRequest) return;
+    
+    const coachName = sessionRequest.senderFirstName && sessionRequest.senderLastName
+      ? `${sessionRequest.senderFirstName} ${sessionRequest.senderLastName}`
+      : `Coach #${sessionRequest.senderId}`;
+    
+    Alert.alert(
+      "Confirm Decline",
+      `Are you sure you want to decline this session request from ${coachName}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Decline",
+          style: "destructive",
+          onPress: handleDeclineSessionRequest
+        }
+      ]
+    );
+  }
 
   const handleDeclineSessionRequest = async () => {
     if (!userData || !sessionRequest) return;
@@ -155,16 +207,20 @@ const getSelectedDateTimeData = (option: number) => {
           }
         ]
       );
+      navigation.goBack()
     } catch (error) {
       console.error('Error declining session request:', error);
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to decline session request");
+      navigation.goBack()
     } finally {
       setProcessing(false);
     }
   };
 
-  const getSelectedDateTimeText = (option: number) => {
+  const getSelectedDateTimeText = (option: number | null) => {
     if (!sessionRequest) return ""
+    if (!option) return ""
+
     
     const dates = [sessionRequest.sessionDate1, sessionRequest.sessionDate2, sessionRequest.sessionDate3]
     const times = [sessionRequest.sessionTime1, sessionRequest.sessionTime2, sessionRequest.sessionTime3]
@@ -316,7 +372,7 @@ const getSelectedDateTimeData = (option: number) => {
           {renderDateTimeOption(3)}
         </View>
 
-                {/* Action Buttons */}
+        {/* Action Buttons */}
         <View className="flex-row justify-between mb-8">
           <TouchableOpacity 
             className="flex-1 py-4 rounded-lg mr-3"
@@ -324,7 +380,7 @@ const getSelectedDateTimeData = (option: number) => {
               backgroundColor: processing ? Colors.grey.medium : Colors.uaGreen,
               opacity: processing ? 0.6 : 1 
             }}
-            onPress={handleAcceptSessionRequest}
+            onPress={Platform.OS === 'web' ? handleAcceptSessionRequest : confirmAcceptSessionRequest }
             disabled={processing}
           >
             <Text className="text-white font-bold text-center text-lg">
@@ -338,7 +394,7 @@ const getSelectedDateTimeData = (option: number) => {
               backgroundColor: processing ? Colors.grey.medium : Colors.uaRed,
               opacity: processing ? 0.6 : 1 
             }}
-            onPress={handleDeclineSessionRequest}
+            onPress={Platform.OS === 'web' ? handleDeclineSessionRequest : confirmDeclineSessionRequest}
             disabled={processing}
           >
             <Text className="text-white font-bold text-center text-lg">
@@ -351,4 +407,4 @@ const getSelectedDateTimeData = (option: number) => {
   )
 }
 
-export default SessionDetails
+export default SessionRequestDetails

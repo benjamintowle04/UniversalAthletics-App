@@ -14,7 +14,7 @@ const ExploreConnections = ({navigation}: RouterProps) => {
 
   // Generic interface for connections that works for both coaches and members
   interface Connection {
-    firebaseID?: string;
+    firebaseID: string;
     id?: string;
     firstName: string;
     lastName: string;
@@ -94,6 +94,7 @@ const ExploreConnections = ({navigation}: RouterProps) => {
 
         console.log(`Fetched ${fetchedConnections.length} ${userSpecificData.connectionType} for exploration`);
         setConnections(fetchedConnections);
+        console.log("First Connection in explore firebase ID is", fetchedConnections.at(0)?.firebaseID)
       } catch (error) {
         console.error(`Error fetching ${userSpecificData?.connectionType} for exploration:`, error);
       }
@@ -114,6 +115,13 @@ const ExploreConnections = ({navigation}: RouterProps) => {
   const filteredConnections = connections.filter(connection => 
     `${connection.firstName} ${connection.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  //Debug log
+  filteredConnections.forEach((connection) => {
+    console.log('Raw skills data:', connection.skills);
+    console.log('Processed skills:', getIconsFromSkills(connection.skills));
+  });
+
 
   // Show loading while user data is being determined
   if (!userData || !userSpecificData) {
@@ -172,9 +180,13 @@ const ExploreConnections = ({navigation}: RouterProps) => {
                 location={connection.location || ""}
                 skills={connection.skills ? getIconsFromSkills(connection.skills) : []}
                 onPress={() => {
+                    console.log("Navigating to Connection profile with profile firebase ID: ", connection.firebaseID)
                     navigation.navigate("ConnectionProfile", {
-                      profileId: connection.firebaseID,
-                      profileType: connection.userType
+                      profileId: connection.id,
+                      profileType: connection.userType, 
+                      profileFirebaseId: connection.firebaseID, 
+                      coachId: connection.userType === "COACH" ? connection.id : userData.id,
+                      memberId: connection.userType === "MEMBER" ? connection.id : userData.id,
                     });
                   }}              
               />

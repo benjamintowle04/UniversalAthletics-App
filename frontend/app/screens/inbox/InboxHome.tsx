@@ -27,6 +27,8 @@ import {
 
 import { FIREBASE_AUTH } from '../../../firebase_config'
 import { FIREBASE_DB } from '../../../firebase_config';
+import { getMembersCoaches } from '../../../controllers/MemberInfoController'
+import { getCoachesMembers } from '../../../controllers/CoachController'
 
 
 const InboxHome = ({navigation}: RouterProps) => {
@@ -81,7 +83,13 @@ const InboxHome = ({navigation}: RouterProps) => {
 
   const handleConnectionRequestPress = (request: any) => {
     if (request.senderFirebaseId) {
-      navigation.navigate('CoachProfile', { coachId: request.senderFirebaseId });
+      navigation.navigate('ConnectionProfile', {
+        profileId: request.senderId,
+        profileFirebaseId: request.senderFirebaseId, 
+        profileType: request.senderType,
+        coachId: request.senderType === "COACH" ? request.senderId : request.receiverId,
+        memberId: request.senderType === "MEMBER" ? request.senderId : request.receiverId,                                 
+      });
     } else {
       console.error('No sender Firebase ID found in connection request:', request);
     }
@@ -103,12 +111,22 @@ const InboxHome = ({navigation}: RouterProps) => {
     try {
       await acceptConnectionRequest(request.id, userData.id);
       
+
       const updatedRequests = userData.pendingConnectionRequests.filter(
         req => req.id !== request.id
       );
+
+      // Fetch updated connections based on user type
+      let updatedConnections;
+      if (userData.userType === 'MEMBER') {
+        updatedConnections = await getMembersCoaches(userData.id);
+      } else {
+        updatedConnections = await getCoachesMembers(userData.id);
+      }
       
       updateUserData({
-        pendingConnectionRequests: updatedRequests
+        pendingConnectionRequests: updatedRequests, 
+        connections: updatedConnections
       });
       
       Alert.alert("Success", "Connection request accepted! You are now connected with this coach.");

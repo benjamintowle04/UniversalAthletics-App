@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { HeaderLogo, NotificationIcon, BackButton } from './HeaderComponents';
 
+
 interface HeaderNotificationProps {
   hasNotifications: boolean;
   notificationCount: number;
@@ -20,7 +21,7 @@ export const createInboxHeaderWithBackButton = ({
   headerShown: true,
   title: '',
   headerBackTitle: 'Back',
-  headerBackTitleVisible: false,
+  headerBackTitleVisible: true,
   headerBackVisible: true,
   headerLeft: () => <HeaderLogo />,
   headerRight: () => (

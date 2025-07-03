@@ -10,10 +10,13 @@ import { HeaderLogo, BackButton } from '../headers/HeaderComponents';
 import InboxHome from '../../screens/inbox/InboxHome';
 import SentRequests from '../../screens/inbox/SentRequests';
 import ChatScreen from '../../screens/inbox/messaging/ChatScreen';
+import SessionRequestDetails from '../../screens/sessions/SessionRequestDetails';
+import ConnectionProfile from '../../screens/connections/ConnectionProfile';
+import RequestASession from '../../screens/sessions/RequestASession';
 
 const Stack = createNativeStackNavigator();
 
-export function InboxStackNavigator() {
+export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
   const headerProps = {
@@ -23,8 +26,20 @@ export function InboxStackNavigator() {
     sentNotificationCount,
   };
 
+  // Expose navigation methods to parent
+  React.useImperativeHandle(ref, () => ({
+    resetToRoot: () => {
+      // This will be handled by the tab navigator
+    },
+  }));
+
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+      }}
+    >
       <Stack.Screen 
         name="Inbox" 
         component={InboxHome}
@@ -80,11 +95,46 @@ export function InboxStackNavigator() {
           headerShown: true,
           title: 'Sent Requests',
           headerBackTitle: 'Back',
-          headerLeft: () => (
-            <BackButton onPress={() => navigation.goBack()} />
-          ),
+          headerLeft: () => <HeaderLogo />,
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('Inbox')}
+                style={{ marginRight: 15, position: 'relative' }}
+              >
+                <Ionicons name="mail-outline" size={24} color="blue" />
+                {hasSentNotifications && (
+                  <View 
+                    style={{
+                      position: 'absolute',
+                      top: -8,
+                      right: -8,
+                      backgroundColor: 'red',
+                      borderRadius: 10,
+                      minWidth: 20,
+                      height: 20,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingHorizontal: 4,
+                    }}
+                  >
+                    <Text 
+                      style={{
+                        color: 'white',
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {sentNotificationCount > 99 ? '99+' : sentNotificationCount.toString()}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          )
         })}
       />
+
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen as React.ComponentType<any>}
@@ -92,6 +142,33 @@ export function InboxStackNavigator() {
           ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
         })}
       />
+
+      <Stack.Screen
+        name="SessionRequestDetails"
+        component={SessionRequestDetails as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
+        })}
+      />
+
+       <Stack.Screen
+        name="ConnectionProfile"
+        component={ConnectionProfile as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
+        })}
+      />
+
+      <Stack.Screen
+        name="RequestASession"
+        component={RequestASession as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
+        })}
+      />
+
     </Stack.Navigator>
   );
-}
+});
+
+InboxStackNavigator.displayName = 'InboxStackNavigator';

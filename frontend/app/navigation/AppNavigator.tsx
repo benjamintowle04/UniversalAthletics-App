@@ -10,6 +10,7 @@ import { getCoachByFirebaseId } from '../../controllers/CoachController';
 import { PreLoginStackNavigator } from './stacks/PreLoginStack';
 import { OnboardingStackNavigator } from './stacks/OnboardingStack';
 import { MainTabNavigator } from './tabs/MainTabNavigator';
+
 import { createLinkingConfig } from './config/LinkingConfig';
 
 export function AppNavigator() {
@@ -106,7 +107,7 @@ export function AppNavigator() {
       return <MainAppNavigator />;
     }
 
-    // Members go through onboarding if needed
+    // Members go through onboarding if needed n
     if (needsOnboarding) {
       return <OnboardingStackNavigator MainAppNavigator={MainAppNavigator} />;
     } else {

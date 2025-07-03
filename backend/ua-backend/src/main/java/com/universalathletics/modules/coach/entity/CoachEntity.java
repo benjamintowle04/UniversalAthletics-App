@@ -9,6 +9,7 @@ import java.util.List;
 // This import is crucial for handling the JSON serialization of bidirectional relationships
 // It prevents infinite recursion when converting to JSON
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.universalathletics.modules.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.modules.skill.entity.SkillEntity;;
 
@@ -120,8 +121,8 @@ public class CoachEntity {
   @JoinTable(name = "Coach_Skill",
     joinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"),
     inverseJoinColumns = @JoinColumn(name = "Skill_ID", referencedColumnName = "Skill_ID"))
-  @JsonIgnore
-  private List<SkillEntity> skills; // Renamed from skill to skills to match getter/setter
+  @JsonIgnoreProperties("coaches")
+  private List<SkillEntity> skills;
 
 
   // Define the junction table for many-to-many relationship with Members
@@ -159,7 +160,7 @@ public class CoachEntity {
    * @return skill, the instance list of skills for Coach
    */
   public List<SkillEntity> getSkills() {
-    return this.skills; // Updated to use the renamed field
+    return this.skills; 
   }
 
   /**
@@ -212,9 +213,6 @@ public class CoachEntity {
   }
   public List<MemberInfoEntity> getMembers() {
     return members;
-  }
-  public List<SkillEntity> getSkill() {
-    return skills;
   }
 
 

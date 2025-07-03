@@ -22,18 +22,28 @@ const SentRequests = ({navigation}: RouterProps) => {
   }, [userData?.sentSessionRequests])
 
   const handleConnectionRequestPress = (request: any) => {
-    // Navigate to CoachProfile with the receiver's Firebase ID
+    // Navigate to ConnectionProfile with the receiver's Firebase ID
     if (request.receiverFirebaseId) {
-      navigation.navigate('CoachProfile', { coachId: request.receiverFirebaseId });
+      navigation.navigate('ConnectionProfile', {profileId: request.receiverId, 
+                                                profileFirebaseId: request.receiverFirebaseId, 
+                                                profileType: request.receiverType, 
+                                                coachId: userData?.userType === "COACH" ? request.senderId : request.receiverId,
+                                                memberId: userData?.userType === "MEMBER" ? request.senderId : request.receiverId
+                                              });
     } else {
       console.error('No receiver Firebase ID found in sent connection request:', request);
     }
   }
 
   const handleSessionRequestPress = (request: any) => {
-    // Navigate to CoachProfile with the receiver's Firebase ID
+    // Navigate to ConnectionProfile with the receiver's Firebase ID
     if (request.receiverFirebaseId) {
-      navigation.navigate('CoachProfile', { coachId: request.receiverFirebaseId });
+      navigation.navigate('ConnectionProfile', {profileId: request.receiverId, 
+                                                profileFirebaseId: request.receiverFirebaseId, 
+                                                profileType: request.receiverType, 
+                                                coachId: userData?.userType === "COACH" ? request.senderId : request.receiverId,
+                                                memberId: userData?.userType === "MEMBER" ? request.senderId : request.receiverId
+                                              });
     } else {
       console.error('No receiver Firebase ID found in sent session request:', request);
     }

@@ -9,7 +9,7 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
     <View className="flex-row h-16 bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 shadow-lg">
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('HomeTab')}
       >
         <Ionicons name="home" size={24} className="text-gray-700" />
         <Text className="text-xs mt-1 text-gray-600">Home</Text>
@@ -17,15 +17,15 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
       
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('ScheduleContainer')}
+        onPress={() => navigation.navigate('ScheduleTab', {screen: 'ScheduleContainer'})}
       >
         <MaterialIcons name="calendar-month" size={24} className="text-gray-700" />
-        <Text className="text-xs mt-1 text-gray-600">Schedule</Text>
+        <Text className="text-xs mt-1 text-gray-600">Dick</Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('Merch')}
+        onPress={() => navigation.navigate('MerchTab')}
       >
         <Ionicons name="person" size={24} className="text-gray-700" />
         <Text className="text-xs mt-1 text-gray-600">Merch</Text>
@@ -33,7 +33,7 @@ export const BottomNavBar = ({ navigation }: RouterProps) => {
 
       <TouchableOpacity 
         className="flex-1 items-center justify-center"
-        onPress={() => navigation.navigate('MyConnections')}
+        onPress={() => navigation.navigate('ConnectionsTab', { screen: 'MyConnections' })}
       >
         <Ionicons name="people-outline" size={24} className="text-gray-700" />
         <Text className="text-xs mt-1 text-gray-600">My Connections</Text>

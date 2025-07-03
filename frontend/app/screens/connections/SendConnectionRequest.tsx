@@ -47,6 +47,10 @@ const SendConnectionRequest = ({ route, navigation }: SendConnectionRequestProps
         throw new Error("User is not authenticated");
       }
 
+      console.log("Receiver profile pic before unsigning:", profileData.profilePic);
+
+
+
       const connectionRequestData = {
         senderType: userData.userType,
         senderId: userData.id,
@@ -64,10 +68,13 @@ const SendConnectionRequest = ({ route, navigation }: SendConnectionRequestProps
         status: 'PENDING' as const
       };
 
+      console.log("Sending connection request with data:", connectionRequestData);
+      console.log("Receiver Profile Pic URL after unsigning:", connectionRequestData.receiverProfilePic);
+
       let createdRequest;
-      if (userData.userType === 'MEMBER' && profileType === 'COACH') {
+      if (userData.userType === 'MEMBER') {
         createdRequest = await createMemberToCoachConnectionRequest(connectionRequestData);
-      } else if (userData.userType === 'COACH' && profileType === 'MEMBER') {
+      } else if (userData.userType === 'COACH') {
         createdRequest = await createCoachToMemberConnectionRequest(connectionRequestData);
       } else {
         throw new Error("Invalid user type combination for connection request");

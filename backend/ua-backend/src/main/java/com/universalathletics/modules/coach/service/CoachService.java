@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.universalathletics.modules.coach.entity.CoachEntity;
 import com.universalathletics.modules.coach.repository.CoachRepository;
+import com.universalathletics.modules.memberInfo.entity.MemberInfoEntity;
 import com.universalathletics.modules.skill.entity.SkillEntity;
 import com.universalathletics.modules.skill.repository.SkillRepository;
 
@@ -104,6 +105,22 @@ public class CoachService {
      */
     public List<CoachEntity> findAllCoaches() {
         return coachRepository.findAll();
+    }
+
+    /**
+     * Retrieves all members associated with a specific coach.
+     * 
+     * @param coachId The unique identifier of the coach
+     * @return List of MemberInfoEntity objects associated with the coach, or empty list if none found
+     * @throws EntityNotFoundException if the coach with the given ID doesn't exist
+     */
+    public List<MemberInfoEntity> getCoachMembers(Integer id) {
+        CoachEntity coach = coachRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + id));
+
+        // The members are already loaded via the @ManyToMany relationship
+        // Just return the list from the entity
+        return coach.getMembers();
     }
 
     // --------------------------------- Delete Coach

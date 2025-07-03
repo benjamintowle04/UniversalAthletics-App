@@ -82,7 +82,6 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
                 {isUpcoming() ? 'Upcoming' : 'Past Session'}
               </Text>
             </View>
-            <Text className="text-sm text-gray-500">ID: {sessionId}</Text>
           </View>
 
           {/* Session Title */}
@@ -137,18 +136,18 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
         </View>
       )}
 
-      {/* Coach Information Card */}
+      {/* Connection INformation */}
       <View className="bg-white mx-4 mt-4 rounded-xl shadow-sm border border-gray-100">
         <View className="p-6">
           <View className="flex-row items-center mb-4">
             <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-4">
               <Ionicons name="person" size={20} color="#8B5CF6" />
             </View>
-            <Text className="text-lg font-semibold text-gray-900">Coach</Text>
+            <Text className="text-lg font-semibold text-gray-900">Session Takes Place with...</Text>
           </View>
           
           <View className="ml-14 flex-row items-center">
-            {/* Coach Profile Picture */}
+            {/* Profile Picture */}
             <View className="mr-4">
               {coachProfilePic ? (
                 <Image 
@@ -164,7 +163,6 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
             
             <View className="flex-1">
               <Text className="text-gray-900 font-semibold text-lg">{coachName}</Text>
-              <Text className="text-gray-500 text-sm">Personal Trainer</Text>
             </View>
           </View>
         </View>

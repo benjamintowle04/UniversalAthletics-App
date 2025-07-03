@@ -8,10 +8,12 @@ import MyConnections from '../../screens/connections/MyConnections';
 import ExploreConnections from '../../screens/connections/ExploreConnections';
 import ConnectionProfile from '../../screens/connections/ConnectionProfile';
 import SendConnectionRequest from '../../screens/connections/SendConnectionRequest';
+import ChatScreen from '../../screens/inbox/messaging/ChatScreen';
+import RequestASession from '../../screens/sessions/RequestASession';
 
 const Stack = createNativeStackNavigator();
 
-export function ConnectionsStackNavigator() {
+export const ConnectionsStackNavigator = React.forwardRef<any, any>((props, ref) => {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
 
   const headerProps = {
@@ -21,8 +23,21 @@ export function ConnectionsStackNavigator() {
     sentNotificationCount,
   };
 
+  // Expose navigation methods to parent
+  React.useImperativeHandle(ref, () => ({
+    resetToRoot: () => {
+      // This will be handled by the tab navigator
+      // The stack will automatically reset when the tab is pressed
+    },
+  }));
+
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+      }}
+    >
       <Stack.Screen 
         name="MyConnections"
         component={MyConnections}
@@ -53,6 +68,22 @@ export function ConnectionsStackNavigator() {
           ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
         })}
       />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
+        })}
+      />
+      <Stack.Screen
+        name="RequestASession"
+        component={RequestASession as React.ComponentType<any>}
+        options={({ navigation }) => ({
+          ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
+        })}
+      />
     </Stack.Navigator>
   );
-}
+});
+
+ConnectionsStackNavigator.displayName = 'ConnectionsStackNavigator';
