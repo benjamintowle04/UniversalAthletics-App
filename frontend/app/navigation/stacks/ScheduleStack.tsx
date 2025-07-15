@@ -9,6 +9,7 @@ const Stack = createNativeStackNavigator();
 
 export const ScheduleStackNavigator = React.forwardRef<any, any>((props, ref) => {
   const { hasInboxNotifications, inboxNotificationCount, hasSentNotifications, sentNotificationCount } = useUser();
+  const navigationRef = React.useRef<any>(null);
 
   const headerProps = {
     hasNotifications: hasInboxNotifications,
@@ -20,7 +21,12 @@ export const ScheduleStackNavigator = React.forwardRef<any, any>((props, ref) =>
   // Expose navigation methods to parent
   React.useImperativeHandle(ref, () => ({
     resetToRoot: () => {
-      // This will be handled by the tab navigator
+      if (navigationRef.current) {
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'ScheduleContainer' }],
+        });
+      }
     },
   }));
 
@@ -34,9 +40,13 @@ export const ScheduleStackNavigator = React.forwardRef<any, any>((props, ref) =>
       <Stack.Screen 
         name="ScheduleContainer" 
         component={ScheduleContainer} 
-        options={({ navigation }) => ({
-          ...createInboxHeaderWithoutBackButton({ ...headerProps, navigation }),
-        })}
+        options={({ navigation }) => {
+          // Store navigation reference for the root screen
+          navigationRef.current = navigation;
+          return {
+            ...createInboxHeaderWithoutBackButton({ ...headerProps, navigation }),
+          };
+        }}
       />
       <Stack.Screen 
         name="SessionDetails" 

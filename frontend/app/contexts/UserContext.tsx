@@ -324,7 +324,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }));
     } else {
       const members = await getCoachesMembers(userId);
-      console.log("Fetched members for coach:", members);
       return (members || []).map((member: any): Connection => ({
         id: member.id,
         firstName: member.firstName,

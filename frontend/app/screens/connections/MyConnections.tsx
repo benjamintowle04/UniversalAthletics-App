@@ -1,4 +1,4 @@
-import { View, Text, TextInput, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, ScrollView, SafeAreaView, TouchableOpacity, Platform, Dimensions } from 'react-native'
 import React, { useEffect, useState, useContext, useMemo} from 'react'
 import { CoachCard } from '../../components/card_view/CoachCard'
 import { getIconsFromSkills } from '../../../utils/IconLibrary'
@@ -8,11 +8,18 @@ import { getMembersCoaches } from '../../../controllers/MemberInfoController'
 import { getCoachesMembers } from '../../../controllers/CoachController'
 import { RouterProps } from "../../types/RouterProps";
 import { HeaderText } from '../../components/text/HeaderText'
+import { useConnection } from '../../hooks/connections/useConnection'
 import "../../../global.css"
+import MyConnectionsWebUI from '../../ui/web/connections/MyConnectionsWebUI';
 
 const MyConnections = ({ navigation }: RouterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Platform detection
+  const { width } = Dimensions.get('window');
+  const isWeb = Platform.OS === 'web';
+  const isLargeScreen = width > 768;
 
   // Generic interface for connections that works for both coaches and members
   interface Connection {
@@ -34,6 +41,16 @@ const MyConnections = ({ navigation }: RouterProps) => {
   }
       
   const { userData, setUserData } = userContext;
+
+  // Use the connection hook for message functionality
+  // We'll pass null for profileData since we'll pass the connection data directly to handleMessageProfile
+  const { handleMessageProfile } = useConnection({
+    profileData: null,
+    profileId: undefined,
+    profileType: undefined,
+    profileFirebaseId: undefined,
+    navigation
+  });
 
   // Memoize user-specific data to prevent infinite re-renders
   const userSpecificData = useMemo(() => {
@@ -109,8 +126,6 @@ const MyConnections = ({ navigation }: RouterProps) => {
       }
     };
 
-
-
     // Only fetch if we have the required data
     if (userData?.id && userData?.userType && userSpecificData) {
       console.log(`Fetching connections for user ID: ${userData.id}, User Type: ${userData.userType}`);
@@ -127,6 +142,45 @@ const MyConnections = ({ navigation }: RouterProps) => {
     `${connection.firstName} ${connection.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Handler functions for UI components
+  const handleConnectionPress = (connection: Connection) => {
+    navigation.navigate("ConnectionProfile", {
+      profileId: connection.id,
+      profileType: connection.userType, 
+      profileFirebaseId: connection.firebaseID
+    });
+  };
+
+  const handleExplorePress = () => {
+    navigation.navigate('ExploreConnections');
+  };
+
+  // Create a wrapper for handleMessageProfile that passes the connection data
+  const handleMessageConnection = (connection: Connection) => {
+    handleMessageProfile(connection);
+  };
+
+  // Prepare props for UI components
+  const uiProps = {
+    connections,
+    filteredConnections,
+    searchQuery,
+    setSearchQuery,
+    isLoading,
+    userSpecificData,
+    userData,
+    navigation,
+    onConnectionPress: handleConnectionPress,
+    onExplorePress: handleExplorePress, 
+    onMessagePress: handleMessageConnection,
+  };
+
+  // Render appropriate UI based on platform and screen size
+  if (isWeb && isLargeScreen) {
+    return <MyConnectionsWebUI {...uiProps} />;
+  }
+
+  // Mobile UI (existing implementation)
   const renderEmptyState = () => {
     if (!userSpecificData) return null;
 
@@ -141,13 +195,7 @@ const MyConnections = ({ navigation }: RouterProps) => {
         </Text>
         <TouchableOpacity 
           className="bg-blue-500 px-6 py-3 rounded-full mt-6 flex-row items-center"
-          onPress={() => {
-            if (userSpecificData.exploreNavigation === 'ExploreConnections') {
-              navigation.navigate('ExploreConnections');
-            } else {
-              navigation.navigate('Profile');
-            }
-          }}
+          onPress={handleExplorePress}
         >
           <Ionicons 
             name={userData?.userType === 'COACH' ? "settings" : "compass"} 
@@ -175,18 +223,11 @@ const MyConnections = ({ navigation }: RouterProps) => {
           lastName={connection.lastName}
           location={connection.location}
           skills={connection.skills ? getIconsFromSkills(connection.skills) : []}
-          onPress={() => {
-            navigation.navigate("ConnectionProfile", {
-              profileId: connection.id,
-              profileType: connection.userType, 
-              profileFirebaseId: connection.firebaseID
-            });
-          }}
+          onPress={() => handleConnectionPress(connection)}
         />
       </View>
     );
   };
-
 
   // Show loading while user data is being determined
   if (!userData || !userSpecificData) {
@@ -218,7 +259,6 @@ const MyConnections = ({ navigation }: RouterProps) => {
             />
             {searchQuery.length > 0 && (
               <Ionicons 
-
                 name="close-circle" 
                 size={20} 
                 color="#666" 
@@ -255,7 +295,7 @@ const MyConnections = ({ navigation }: RouterProps) => {
 
       <TouchableOpacity 
         className="absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-        onPress={() => { navigation.navigate("ExploreConnections") }}
+        onPress={handleExplorePress}
       >
         <Ionicons 
           name="compass"

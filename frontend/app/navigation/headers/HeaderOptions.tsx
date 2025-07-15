@@ -28,7 +28,7 @@ export const createInboxHeaderWithBackButton = ({
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
       <NotificationIcon
         iconName="send-outline"
-        onPress={() => navigation.navigate('InboxTab', { screen: 'SentRequests' })}
+        onPress={() => navigation.navigate('SentRequestsTab')}
         hasNotifications={hasSentNotifications}
         notificationCount={sentNotificationCount}
         marginRight={15}
@@ -60,7 +60,7 @@ export const createInboxHeaderWithoutBackButton = ({
     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
       <NotificationIcon
         iconName="send-outline"
-        onPress={() => navigation.navigate('InboxTab', { screen: 'SentRequests' })}
+        onPress={() => navigation.navigate('SentRequestsTab')}
         hasNotifications={hasSentNotifications}
         notificationCount={sentNotificationCount}
         marginRight={15}

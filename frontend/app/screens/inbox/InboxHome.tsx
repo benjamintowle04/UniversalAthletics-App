@@ -622,23 +622,7 @@ const InboxHome = ({navigation}: RouterProps) => {
             Stay updated with your latest notifications
           </Text>
         </View>
-
-        {/* Debug Info */}
-        {__DEV__ && (
-          <View className="bg-blue-50 p-3 rounded-lg mb-4">
-            <Text className="text-blue-800 font-bold mb-1">Debug Info:</Text>
-            <Text className="text-blue-600 text-sm">
-              User ID: {userData?.id} | Firebase UID: {FIREBASE_AUTH.currentUser?.uid}
-            </Text>
-            <Text className="text-blue-600 text-sm">
-              Conversations: {conversations.length} | Authenticated: {FIREBASE_AUTH.currentUser ? '✅' : '❌'}
-            </Text>
-            <Text className="text-blue-600 text-sm">
-              Live unread counts: {conversations.map(c => `${c.id.slice(-4)}:${c.unreadCount}`).join(', ')}
-            </Text>
-          </View>
-        )}
-     
+        
         {/* Connection Requests Section */}
         {renderCategorySection(
           "Connection Requests",

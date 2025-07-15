@@ -9,11 +9,20 @@ import { ScheduleStackNavigator } from '../stacks/ScheduleStack';
 import { ConnectionsStackNavigator } from '../stacks/ConnectionsStack';
 import { SettingsStackNavigator } from '../stacks/SettingsStack';
 import { InboxStackNavigator } from '../stacks/InboxStack';
+import { SentRequestsStackNavigator } from '../stacks/SentRequestsStack';
 
 const Tab = createBottomTabNavigator();
 
 export function MainTabNavigator() {
   const { hasInboxNotifications, inboxNotificationCount, userType } = useUser();
+  
+  // Create refs for each stack navigator
+  const homeStackRef = React.useRef<any>(null);
+  const scheduleStackRef = React.useRef<any>(null);
+  const connectionsStackRef = React.useRef<any>(null);
+  const inboxStackRef = React.useRef<any>(null);
+  const settingsStackRef = React.useRef<any>(null);
+  const sentRequestsStackRef = React.useRef<any>(null);
   
   return (
     <Tab.Navigator
@@ -47,137 +56,99 @@ export function MainTabNavigator() {
     >
       <Tab.Screen 
         name="HomeTab" 
-        component={HomeStackNavigator} 
         options={{
           tabBarLabel: 'Home',
         }}
-        listeners={({ navigation, route }) => ({
+        listeners={{
           tabPress: (e) => {
-            // Only reset if the tab is already focused (user taps the same tab twice)
-            const state = navigation.getState();
-            const currentRoute = state.routes[state.index];
-            if (!currentRoute.state?.index) {
-              // If the current route has no state, it means it's the root screen
-              return;
-            }
-            
-            if (currentRoute.name === 'HomeTab' && currentRoute.state?.index > 0) {
-              // User is on HomeTab and not on the root screen, so reset to root
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'HomeTab' }],
-              });
-            }
+            homeStackRef.current?.resetToRoot();
           },
-        })}
-      />
+        }}
+      >
+        {() => <HomeStackNavigator ref={homeStackRef} />}
+      </Tab.Screen>
+      
       <Tab.Screen 
         name="ScheduleTab" 
-        component={ScheduleStackNavigator} 
         options={{
           tabBarLabel: 'Schedule',
         }}
-        listeners={({ navigation, route }) => ({
+        listeners={{
           tabPress: (e) => {
-            // Only reset if the tab is already focused (user taps the same tab twice)
-            const state = navigation.getState();
-            const currentRoute = state.routes[state.index];
-            if (!currentRoute.state?.index) {
-              // If the current route has no state, it means it's the root screen
-              return;
-            }
-            
-            if (currentRoute.name === 'ScheduleTab' && currentRoute.state?.index > 0) {
-              // User is on ScheduleTab and not on the root screen, so reset to root
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'ScheduleTab' }],
-              });
-            }
+            scheduleStackRef.current?.resetToRoot();
           },
-        })}
-      />
+        }}
+      >
+        {() => <ScheduleStackNavigator ref={scheduleStackRef} />}
+      </Tab.Screen>
+      
       <Tab.Screen 
         name="ConnectionsTab"
-        component={ConnectionsStackNavigator}
         options={{
           tabBarLabel: userType === 'COACH' ? 'Members' : 'Coaches'
         }}
-        listeners={({ navigation, route }) => ({
+        listeners={{
           tabPress: (e) => {
-            // Only reset if the tab is already focused (user taps the same tab twice)
-            const state = navigation.getState();
-            const currentRoute = state.routes[state.index];
-            if (!currentRoute.state?.index) {
-              // If the current route has no state, it means it's the root screen
-              return;
-            }
-            
-            if (currentRoute.name === 'ConnectionsTab' && currentRoute.state?.index > 0) {
-              // User is on ConnectionsTab and not on the root screen, so reset to root
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'ConnectionsTab' }],
-              });
-            }
+            connectionsStackRef.current?.resetToRoot();
           },
-        })}
-      />
+        }}
+      >
+        {() => <ConnectionsStackNavigator ref={connectionsStackRef} />}
+      </Tab.Screen>
 
       <Tab.Screen 
         name="InboxTab"
-        component={InboxStackNavigator}
         options={{
           tabBarLabel: 'Inbox',
           tabBarItemStyle: { display: 'none' },
         }}
-        listeners={({ navigation, route }) => ({
+        listeners={{
           tabPress: (e) => {
-            // Only reset if the tab is already focused (user taps the same tab twice)
-            const state = navigation.getState();
-            const currentRoute = state.routes[state.index];
-            if (!currentRoute.state?.index) {
-              // If the current route has no state, it means it's the root screen
-              return;
-            }
-            
-            if (currentRoute.name === 'InboxTab' && currentRoute.state?.index > 0) {
-              // User is on InboxTab and not on the root screen, so reset to root
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'InboxTab' }],
-              });
-            }
+            // Force reset even if not focused since this tab is hidden
+            inboxStackRef.current?.resetToRoot();
           },
-        })}
-      />
+          focus: (e) => {
+            // Also reset when the tab gains focus programmatically
+            inboxStackRef.current?.resetToRoot();
+          },
+        }}
+      >
+        {() => <InboxStackNavigator ref={inboxStackRef} />}
+      </Tab.Screen>
+
+      <Tab.Screen 
+        name="SentRequestsTab"
+        options={{
+          tabBarLabel: 'Sent',
+          tabBarItemStyle: { display: 'none' },
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Force reset even if not focused since this tab is hidden
+            sentRequestsStackRef.current?.resetToRoot();
+          },
+          focus: (e) => {
+            // Also reset when the tab gains focus programmatically
+            sentRequestsStackRef.current?.resetToRoot();
+          },
+        }}
+      >
+        {() => <InboxStackNavigator ref={sentRequestsStackRef} />}
+      </Tab.Screen>
 
       <Tab.Screen 
         name="SettingsTab" 
-        component={SettingsStackNavigator} 
         options={{
           tabBarLabel: 'Settings',
         }}
-        listeners={({ navigation, route }) => ({
+        listeners={{
           tabPress: (e) => {
-            // Only reset if the tab is already focused (user taps the same tab twice)
-            const state = navigation.getState();
-            const currentRoute = state.routes[state.index];
-            if (!currentRoute.state?.index) {
-              // If the current route has no state, it means it's the root screen
-              return;
-            }
-            
-            if (currentRoute.name === 'SettingsTab' && currentRoute.state?.index > 0) {
-              // User is on SettingsTab and not on the root screen, so reset to root
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'SettingsTab' }],
-              });
-            }
+            settingsStackRef.current?.resetToRoot();
           },
-        })}
-      />
+        }}
+      >
+        {() => <SettingsStackNavigator ref={settingsStackRef} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

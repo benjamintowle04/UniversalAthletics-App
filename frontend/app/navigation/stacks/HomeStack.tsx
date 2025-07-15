@@ -5,10 +5,8 @@ import { createInboxHeaderWithoutBackButton, createInboxHeaderWithBackButton } f
 
 import Home from '../../screens/home/Home';
 import ConnectionProfile from '../../screens/connections/ConnectionProfile';
-import SessionRequestDetails from '../../screens/sessions/SessionRequestDetails';
 import RequestASession from '../../screens/sessions/RequestASession';
 import ChatScreen from '../../screens/inbox/messaging/ChatScreen';
-import SessionDetails from '../../screens/sessions/SessionDetails';
 import SendConnectionRequest from '../../screens/connections/SendConnectionRequest';
 import ExploreConnections from '../../screens/connections/ExploreConnections';
 
@@ -27,7 +25,7 @@ export const HomeStackNavigator = React.forwardRef<any, any>((props, ref) => {
   // Expose navigation methods to parent
   React.useImperativeHandle(ref, () => ({
     resetToRoot: () => {
-      // This will be handled by the tab navigator
+      //handled by the tab navigator
     },
   }));
 
