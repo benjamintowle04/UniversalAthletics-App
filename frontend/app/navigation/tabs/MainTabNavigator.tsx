@@ -133,7 +133,7 @@ export function MainTabNavigator() {
           },
         }}
       >
-        {() => <InboxStackNavigator ref={sentRequestsStackRef} />}
+        {() => <SentRequestsStackNavigator ref={sentRequestsStackRef} />}
       </Tab.Screen>
 
       <Tab.Screen 

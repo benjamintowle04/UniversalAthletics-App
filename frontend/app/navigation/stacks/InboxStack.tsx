@@ -94,7 +94,7 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  onPress={() => navigation.navigate('Inbox')}
+                  onPress={() => navigation.navigate('InboxTab')}
                   style={{ marginRight: 15, position: 'relative' }}
                 >
                   <Ionicons name="mail-outline" size={24} color="blue" />
@@ -142,7 +142,7 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
               
               <TouchableOpacity 
-                  onPress={() => navigation.navigate('SentRequests')}
+                  onPress={() => navigation.navigate('SentRequestsTab')}
                   style={{ marginRight: 15, position: 'relative' }}
                 >
                   <Ionicons name="send-outline" size={24} color="blue" />
@@ -174,9 +174,9 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity 
-                onPress={() => navigation.navigate('Inbox')}
-                style={{ marginRight: 15, position: 'relative' }}
-              >
+                  onPress={() => navigation.navigate('Inbox')}
+                  style={{ marginRight: 15, position: 'relative' }}
+                >
                 <Ionicons name="mail-outline" size={24} color="blue" />
                 {hasSentNotifications && (
                   <View 

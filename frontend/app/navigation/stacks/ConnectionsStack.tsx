@@ -93,6 +93,7 @@ export const ConnectionsStackNavigator = React.forwardRef<any, any>((props, ref)
           ...createInboxHeaderWithBackButton({ ...headerProps, navigation }),
         })}
       />
+
     </Stack.Navigator>
   );
 });

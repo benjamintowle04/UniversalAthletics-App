@@ -27,6 +27,41 @@ interface ConnectionProfileProps extends RouterProps {
   route: ConnectionProfileRouteProp;
 }
 
+// Define skill level type and helper functions
+type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+
+interface SkillWithLevel {
+  skillId: number;
+  skillTitle: string;
+  skillLevel: SkillLevel;
+}
+
+const getSkillLevelColor = (level: SkillLevel): string => {
+  switch (level) {
+    case 'BEGINNER':
+      return Colors.uaGreen || '#4CAF50';
+    case 'INTERMEDIATE':
+      return Colors.uaBlue || '#2196F3';
+    case 'ADVANCED':
+      return Colors.uaRed || '#F44336';
+    default:
+      return Colors.grey?.medium || '#757575';
+  }
+};
+
+const getSkillLevelText = (level: SkillLevel): string => {
+  switch (level) {
+    case 'BEGINNER':
+      return 'Beginner';
+    case 'INTERMEDIATE':
+      return 'Intermediate';
+    case 'ADVANCED':
+      return 'Advanced';
+    default:
+      return level;
+  }
+};
+
 const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
   // Platform detection
   const { width } = Dimensions.get('window');
@@ -88,11 +123,123 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     navigation
   });
 
+  // Process skills with levels for coaches
+  const skillsWithLevels = useMemo(() => {
+    if (profileType === 'COACH' && profileData?.skillsWithLevels) {
+      console.log("Processing skills with levels:", profileData.skillsWithLevels);
+      return profileData.skillsWithLevels as SkillWithLevel[];
+    }
+    return [];
+  }, [profileData?.skillsWithLevels, profileType]);
+
+  // Determine if we should show skills with levels or traditional skills
+  const shouldShowSkillLevels = profileType === 'COACH' && skillsWithLevels.length > 0;
+
+  // Get skill icons
   const skillIcons = useMemo(() => {
-    return profileData?.skills ? getIconsFromSkills(profileData.skills) : [];
+    if (profileData?.skills) {
+      // Extract skill titles regardless of format
+      const skillTitles = profileData.skills.map(skill => 
+        typeof skill === 'string' ? { skill_id: 0, title: skill } : { skill_id: skill.skill_id || 0, title: skill.title }
+      );
+      return getIconsFromSkills(skillTitles);
+    }
+    return [];
   }, [profileData?.skills]);
 
- 
+
+  // Render skills with levels component for coaches
+  const renderSkillsWithLevels = () => {
+    if (!shouldShowSkillLevels) {
+      return null;
+    }
+
+    return (
+      <View className="mb-6">
+        <Text className="text-lg font-semibold text-gray-900 mb-3">
+          Skills & Expertise Levels
+        </Text>
+        <View className="flex-row flex-wrap">
+          {skillsWithLevels.map((skill, index) => {
+            const skillIcon = getIconsFromSkills([{ skill_id: skill.skillId, title: skill.skillTitle }])[0];
+            const levelColor = getSkillLevelColor(skill.skillLevel);
+            
+            return (
+              <View 
+                key={`${skill.skillId}-${index}`}
+                className="mr-3 mb-3 p-3 rounded-lg border"
+                style={{ 
+                  borderColor: levelColor,
+                  backgroundColor: `${levelColor}15` // 15% opacity
+                }}
+              >
+                <View className="flex-row items-center mb-1">
+                  {skillIcon && (
+                    <Ionicons 
+                      name={skillIcon as any} 
+                      size={20} 
+                      color={levelColor}
+                      style={{ marginRight: 6 }}
+                    />
+                  )}
+                  <Text 
+                    className="font-medium capitalize"
+                    style={{ color: levelColor }}
+                  >
+                    {skill.skillTitle.replace(/_/g, ' ')}
+                  </Text>
+                </View>
+                <View 
+                  className="px-2 py-1 rounded-full"
+                  style={{ backgroundColor: levelColor }}
+                >
+                  <Text className="text-white text-xs font-medium text-center">
+                    {getSkillLevelText(skill.skillLevel)}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
+  // Render traditional skills component (for members or coaches without skill levels)
+  const renderTraditionalSkills = () => {
+    if (shouldShowSkillLevels) {
+      return null; // Don't show traditional skills if we have skills with levels
+    }
+
+    if (skillIcons.length === 0) {
+      return null;
+    }
+
+    return (
+      <View className="mb-6">
+        <Text className="text-lg font-semibold text-gray-900 mb-3">
+          Skills
+        </Text>
+        <View className="flex-row flex-wrap">
+          {skillIcons.map((icon, index) => (
+            <View 
+              key={index}
+              className="mr-3 mb-3 p-3 rounded-lg"
+              style={{ backgroundColor: Colors.grey?.light || '#f5f5f5' }}
+            >
+              <Ionicons 
+                name={icon as any} 
+                size={24} 
+                color={Colors.uaBlue || '#2196F3'} 
+              />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  // ... rest of your existing renderConnectionButton function stays the same ...
   const renderConnectionButton = () => {
     if (!getProfileSpecificData) return null;
 
@@ -146,6 +293,8 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
                 )}
               </TouchableOpacity>
               
+              // In your ConnectionProfileWebUI component, replace the existing skills section with:
+
               <TouchableOpacity 
                 className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
                 style={{ backgroundColor: Colors.uaRed }}
@@ -246,9 +395,13 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
     profileData,
     getProfileSpecificData,
     skillIcons,
+    skillsWithLevels, 
+    shouldShowSkillLevels, 
     buttonState,
     isProcessingRequest,
     renderConnectionButton,
+    renderSkillsWithLevels, 
+    renderTraditionalSkills, 
     handleEmailPress,
     handlePhonePress,
     handleBookSession,
@@ -267,4 +420,3 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
 
 export default ConnectionProfile;
 
-    

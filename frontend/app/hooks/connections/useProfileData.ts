@@ -17,6 +17,12 @@ interface ProfileData {
   bioPic1?: string;
   bioPic2?: string;
   skills: Array<{skill_id: number, title: string}>;
+  // Add new field for coaches with skill levels
+  skillsWithLevels?: Array<{
+    skillId: number;
+    skillTitle: string;
+    skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  }>;
   userType: 'COACH' | 'MEMBER';
 }
 
@@ -50,6 +56,17 @@ export const useProfileData = ({ profileId, profileType, profileFirebaseId }: Us
           fetchedData = await getCoachByFirebaseId(profileFirebaseId);
           if (fetchedData) {
             fetchedData.userType = 'COACH';
+            
+            // Handle backward compatibility for skills
+            // If skillsWithLevels exists, use it; otherwise, use the old skills format
+            if (fetchedData.skillsWithLevels && fetchedData.skillsWithLevels.length > 0) {
+              // New format with skill levels - keep both for compatibility
+              console.log("Coach has skills with levels:", fetchedData.skillsWithLevels);
+            } else if (fetchedData.skills) {
+              // Old format - convert to new format for consistency
+              console.log("Coach has traditional skills:", fetchedData.skills);
+              // Keep the old skills format as is for backward compatibility
+            }
           }
         } else {
           fetchedData = await getMemberByFirebaseId(profileFirebaseId);

@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../../themes/colors/Colors';
+import { getIconsFromSkills } from '../../../../utils/IconLibrary';
+
+interface SkillWithLevel {
+  skillId: number;
+  skillTitle: string;
+  skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+}
 
 interface ConnectionProfileWebUIProps {
   profileData: any;
   getProfileSpecificData: any;
   skillIcons: any[];
+  skillsWithLevels: SkillWithLevel[];
+  shouldShowSkillLevels: boolean;
   buttonState: string;
   isProcessingRequest: boolean;
   renderConnectionButton: () => React.ReactNode;
@@ -25,12 +34,39 @@ interface ImageDimensions {
   orientation: 'landscape' | 'portrait' | 'square';
 }
 
+// Helper functions for skill levels
+const getSkillLevelColor = (level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'): string => {
+  switch (level) {
+    case 'BEGINNER':
+      return Colors.uaGreen || '#4CAF50';
+    case 'INTERMEDIATE':
+      return Colors.uaBlue || '#2196F3';
+    case 'ADVANCED':
+      return Colors.uaRed || '#F44336';
+    default:
+      return Colors.grey?.medium || '#757575';
+  }
+};
+
+const getSkillLevelText = (level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'): string => {
+  switch (level) {
+    case 'BEGINNER':
+      return 'Beginner';
+    case 'INTERMEDIATE':
+      return 'Intermediate';
+    case 'ADVANCED':
+      return 'Advanced';
+    default:
+      return level;
+  }
+};
+
 const ConnectionProfileWebUI: React.FC<ConnectionProfileWebUIProps> = ({
   profileData,
   getProfileSpecificData,
   skillIcons,
-  buttonState,
-  isProcessingRequest,
+  skillsWithLevels,
+  shouldShowSkillLevels,
   renderConnectionButton,
   handleEmailPress,
   handlePhonePress,
@@ -106,6 +142,92 @@ const ConnectionProfileWebUI: React.FC<ConnectionProfileWebUIProps> = ({
 
     loadImageDimensions();
   }, [getProfileSpecificData]);
+
+  // Render skills with levels component for coaches
+  const renderSkillsWithLevels = () => {
+    if (!shouldShowSkillLevels) {
+      return null;
+    }
+
+    return (
+      <View className="mb-6">
+        <Text className="text-xl font-semibold text-gray-900 mb-4">
+          Skills & Expertise Levels
+        </Text>
+        <View className="flex-row flex-wrap gap-3">
+          {skillsWithLevels.map((skill, index) => {
+            const levelColor = getSkillLevelColor(skill.skillLevel);
+            
+            return (
+              <View 
+                key={`${skill.skillId}-${index}`}
+                className="p-4 rounded-xl border shadow-sm bg-white hover:shadow-md transition-shadow"
+                style={{ 
+                  borderColor: levelColor,
+                  minWidth: 180
+                }}
+              >
+                <View className="flex-row items-center mb-2">
+                  <Text 
+                    className="font-semibold capitalize flex-1"
+                    style={{ color: levelColor }}
+                  >
+                    {skill.skillTitle.replace(/_/g, ' ')}
+                  </Text>
+                </View>
+                <View 
+                  className="px-3 py-1 rounded-full"
+                  style={{ backgroundColor: levelColor }}
+                >
+                  <Text className="text-white text-sm font-medium text-center">
+                    {getSkillLevelText(skill.skillLevel)}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
+  // Replace the renderTraditionalSkills function with this:
+  const renderTraditionalSkills = () => {
+    if (shouldShowSkillLevels) {
+      return null; // Don't show traditional skills if we have skills with levels
+    }
+
+    if (!profileData?.skills || profileData.skills.length === 0) {
+      return null;
+    }
+
+    return (
+      <View className="mb-6">
+        <Text className="text-xl font-semibold text-gray-900 mb-4">
+          Skills
+        </Text>
+        <View className="flex-row flex-wrap gap-3">
+          {profileData.skills.map((skill: { title: any; }, index: React.Key | null | undefined) => {
+            const skillTitle = typeof skill === 'string' ? skill : skill.title;
+            const skillIcon = getIconsFromSkills([skillTitle])[0];
+            
+            return (
+              <View 
+                key={index}
+                className="p-4 rounded-xl shadow-sm bg-white hover:shadow-md transition-shadow flex-row items-center"
+                style={{ backgroundColor: Colors.grey?.light || '#f5f5f5' }}
+              >
+                <Text className="text-gray-800 font-medium capitalize">
+                  {skillTitle.replace(/_/g, ' ')}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
 
   // Render bio section with dynamic layout based on image orientation
   const renderBioSection = (
@@ -308,28 +430,8 @@ const ConnectionProfileWebUI: React.FC<ConnectionProfileWebUIProps> = ({
               </View>
 
               {/* Skills Section */}
-              {skillIcons.length > 0 && (
-                <View className="mb-6 w-full">
-                  <Text className="text-xl font-semibold text-gray-900 mb-4 text-center">Skills & Interests</Text>
-                  <View className="flex-row flex-wrap justify-center gap-3">
-                    {skillIcons.map((skill, index) => (
-                      <View 
-                        key={index} 
-                        className="flex-row items-center px-4 py-3 rounded-full"
-                        style={{ backgroundColor: Colors.uaBlue + '20' }}
-                      >
-                        <Text className="mr-2 text-lg">{skill.icon}</Text>
-                        <Text 
-                          className="text-base font-medium capitalize"
-                          style={{ color: Colors.uaBlue }}
-                        >
-                          {skill.title.replace('_', ' ')}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
+              {renderSkillsWithLevels()}
+              {renderTraditionalSkills()}
             </View>
 
             {/* Action Buttons */}
@@ -355,7 +457,7 @@ const ConnectionProfileWebUI: React.FC<ConnectionProfileWebUIProps> = ({
                     style={{ backgroundColor: Colors.uaBlue }}
                     onPress={handleMessageProfile}
                   >
-                                       <Ionicons name="chatbubble" size={20} color="white" />
+                    <Ionicons name="chatbubble" size={20} color="white" />
                     <Text className="text-white font-semibold ml-2 text-base">
                       {getProfileSpecificData?.messageButtonText}
                     </Text>
@@ -440,4 +542,4 @@ const ConnectionProfileWebUI: React.FC<ConnectionProfileWebUIProps> = ({
 };
 
 export default ConnectionProfileWebUI;
- 
+

@@ -1,16 +1,19 @@
-import { View, Text, TextInput, ScrollView, SafeAreaView } from 'react-native'
+import { Platform, Dimensions } from 'react-native'
 import React, { useEffect, useState, useContext, useMemo} from 'react'
-import { CoachCard } from '../../components/card_view/CoachCard'
-import { getIconsFromSkills } from '../../../utils/IconLibrary'
 import { UserContext } from '../../contexts/UserContext'
 import { getAllCoaches } from '../../../controllers/CoachController'
-import { getAllMembers } from '../../../controllers/MemberInfoController' // Add this import
-import { Ionicons } from '@expo/vector-icons'
-import { HeaderText } from '../../components/text/HeaderText'
+import { getAllMembers } from '../../../controllers/MemberInfoController'
 import { RouterProps } from "../../types/RouterProps";
+import ExploreConnectionsWebUI from '../../ui/web/connections/ExploreConnectionsWebUI';
+import ExploreConnectionsMobileUI from '../../ui/mobile/connections/ExploreConnectionsMobileUI';
 
 const ExploreConnections = ({navigation}: RouterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Platform detection
+  const { width } = Dimensions.get('window');
+  const isWeb = Platform.OS === 'web';
+  const isLargeScreen = width > 768;
 
   // Generic interface for connections that works for both coaches and members
   interface Connection {
@@ -116,86 +119,53 @@ const ExploreConnections = ({navigation}: RouterProps) => {
     `${connection.firstName} ${connection.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  //Debug log
-  filteredConnections.forEach((connection) => {
-    console.log('Raw skills data:', connection.skills);
-    console.log('Processed skills:', getIconsFromSkills(connection.skills));
-  });
+  // Handler functions for UI components
+  const handleConnectionPress = (connection: Connection) => {
+    console.log("Navigating to Connection profile with profile firebase ID: ", connection.firebaseID)
+    if (userData == null || userData.id == null) {
+      console.error('User data is not available or incomplete');
+      return;
+    }
+    
+    
+    navigation.navigate("ConnectionProfile", {
+      profileId: connection.id,
+      profileType: connection.userType, 
+      profileFirebaseId: connection.firebaseID, 
+      coachId: connection.userType === "COACH" ? connection.id : userData.id,
+      memberId: connection.userType === "MEMBER" ? connection.id : userData.id,
+    });
+  };
 
+  const handleFilterPress = () => {
+    // TODO: Navigate to filter screen or show filter modal
+    console.log('Filter button pressed');
+    // Example navigation (you'll need to create this screen):
+    // navigation.navigate('ExploreFilters', { 
+    //   userType: userData?.userType,
+    //   targetUserType: userSpecificData?.targetUserType 
+    // });
+  };
 
-  // Show loading while user data is being determined
-  if (!userData || !userSpecificData) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">Loading user data...</Text>
-        </View>
-      </SafeAreaView>
-    );
+  // Prepare props for UI components
+  const uiProps = {
+    connections,
+    filteredConnections,
+    searchQuery,
+    setSearchQuery,
+    userSpecificData,
+    userData,
+    onConnectionPress: handleConnectionPress,
+    onFilterPress: handleFilterPress,
+  };
+
+  // Render appropriate UI based on platform and screen size
+  if (isWeb && isLargeScreen) {
+    return <ExploreConnectionsWebUI {...uiProps} />;
   }
 
-  return (
-    <SafeAreaView className="flex-1 bg-white">  
-      <View className="mt-4">
-        <HeaderText text={userSpecificData.headerTitle}/>
-      </View>
-      <View className="px-4 pt-4 pb-2">
-        <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-2">
-          <Ionicons name="search" size={20} color="#666" />
-          <TextInput
-            className="flex-1 ml-2 text-base"
-            placeholder={userSpecificData.searchPlaceholder}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#666"
-          />
-          {searchQuery.length > 0 && (
-            <Ionicons 
-              name="close-circle" 
-              size={20} 
-              color="#666" 
-              onPress={() => setSearchQuery('')}
-            />
-          )}
-        </View>
-      </View>     
-      <ScrollView className="flex-1 px-2">
-        {filteredConnections.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-20">
-            <Ionicons name="people-outline" size={60} color="#ccc" />
-            <Text className="text-lg text-gray-500 mt-4">
-              No {userSpecificData.connectionType} found
-            </Text>
-            <Text className="text-gray-400 mt-1">
-              {searchQuery ? 'Try adjusting your search' : `No ${userSpecificData.connectionType} available in your area`}
-            </Text>
-          </View>
-        ) : (
-          filteredConnections.map((connection) => (
-            <View key={connection.firebaseID || connection.id}>
-              <CoachCard
-                imageUrl={connection.profilePic}
-                firstName={connection.firstName || ""}
-                lastName={connection.lastName || ""}
-                location={connection.location || ""}
-                skills={connection.skills ? getIconsFromSkills(connection.skills) : []}
-                onPress={() => {
-                    console.log("Navigating to Connection profile with profile firebase ID: ", connection.firebaseID)
-                    navigation.navigate("ConnectionProfile", {
-                      profileId: connection.id,
-                      profileType: connection.userType, 
-                      profileFirebaseId: connection.firebaseID, 
-                      coachId: connection.userType === "COACH" ? connection.id : userData.id,
-                      memberId: connection.userType === "MEMBER" ? connection.id : userData.id,
-                    });
-                  }}              
-              />
-            </View> 
-          ))
-        )}
-      </ScrollView>
-    </SafeAreaView>
-  )
+  // Use the extracted mobile UI component
+  return <ExploreConnectionsMobileUI {...uiProps} />;
 }
 
 export default ExploreConnections

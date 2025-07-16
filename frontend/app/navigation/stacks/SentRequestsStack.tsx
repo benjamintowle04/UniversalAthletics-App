@@ -61,6 +61,38 @@ export const SentRequestsStackNavigator = React.forwardRef<any, any>((props, ref
             headerRight: () => (
               <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
                 <TouchableOpacity 
+                  onPress={() => navigation.navigate('SentRequestsTab')}
+                  style={{ marginRight: 15, position: 'relative' }}
+                >
+                  <Ionicons name="send-outline" size={24} color="blue" />
+                  {hasSentNotifications && (
+                    <View 
+                      style={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        backgroundColor: 'red',
+                        borderRadius: 10,
+                        minWidth: 20,
+                        height: 20,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 4,
+                      }}
+                    >
+                      <Text 
+                        style={{
+                          color: 'white',
+                          fontSize: 12,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {sentNotificationCount > 99 ? '99+' : sentNotificationCount.toString()}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity 
                   onPress={() => navigation.navigate('InboxTab')}
                   style={{ marginRight: 15, position: 'relative' }}
                 >
