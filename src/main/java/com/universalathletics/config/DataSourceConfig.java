@@ -30,7 +30,7 @@ public class DataSourceConfig {
     /**
      * Create a DataSource when JAWSDB_URL is present (Heroku JawsDB add-on).
      */
-    @Bean(name = "dataSource")
+    @Bean
     @org.springframework.context.annotation.Primary
     @ConditionalOnProperty(name = "JAWSDB_URL")
     public DataSource jawsdbDataSource() throws URISyntaxException {
@@ -60,9 +60,9 @@ public class DataSourceConfig {
     /**
      * Create a DataSource when SPRING_DATASOURCE_URL is explicitly set (env override).
      */
-    @Bean(name = "dataSource")
-    @org.springframework.context.annotation.Primary
+    @Bean
     @ConditionalOnProperty(name = "spring.datasource.url")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(javax.sql.DataSource.class)
     public DataSource springEnvDataSource() {
         DataSourceBuilder<?> dsBuilder = DataSourceBuilder.create();
         dsBuilder.url(springDatasourceUrl);
