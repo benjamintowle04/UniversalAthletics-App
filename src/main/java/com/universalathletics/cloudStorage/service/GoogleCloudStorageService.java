@@ -19,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class GoogleCloudStorageService {
 
-    @Value("${gcp.bucket.name}")
+    @Value("${gcp.bucket.name:}")
     private String bucketName;
 
-    @Value("${gcp.project.id}")
+    @Value("${gcp.project.id:}")
     private String projectId;
 
-    @Value("${gcp.credentials.path}")
+    @Value("${gcp.credentials.path:}")
     private String credentialsPath;
     
 
@@ -33,6 +33,13 @@ public class GoogleCloudStorageService {
 
     @PostConstruct
     public void initialize() throws IOException {
+        // If any of the required GCP properties are missing, skip initialization.
+        if (bucketName == null || bucketName.isEmpty() || projectId == null || projectId.isEmpty() || credentialsPath == null || credentialsPath.isEmpty()) {
+            // don't initialize storage; the service will operate in no-op mode
+            System.out.println("GCP configuration not provided; GoogleCloudStorageService will be disabled.");
+            return;
+        }
+
         StorageOptions storageOptions = StorageOptions.newBuilder()
             .setProjectId(projectId)
             .setCredentials(GoogleCredentials.fromStream(new FileInputStream(credentialsPath)))
@@ -41,6 +48,9 @@ public class GoogleCloudStorageService {
     }
 
     public String getSignedFileUrl(String fileName) throws IOException {
+        if (storage == null) {
+            throw new IllegalStateException("GoogleCloudStorageService is not configured. Set gcp.bucket.name, gcp.project.id and gcp.credentials.path to enable.");
+        }
 
         // Make sure fileName doesn't already contain the bucket URL
         if (fileName.startsWith("https://storage.googleapis.com/")) {
@@ -66,6 +76,10 @@ public class GoogleCloudStorageService {
     
 
     public String uploadFile(MultipartFile file, String folder) throws IOException {
+        if (storage == null) {
+            throw new IllegalStateException("GoogleCloudStorageService is not configured. Set gcp.bucket.name, gcp.project.id and gcp.credentials.path to enable.");
+        }
+
         String fileName = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fileName)
             .setContentType(file.getContentType())
