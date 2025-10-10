@@ -6,11 +6,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.universalathletics.cloudStorage.service.GoogleCloudStorageService;
 import com.universalathletics.modules.coach.model.CoachSortDTO;
 import com.universalathletics.service.geocoding.GeocodingService;
 import com.universalathletics.service.sorting.CoachSortingService;
+import org.springframework.http.MediaType;
+
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -72,16 +78,98 @@ public class CoachController {
     private CoachSortingService coachSortingService;
 
     /**
-     * Creates a new member in the system.
+     * Creates a new coach in the system.
      *
-     * @param coach The member information to be saved
+     * @param coach The coach information to be saved
      * @return ResponseEntity<CoachEntity> with status 201 (CREATED) and the
-     *         created member
+     *         created coach
      */
     @PostMapping
     public ResponseEntity<CoachEntity> createCoach(@RequestBody CoachEntity coach) {
-        CoachEntity createdMember = coachservice.saveCoach(coach);
-        return new ResponseEntity<>(createdMember, HttpStatus.CREATED);
+        CoachEntity createdCoach = coachservice.saveCoach(coach);
+        try {
+            // Fetch the freshly saved coach so transient fields (skillsWithLevels) are populated
+            CoachEntity fullCoach = coachservice.findCoachByFirebaseID(createdCoach.getFirebaseID());
+
+            // Sign profile and bio picture URLs if present
+            if (fullCoach.getProfilePic() != null) {
+                try {
+                    String signedUrl = storageService.getSignedFileUrl(fullCoach.getProfilePic());
+                    fullCoach.setProfilePic(signedUrl);
+                } catch (Exception e) {
+                    logger.error("Error signing profile URL for created coach: {}", e.getMessage(), e);
+                }
+            }
+            if (fullCoach.getBioPic1() != null) {
+                try {
+                    String signedUrl = storageService.getSignedFileUrl(fullCoach.getBioPic1());
+                    fullCoach.setBioPic1(signedUrl);
+                } catch (Exception e) {
+                    logger.error("Error signing bioPic1 URL for created coach: {}", e.getMessage(), e);
+                }
+            }
+            if (fullCoach.getBioPic2() != null) {
+                try {
+                    String signedUrl = storageService.getSignedFileUrl(fullCoach.getBioPic2());
+                    fullCoach.setBioPic2(signedUrl);
+                } catch (Exception e) {
+                    logger.error("Error signing bioPic2 URL for created coach: {}", e.getMessage(), e);
+                }
+            }
+
+            return new ResponseEntity<>(fullCoach, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.warn("Returning unsupplemented created coach due to: {}", e.getMessage());
+            return new ResponseEntity<>(createdCoach, HttpStatus.CREATED);
+        }
+    }
+
+    /**
+     * Updates an existing coach's profile information.
+     *
+     * @param firebaseId The Firebase ID of the coach to update
+     * @param coach The updated coach information
+     * @return ResponseEntity<CoachEntity> with status 200 (OK) and the updated coach
+     */
+    @PutMapping(value = "/update/{firebaseId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CoachEntity> updateCoach(
+            @PathVariable String firebaseId,
+            @RequestParam("coachInfoJson") String coachInfoJson,
+            @RequestParam("skillsJson") String skillsJson,
+            @RequestParam(value = "profilePic", required = false) MultipartFile profilePic,
+            @RequestParam(value = "bioPic1", required = false) MultipartFile bioPic1,
+            @RequestParam(value = "bioPic2", required = false) MultipartFile bioPic2) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+            CoachEntity coachInfo = objectMapper.readValue(coachInfoJson, CoachEntity.class);
+            // Parse skillsJson as needed for your skill structure
+
+            // Handle profile picture upload
+            if (profilePic != null && !profilePic.isEmpty()) {
+                String imageUrl = storageService.uploadFile(profilePic, "profiles");
+                coachInfo.setProfilePic(imageUrl);
+            }
+            if (bioPic1 != null && !bioPic1.isEmpty()) {
+                String bioPic1Url = storageService.uploadFile(bioPic1, "profiles");
+                coachInfo.setBioPic1(bioPic1Url);
+            }
+            if (bioPic2 != null && !bioPic2.isEmpty()) {
+                String bioPic2Url = storageService.uploadFile(bioPic2, "profiles");
+                coachInfo.setBioPic2(bioPic2Url);
+            }
+
+            coachInfo.setFirebaseID(firebaseId);
+
+            CoachEntity updatedCoach = coachservice.updateCoach(coachInfo);
+            return new ResponseEntity<>(updatedCoach, HttpStatus.OK);
+
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

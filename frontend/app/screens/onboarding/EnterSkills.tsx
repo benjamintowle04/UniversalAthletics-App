@@ -117,7 +117,7 @@ const EnterSkills = ({ navigation, route }: EnterSkillsProps) => {
             firstName: previousUserData?.firstName || userData?.firstName || '',
             lastName: previousUserData?.lastName || userData?.lastName || '',
             phone: previousUserData?.phone || userData?.phone || '',
-            biography: previousUserData?.biography || userData?.biography || '',
+            biography: previousUserData?.biography || (userData as any)?.biography || '',
             location: previousUserData?.location || userData?.location || null,
             skills: skills,
             profilePic: previousUserData?.profilePic || null, // Preserve profile pic

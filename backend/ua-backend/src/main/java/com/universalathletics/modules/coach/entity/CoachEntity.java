@@ -6,20 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
+
 // This import is crucial for handling the JSON serialization of bidirectional relationships
 // It prevents infinite recursion when converting to JSON
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.universalathletics.modules.memberInfo.entity.MemberInfoEntity;
-import com.universalathletics.modules.skill.entity.SkillEntity;;
+import com.universalathletics.modules.skill.entity.SkillEntity;
+import com.universalathletics.modules.jct.coachSkill.model.CoachSkillDTO;
+import com.universalathletics.modules.jct.coachSkill.entity.CoachSkillEntity;
 
 
 //--------------------- Coach Entity Class ------------------------------//
 /**
- * Entity class representing member information in the Universal Athletics
+ * Entity class representing coach information in the Universal Athletics
  * system.
- * This class maps to the 'member_info' table in the database and contains
- * personal and contact information for each member.
+ * This class maps to the 'Coach' table in the database and contains
+ * personal and contact information for each coach.
  *
  */
 
@@ -40,26 +43,26 @@ public class CoachEntity {
   private Integer id;
 
   /**
-   * Member's first name.
+   * Coach's first name.
    */
   @Column(name = "First_Name")
   private String firstName;
 
   /**
-   * Member's last name.
+   * Coach's last name.
    */
   @Column(name = "Last_Name")
   private String lastName;
 
   /**
-   * Member's email address.
+   * Coach's email address.
    * Used for communication and account identification.
    */
   @Column(name = "Email")
   private String email;
 
   /**
-   * Member's contact phone number.
+   * Coach's contact phone number.
    * NOTE: This field has a size limit in the database.
    * If you're getting "Data too long for column 'Phone'" errors,
    * either shorten the phone number format or alter the database column.
@@ -68,62 +71,56 @@ public class CoachEntity {
   private String phone;
 
   /**
-   * Member's biographical information.
-   * Contains a brief description or background of the member.
+   * Coach's biographical information.
+   * Contains a brief description or background of the coach.
    */
   @Column(name = "Biography_1")
   private String biography1;
 
   /**
-   * Member's biographical information.
-   * Contains a brief description or background of the member.
+   * Coach's biographical information.
+   * Contains a brief description or background of the coach.
    * This field is optional and can be null.
   */
   @Column(name = "Biography_2")
   private String biography2;
 
   /**
-   * URL or path to member's profile picture.
+   * URL or path to coach's profile picture.
    * This stores the URL returned from Google Cloud Storage after upload.
    */
   @Column(name = "Profile_Pic")
   private String profilePic;
 
   /**
-   * URL or path to member's bio picture.
+   * URL or path to coach's bio picture.
    * This stores the URL returned from Google Cloud Storage after upload.
    */
   @Column(name = "Bio_Pic_1")
   private String bioPic1;
 
   /**
-   * URL or path to member's bio picture.
+   * URL or path to coach's bio picture.
    */
   @Column(name = "Bio_Pic_2")
   private String bioPic2;
 
-
   /**
-   * Member's geographical location or address.
+   * Coach's geographical location or address.
    */
   @Column(name = "Location")
   private String location;
 
   /**
-   * Member's unique authentication token.
+   * Coach's unique authentication token.
    */
   @Column(name = "Firebase_ID")
   private String firebaseID;
 
-  // Define the junction table for many-to-many relationship with Skills
-  @ManyToMany
-  (fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-  @JoinTable(name = "Coach_Skill",
-    joinColumns = @JoinColumn(name = "Coach_ID", referencedColumnName = "Coach_ID"),
-    inverseJoinColumns = @JoinColumn(name = "Skill_ID", referencedColumnName = "Skill_ID"))
-  @JsonIgnoreProperties("coaches")
-  private List<SkillEntity> skills;
-
+  // Define the relationship with CoachSkillEntity for skills with levels
+  @OneToMany(mappedBy = "coach", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JsonIgnore
+  private List<CoachSkillEntity> coachSkills;
 
   // Define the junction table for many-to-many relationship with Members
   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
@@ -132,6 +129,10 @@ public class CoachEntity {
     inverseJoinColumns = @JoinColumn(name = "Member_ID", referencedColumnName = "Member_ID"))
   @JsonIgnore
   private List<MemberInfoEntity> members;
+
+  // Transient field for JSON serialization - skills with levels
+  @Transient
+  private List<CoachSkillDTO> skillsWithLevels;
 
   /**
    * Constructor for Coach Entity
@@ -154,25 +155,67 @@ public class CoachEntity {
   }
 
   /**
-   * Getter used by CoachService to get the attached skills of a certain
-   * member
+   * Getter for coach skills with levels
    *
-   * @return skill, the instance list of skills for Coach
+   * @return List of CoachSkillEntity
    */
-  public List<SkillEntity> getSkills() {
-    return this.skills; 
+  public List<CoachSkillEntity> getCoachSkills() {
+    return this.coachSkills; 
   }
 
   /**
-   * Setter used by CoachService to save a set of skills to a member
+   * Setter for coach skills with levels
    *
-   * @param skill
+   * @param coachSkills List of CoachSkillEntity
    */
-  public void setSkills(List<SkillEntity> skills) {
-    this.skills = skills; // Updated to use the renamed field
+  public void setCoachSkills(List<CoachSkillEntity> coachSkills) {
+    this.coachSkills = coachSkills;
   }
 
+  /**
+   * Getter for skills with levels (transient field for JSON)
+   *
+   * @return List of CoachSkillDTO
+   */
+  public List<CoachSkillDTO> getSkillsWithLevels() {
+    return this.skillsWithLevels;
+  }
 
+  /**
+   * Setter for skills with levels (transient field for JSON)
+   *
+   * @param skillsWithLevels List of CoachSkillDTO
+   */
+  public void setSkillsWithLevels(List<CoachSkillDTO> skillsWithLevels) {
+    this.skillsWithLevels = skillsWithLevels;
+  }
+
+  // Keep the old getSkills method for backward compatibility
+  /**
+   * Getter used by CoachService to get the attached skills of a certain coach
+   * @deprecated Use getCoachSkills() instead for skill levels
+   * @return List of SkillEntity (without levels)
+   */
+  @Deprecated
+  public List<SkillEntity> getSkills() {
+    if (this.coachSkills != null) {
+      return this.coachSkills.stream()
+        .map(CoachSkillEntity::getSkill)
+        .collect(java.util.stream.Collectors.toList());
+    }
+    return null;
+  }
+
+  /**
+   * Setter used by CoachService to save a set of skills to a coach
+   * @deprecated Use setCoachSkills() instead for skill levels
+   * @param skills List of SkillEntity
+   */
+  @Deprecated
+  public void setSkills(List<SkillEntity> skills) {
+    // This method is kept for backward compatibility but should not be used
+    // Use setCoachSkills() instead
+  }
 
   // -------- Getters --------- //
   public Integer getId() {
@@ -215,8 +258,44 @@ public class CoachEntity {
     return members;
   }
 
-
-  
-
-
+  // -------- Setters --------- //
+  public void setId(Integer id) {
+    this.id = id;
+  }
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+  public void setEmail(String email) {
+    this.email = email;
+  }
+  public void setPhone(String phone) {
+    this.phone = phone;
+  }
+  public void setBiography1(String biography1) {
+    this.biography1 = biography1;
+  }
+  public void setBiography2(String biography2) {
+    this.biography2 = biography2;
+  }
+  public void setProfilePic(String profilePic) {
+    this.profilePic = profilePic;
+  }
+  public void setBioPic1(String bioPic1) {
+    this.bioPic1 = bioPic1;
+  }
+  public void setBioPic2(String bioPic2) {
+    this.bioPic2 = bioPic2;
+  }
+  public void setLocation(String location) {
+    this.location = location;
+  }
+  public void setFirebaseID(String firebaseID) {
+    this.firebaseID = firebaseID;
+  }
+  public void setMembers(List<MemberInfoEntity> members) {
+    this.members = members;
+  }
 }

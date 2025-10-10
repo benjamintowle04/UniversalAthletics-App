@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator, Platform, Dimensions, Alert } from 'react-native'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { FIREBASE_AUTH } from '../../../firebase_config';
 import { RouterProps } from '../../types/RouterProps';
 import { useUser } from '../../contexts/UserContext';
@@ -11,7 +11,7 @@ import '../../../global.css';
 
 const Home = ({ navigation }: RouterProps) => {    
   const auth = FIREBASE_AUTH;
-  const { userData, setUserData, isLoading, userType, isDetectingUserType } = useUser();
+  const { userData, setUserData, isLoading, userType, isDetectingUserType, isGuest } = useUser();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -20,6 +20,10 @@ const Home = ({ navigation }: RouterProps) => {
   const { width } = Dimensions.get('window');
   const isWeb = Platform.OS === 'web';
   const isLargeScreen = width > 768;
+
+  useEffect(() => {
+    console.log("Home mounted. UserData:", userData);
+  });
 
   // Logout function
   const handleLogout = useCallback(async () => {
@@ -101,6 +105,17 @@ const Home = ({ navigation }: RouterProps) => {
 
   // Get user-specific data based on user type
   const getUserSpecificData = () => {
+    // If guest, return a minimal, non-user-specific payload so Home can render
+    if (isGuest) {
+      return {
+        biography: 'Welcome to Universal Athletics',
+        connectionsLabel: 'Coaches',
+        connectionsCount: 0,
+        requestsLabel: '',
+        sessionRequestsLabel: ''
+      };
+    }
+
     if (!userData) return null;
 
     if (userData.userType === 'COACH') {
@@ -124,8 +139,14 @@ const Home = ({ navigation }: RouterProps) => {
 
   const userSpecificData = getUserSpecificData();
 
+  // Debug: surface why Home might be stuck in loading
+  console.log('Home state -- isLoading:', isLoading, 'isDetectingUserType:', isDetectingUserType);
+  console.log('Home state -- userData present:', !!userData, 'userData:', userData);
+  console.log('Home state -- userSpecificData:', userSpecificData);
+
   // Show loading state while user data is being fetched or user type is being detected
-  if (isLoading || isDetectingUserType || !userData || !userSpecificData) {
+  // For guests, skip the user-data gate and show the generic home UI.
+  if ((!isGuest && (isLoading || isDetectingUserType || !userData || !userSpecificData)) ) {
     return (
       <View className={`flex-1 justify-center items-center ${isWeb ? 'min-h-screen bg-gray-100' : ''}`}>
         <ActivityIndicator size="large" color="#0000ff" />

@@ -207,22 +207,21 @@ export const useConnection = ({
       );
       
       const querySnapshot = await getDocs(q);
-      let existingConversation = {} as {id: string, participants?: []} | null;
-      
+      let existingConversation: { id: string; participants?: any[] } | null = null;
+
       if (querySnapshot.size > 0) {
         // Look for existing conversation with this specific participant
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.participantIds.includes(targetFirebaseId)) {
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          if (Array.isArray(data.participantIds) && data.participantIds.includes(targetFirebaseId)) {
             existingConversation = {
-              id: doc.id,
+              id: docSnap.id,
               ...data
             };
+            // stop at the first matching conversation
+            break;
           }
-          else {
-            existingConversation = null;
-          }
-        });
+        }
       } else {
         existingConversation = null;
       }
@@ -230,15 +229,16 @@ export const useConnection = ({
       let conversationId;
       let otherParticipant;
 
-      if (existingConversation?.participants != null) {
+      if (existingConversation && existingConversation.participants != null) {
         console.log("Conversation Exists, navigating to existing convo", existingConversation);
 
         // Use existing conversation
         conversationId = existingConversation.id;
         
         // Find the other participant from existing conversation
+        // Find the other participant; support both firebaseId and firebaseID keys
         otherParticipant = existingConversation.participants?.find(
-          (p: any) => p.firebaseId !== currentUserFirebaseId
+          (p: any) => (p.firebaseId || p.firebaseID) !== currentUserFirebaseId
         );
       } else {
         console.log("Conversation doesnt exist, creating new one");
@@ -246,27 +246,36 @@ export const useConnection = ({
         conversationId = `conv_${userData.id}_${targetProfile.id || targetId}`;
         console.log("Conversation ID: ", conversationId);
         
-        otherParticipant = {
-          id: targetProfile.id || targetId,
-          type: targetType,
-          name: `${targetProfile.firstName} ${targetProfile.lastName}`,
-          profilePic: targetProfile.profilePic,
-          firebaseId: targetFirebaseId
+        // Build sanitized participant objects to avoid undefined fields (Firestore rejects undefined)
+        const participantA = {
+          id: userData.id != null ? String(userData.id) : '',
+          type: userData.userType,
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          profilePic: userData.profilePic || '',
+          firebaseId: currentUserFirebaseId
         };
 
-        // Create new conversation document
+        const participantB = {
+          id: targetProfile.id != null ? String(targetProfile.id) : (targetId != null ? String(targetId) : ''),
+          type: targetType,
+          name: `${targetProfile.firstName || ''} ${targetProfile.lastName || ''}`.trim(),
+          profilePic: targetProfile.profilePic || '',
+          firebaseId: targetFirebaseId || ''
+        };
+
+        // Ensure we have firebase ids for both participants before creating a conversation
+        if (!participantA.firebaseId || !participantB.firebaseId) {
+          console.error('Missing firebase id for conversation participants', { participantA, participantB });
+          Alert.alert('Error', 'Unable to start conversation because one of the users is missing a Firebase ID.');
+          return;
+        }
+
+        otherParticipant = participantB;
+
+        // Create new conversation document with no undefined fields
         await setDoc(doc(FIREBASE_DB, 'conversations', conversationId), {
-          participants: [
-            {
-              id: userData.id.toString(),
-              type: userData.userType,
-              name: `${userData.firstName} ${userData.lastName}`,
-              profilePic: userData.profilePic,
-              firebaseId: currentUserFirebaseId
-            },
-            otherParticipant
-          ],
-          participantIds: [currentUserFirebaseId, targetFirebaseId],
+          participants: [participantA, participantB],
+          participantIds: [participantA.firebaseId, participantB.firebaseId],
           unreadCount: 0,
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now()

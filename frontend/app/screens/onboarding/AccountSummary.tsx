@@ -15,6 +15,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { RouterProps } from "../../types/RouterProps";
 import { EditBioField } from "../../components/text/input/EditBioField";
 import { postUserOnboarding } from "../../../controllers/OnboardingController";
+import { getMemberByFirebaseId } from "../../../controllers/MemberInfoController";
+import { getCoachByFirebaseId } from "../../../controllers/CoachController";
 import { Colors } from "../../themes/colors/Colors";
 import { FIREBASE_AUTH } from "../../../firebase_config";
 
@@ -61,7 +63,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     combinedUserData?.phone || userData?.phone || ''
   );
   const [biography, setBiography] = useState<string>(
-    combinedUserData?.biography || userData?.biography || ''
+    combinedUserData?.biography || ''
   );
   const [imageUri, setImageUri] = useState<string | null>(
     userData?.profilePic || null
@@ -192,6 +194,7 @@ const pickImage = async () => {
     }
   
     try {
+
       // Prepare the complete user data for the backend
       const completeUserData = {
         firstName,
@@ -209,8 +212,120 @@ const pickImage = async () => {
       // Call the backend API first to get the complete user data with ID
       const response = await postUserOnboarding(completeUserData, imageUri);
       console.log("User Data response from backend:", response);
-      
-      navigation.navigate("Home");
+      // If backend returned the created user, normalize the response and set it into context
+      try {
+        if (response) {
+          // Normalize backend response into the MemberData | CoachData shape expected by UserContext
+          const normalize = (resp: any) => {
+            // prefer provided keys, fallback to common alternatives
+            const id = resp.id || resp.userId || resp.memberId || resp.coachId;
+            const firebaseId = resp.firebaseId || resp.firebaseID || FIREBASE_AUTH.currentUser?.uid || '';
+            const email = resp.email || '';
+            const firstName = resp.firstName || resp.first_name || '';
+            const lastName = resp.lastName || resp.last_name || '';
+            const phone = resp.phone || '';
+            const location = resp.location || '';
+            const profilePic = resp.profilePic || resp.profile_pic || resp.profile_image || resp.profile || '';
+            const bioPic1 = resp.bioPic1 || resp.bio_pic1 || '';
+            const bioPic2 = resp.bioPic2 || resp.bio_pic2 || '';
+            const skills = resp.skills || resp.selectedSkills || [];
+            const skillsWithLevels = resp.skillsWithLevels || resp.skills_with_levels || [];
+            // Determine userType: use explicit field if present, otherwise infer from available coach fields
+            const userType = (resp.userType || resp.user_type || (resp.biography1 || resp.bioPic1 || skillsWithLevels.length ? 'COACH' : 'MEMBER')).toUpperCase();
+
+            if (userType === 'COACH') {
+              return {
+                id,
+                firstName,
+                lastName,
+                email,
+                phone,
+                biography1: resp.biography1 || resp.biography || '',
+                biography2: resp.biography2 || '',
+                profilePic,
+                bioPic1,
+                bioPic2,
+                location,
+                firebaseId,
+                userType: 'COACH',
+                skills: resp.skills || [],
+                skillsWithLevels: skillsWithLevels
+              };
+            }
+
+            // Default to MEMBER shape
+            return {
+              id,
+              firstName,
+              lastName,
+              email,
+              phone,
+              biography: resp.biography || '',
+              profilePic,
+              location,
+              firebaseId,
+              userType: 'MEMBER',
+              skills: skills
+            };
+          };
+
+          const mapped = normalize(response);
+          console.log('About to set normalized user data into context:', mapped);
+          await setUserData(mapped as any);
+
+          // Re-fetch authoritative user record (contains signed profilePic URL) and update context
+          try {
+            const firebaseId = mapped.firebaseId || FIREBASE_AUTH.currentUser?.uid || '';
+            if (firebaseId) {
+              try {
+                const freshMember = await getMemberByFirebaseId(firebaseId);
+                if (freshMember && freshMember.firstName) {
+                  console.log('Refetched member after onboarding; updating context with authoritative record');
+                  await setUserData(freshMember as any);
+                } else {
+                  // try coach
+                  const freshCoach = await getCoachByFirebaseId(firebaseId);
+                  if (freshCoach && freshCoach.firstName) {
+                    console.log('Refetched coach after onboarding; updating context with authoritative record');
+                    await setUserData(freshCoach as any);
+                  }
+                }
+              } catch (refetchErr) {
+                console.warn('Refetching authoritative user record failed:', refetchErr);
+              }
+            }
+          } catch (err) {
+            console.error('Error during post-onboarding re-fetch:', err);
+          }
+
+          console.log('Set normalized user data after onboarding');
+          // Reset the navigation state at the root so the onboarding stack is replaced by the main app
+          try {
+            // Use the global navigationRef to reset the root to the MainTab -> Home
+            const { resetRootToHomeTabWithRetry } = require('../../navigation/NavigationRef');
+            await resetRootToHomeTabWithRetry(15, 150);
+            // Also attempt navigating locally to the OnboardingStack's 'Home' route
+            try {
+              // @ts-ignore
+              navigation.navigate('Home');
+            } catch (navErr) {
+              console.warn('Local navigation to Onboarding Home failed:', navErr);
+            }
+          } catch (navErr) {
+            console.error('Global navigation reset failed, falling back to navigate:', navErr);
+            try {
+              // @ts-ignore
+              navigation.navigate('Home');
+            } catch (errNav) {
+              console.error('Fallback navigation to Home also failed:', errNav);
+            }
+          }
+
+        }
+      } catch (err) {
+        console.error('Error setting user data after onboarding:', err);
+      }
+
     } catch (error) {
       console.error('Error completing onboarding:', error);
       Alert.alert("Error", "Failed to complete onboarding. Please try again.");

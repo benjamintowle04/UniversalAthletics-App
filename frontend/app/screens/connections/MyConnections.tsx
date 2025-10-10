@@ -12,6 +12,9 @@ import MyConnectionsMobileUI from '../../ui/mobile/connections/MyConnectionsMobi
 const MyConnections = ({ navigation }: RouterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  const MAX_RETRIES = 10;
+  const RETRY_DELAY_MS = 500;
 
   // Platform detection
   const { width } = Dimensions.get('window');
@@ -37,7 +40,7 @@ const MyConnections = ({ navigation }: RouterProps) => {
     return null;
   }
       
-  const { userData, setUserData } = userContext;
+  const { userData, setUserData, userDataVersion } = userContext as any;
 
   // Use the connection hook for message functionality
   // We'll pass null for profileData since we'll pass the connection data directly to handleMessageProfile
@@ -127,12 +130,19 @@ const MyConnections = ({ navigation }: RouterProps) => {
     if (userData?.id && userData?.userType && userSpecificData) {
       console.log(`Fetching connections for user ID: ${userData.id}, User Type: ${userData.userType}`);
       fetchData();
-    }
-    else {
-      console.log(`Failed Fetching connections for either member or coach based on user type: ${userData?.userType}`);
+    } else {
+      console.log(`User data incomplete for fetching connections. userData:`, userData);
+      // If userData exists but is incomplete (e.g., right after signup), retry a few times before giving up
+      if (retryAttempts < MAX_RETRIES) {
+        const t = setTimeout(() => setRetryAttempts((v) => v + 1), RETRY_DELAY_MS);
+        return () => clearTimeout(t);
+      } else {
+        console.warn('Max retry attempts reached for fetching connections.');
+        setIsLoading(false);
+      }
     }
 
-  }, [userData?.id, userData?.userType]); // Only depend on specific userData properties
+  }, [userData?.id, userData?.userType, retryAttempts, userDataVersion]); // Retry when attempts increment
 
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 

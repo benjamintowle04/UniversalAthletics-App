@@ -1,17 +1,19 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useUser } from '../../contexts/UserContext';
 import { createInboxHeaderWithBackButton } from '../headers/HeaderOptions';
 import { HeaderLogo } from '../headers/HeaderComponents';
 
 // Screen imports
 import SentRequests from '../../screens/inbox/SentRequests';
+import GuestGate from '../../components/navigation/GuestGate';
 import ChatScreen from '../../screens/inbox/messaging/ChatScreen';
 import SessionRequestDetails from '../../screens/sessions/SessionRequestDetails';
 import ConnectionProfile from '../../screens/connections/ConnectionProfile';
 import RequestASession from '../../screens/sessions/RequestASession';
+import EntryPoint from '../../screens/pre_login/EntryPoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,7 +49,6 @@ export const SentRequestsStackNavigator = React.forwardRef<any, any>((props, ref
     >
       <Stack.Screen 
         name="SentRequests" 
-        component={SentRequests}
         options={({ navigation }) => {
           // Store navigation reference for the root screen
           navigationRef.current = navigation;
@@ -128,7 +129,13 @@ export const SentRequestsStackNavigator = React.forwardRef<any, any>((props, ref
             ),
           };
         }}
-      />
+      >
+        {(props) => (
+          <GuestGate>
+            <SentRequests {...props} />
+          </GuestGate>
+        )}
+      </Stack.Screen>
 
       <Stack.Screen
         name="ChatScreen"

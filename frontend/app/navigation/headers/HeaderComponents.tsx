@@ -1,14 +1,20 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, Image } from 'react-native';
+import { View, TouchableOpacity, Text, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export const HeaderLogo = () => (
-  <Image 
-    source={require('../../images/logo.png')} 
-    style={{ width: 54, height: 54, marginLeft: 18 }}
-    resizeMode="contain"
-  />
-);
+export const HeaderLogo = () => {
+  const isWeb = Platform.OS === 'web';
+  const webStyle = { width: 54, height: 54, marginLeft: 18 };
+  const mobileStyle = { width: 40, height: 40, marginLeft: 12 };
+
+  return (
+    <Image
+      source={require('../../images/logo.png')}
+      style={isWeb ? webStyle : mobileStyle}
+      resizeMode="contain"
+    />
+  );
+};
 
 interface NotificationIconProps {
   iconName: keyof typeof Ionicons.glyphMap;

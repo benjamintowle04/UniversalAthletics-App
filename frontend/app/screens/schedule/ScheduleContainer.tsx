@@ -5,7 +5,7 @@ import ScheduleMonthView from './ScheduleMonthView';
 import ScheduleListView from './ScheduleListView';
 import '../../../global.css'; 
 import { Colors } from '../../themes/colors/Colors';
-import { getSessionsByMemberId } from '../../../controllers/SessionController';
+import { getSessionsByMemberId, getSessionsByCoachId } from '../../../controllers/SessionController';
 import { useUser } from '../../contexts/UserContext';
 import { RouterProps } from '../../types/RouterProps';
 
@@ -57,7 +57,17 @@ export default function ScheduleContainer({ navigation, route }: ScheduleContain
     try {
       setLoading(true);
       setError(null);
-      const sessionData = await getSessionsByMemberId(userData.id);
+      // Fetch sessions according to user type: coaches see sessions for their coachId, members see their sessions
+      let sessionData;
+      if (userData.userType === 'COACH') {
+        sessionData = await getSessionsByCoachId(userData.id);
+      } else {
+        sessionData = await getSessionsByMemberId(userData.id);
+      }
+      console.log('Fetched sessions from API:', sessionData);
+      if (!sessionData || !Array.isArray(sessionData)) {
+        console.warn('Sessions API returned no sessions or invalid format', sessionData);
+      }
       setSessions(sessionData);
     } catch (err) {
       console.error('Error fetching sessions:', err);

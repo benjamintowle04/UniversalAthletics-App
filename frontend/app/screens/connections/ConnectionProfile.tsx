@@ -293,8 +293,6 @@ const ConnectionProfile = ({ route, navigation }: ConnectionProfileProps) => {
                 )}
               </TouchableOpacity>
               
-              // In your ConnectionProfileWebUI component, replace the existing skills section with:
-
               <TouchableOpacity 
                 className="py-4 px-6 rounded-full flex-1 flex-row items-center justify-center"
                 style={{ backgroundColor: Colors.uaRed }}

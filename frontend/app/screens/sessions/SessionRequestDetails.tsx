@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Platform, Animated } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
 import { useUser } from '../../contexts/UserContext'
+import { FIREBASE_AUTH } from '../../../firebase_config'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '../../themes/colors/Colors'
 import { acceptSessionRequest, declineSessionRequest } from '../../../controllers/SessionRequestController'
@@ -20,11 +21,101 @@ interface SessionRequestDetailsProps {
   }
 }
 
+// Custom Notification Component
+const CustomNotification = ({ 
+  visible, 
+  message, 
+  type = 'warning', 
+  onHide 
+}: { 
+  visible: boolean; 
+  message: string; 
+  type?: 'warning' | 'error' | 'success'; 
+  onHide: () => void; 
+}) => {
+  const slideAnim = useRef(new Animated.Value(-100)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.sequence([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(slideAnim, {
+          toValue: -100,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        onHide();
+      });
+    }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const getBackgroundColor = () => {
+    switch (type) {
+      case 'error': return '#EF4444';
+      case 'success': return '#10B981';
+      case 'warning': 
+      default: return '#F59E0B';
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case 'error': return 'close-circle';
+      case 'success': return 'checkmark-circle';
+      case 'warning':
+      default: return 'warning';
+    }
+  };
+
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        top: Platform.OS === 'web' ? 20 : 60,
+        left: 20,
+        right: 20,
+        zIndex: 1000,
+        transform: [{ translateY: slideAnim }],
+      }}
+    >
+      <View
+        className="flex-row items-center p-4 rounded-lg shadow-lg"
+        style={{ backgroundColor: getBackgroundColor() }}
+      >
+        <Ionicons name={getIcon()} size={24} color="white" />
+        <Text className="text-white font-semibold text-base ml-3 flex-1">
+          {message}
+        </Text>
+        <TouchableOpacity onPress={onHide}>
+          <Ionicons name="close" size={20} color="white" />
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+};
+
 const SessionRequestDetails = ({navigation, route}: SessionRequestDetailsProps) => {
   const { userData, updateUserData } = useUser()
   const [processing, setProcessing] = useState(false)
   const [selectedDateTime, setSelectedDateTime] = useState<number | null>(null) 
   const [sessionRequest, setSessionRequest] = useState<any>(null)
+  const [notification, setNotification] = useState<{
+    visible: boolean;
+    message: string;
+    type: 'warning' | 'error' | 'success';
+  }>({
+    visible: false,
+    message: '',
+    type: 'warning'
+  });
 
   const { sessionRequestId } = route.params
 
@@ -35,6 +126,20 @@ const SessionRequestDetails = ({navigation, route}: SessionRequestDetailsProps) 
       setSessionRequest(request)
     }
   }, [userData?.pendingSessionRequests, sessionRequestId])
+
+  // Helper function to show notification
+  const showNotification = (message: string, type: 'warning' | 'error' | 'success' = 'warning') => {
+    setNotification({
+      visible: true,
+      message,
+      type
+    });
+  };
+
+  // Helper function to hide notification
+  const hideNotification = () => {
+    setNotification(prev => ({ ...prev, visible: false }));
+  };
 
   // Helper function to convert 24hr time to 12hr format
   const formatTimeTo12Hour = (time24: string) => {
@@ -56,31 +161,54 @@ const SessionRequestDetails = ({navigation, route}: SessionRequestDetailsProps) 
     if (!userData || !sessionRequest) return;
     
     if (!selectedDateTime) {
-      Alert.alert("Please Select", "Please select a date and time option before accepting the session request.")
+      if (Platform.OS === 'web') {
+        showNotification("Please select a date and time option before accepting the session request.", 'warning');
+      } else {
+        Alert.alert("Please Select", "Please select a date and time option before accepting the session request.")
+      }
       return
     }
 
     const selectedTimeText = getSelectedDateTimeText(selectedDateTime);
     
-    Alert.alert(
-      "Confirm Accept",
-      `Are you sure you want to accept this session request for ${selectedTimeText}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Accept",
-          style: "default",
-          onPress: handleAcceptSessionRequest
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // For web, show a confirmation notification and proceed
+      showNotification(`Accepting session for ${selectedTimeText}...`, 'success');
+      setTimeout(() => {
+        handleAcceptSessionRequest();
+      }, 1000);
+    } else {
+      // For mobile, use native Alert
+      Alert.alert(
+        "Confirm Accept",
+        `Are you sure you want to accept this session request for ${selectedTimeText}?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Accept",
+            style: "default",
+            onPress: handleAcceptSessionRequest
+          }
+        ]
+      );
+    }
   }
 
 const handleAcceptSessionRequest = async () => {
   if (!userData || !sessionRequest) return;
+  
+  // Double-check date selection
+  if (!selectedDateTime) {
+    if (Platform.OS === 'web') {
+      showNotification("Please select a date and time option first.", 'warning');
+    } else {
+      Alert.alert("Please Select", "Please select a date and time option before accepting the session request.")
+    }
+    return;
+  }
   
   setProcessing(true);
   
@@ -96,7 +224,8 @@ const handleAcceptSessionRequest = async () => {
       sessionTime: selectedDateTimeData.time,
       sessionLocation: sessionRequest.sessionLocation,
       sessionDescription: sessionRequest.sessionDescription,
-      coachFirebaseId: sessionRequest.senderFirebaseId,
+      // Use multiple fallbacks for firebase IDs to avoid nulls (senderFirebaseId or senderFirebaseID)
+      coachFirebaseId: sessionRequest.senderFirebaseId || sessionRequest.senderFirebaseID || '',
       coachFirstName: sessionRequest.senderFirstName,
       coachLastName: sessionRequest.senderLastName,
       coachProfilePic: getUnsignedUrl(sessionRequest.senderProfilePic),
@@ -104,10 +233,12 @@ const handleAcceptSessionRequest = async () => {
       memberFirstName: userData.firstName,
       memberLastName: userData.lastName,
       memberProfilePic: getUnsignedUrl(userData.profilePic),
-      memberFirebaseId: userData.firebaseId,
+      // Use fallbacks for member firebase ID: prefer userData.firebaseId, then firebaseID, then auth uid
+      memberFirebaseId: userData.firebaseId || (userData as any).firebaseID || FIREBASE_AUTH.currentUser?.uid || '',
       memberId: userData.id
     };
-    
+    console.log('Creating session with payload:', sessionData);
+
     const createdSession = await createSession(sessionData);
     console.log("Session created successfully:", createdSession);
     
@@ -121,23 +252,40 @@ const handleAcceptSessionRequest = async () => {
     });
     
     //Inform user on success
-    Alert.alert(
-      "Success", 
-      `Session request accepted and session scheduled for ${getSelectedDateTimeText(selectedDateTime)}!`,
-      [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack()
-        }
-      ]
-    );
+    const successMessage = `Session request accepted and session scheduled for ${getSelectedDateTimeText(selectedDateTime)}!`;
+    
+    if (Platform.OS === 'web') {
+      showNotification(successMessage, 'success');
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+    } else {
+      Alert.alert(
+        "Success", 
+        successMessage,
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    }
 
-    navigation.goBack();
   } catch (error) {
     // Inform user on error
     console.error('Error accepting session request or creating session:', error);
-    Alert.alert("Error", error instanceof Error ? error.message : "Failed to accept session request");
-    navigation.goBack();
+    const errorMessage = error instanceof Error ? error.message : "Failed to accept session request";
+    
+    if (Platform.OS === 'web') {
+      showNotification(errorMessage, 'error');
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+    } else {
+      Alert.alert("Error", errorMessage);
+      navigation.goBack();
+    }
   } finally {
     setProcessing(false);
   }
@@ -163,21 +311,28 @@ const getSelectedDateTimeData = (option: number | null) => {
       ? `${sessionRequest.senderFirstName} ${sessionRequest.senderLastName}`
       : `Coach #${sessionRequest.senderId}`;
     
-    Alert.alert(
-      "Confirm Decline",
-      `Are you sure you want to decline this session request from ${coachName}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Decline",
-          style: "destructive",
-          onPress: handleDeclineSessionRequest
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      showNotification(`Declining session request from ${coachName}...`, 'warning');
+      setTimeout(() => {
+        handleDeclineSessionRequest();
+      }, 1000);
+    } else {
+      Alert.alert(
+        "Confirm Decline",
+        `Are you sure you want to decline this session request from ${coachName}?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Decline",
+            style: "destructive",
+            onPress: handleDeclineSessionRequest
+          }
+        ]
+      );
+    }
   }
 
   const handleDeclineSessionRequest = async () => {
@@ -197,20 +352,35 @@ const getSelectedDateTimeData = (option: number | null) => {
         pendingSessionRequests: updatedRequests
       });
       
-      Alert.alert(
-        "Request Declined", 
-        "Session request has been declined.",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
-      navigation.goBack()
+      if (Platform.OS === 'web') {
+        showNotification("Session request has been declined.", 'success');
+        setTimeout(() => {
+          navigation.goBack();
+        }, 2000);
+      } else {
+        Alert.alert(
+          "Request Declined", 
+          "Session request has been declined.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.goBack()
+            }
+          ]
+        );
+      }
     } catch (error) {
       console.error('Error declining session request:', error);
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to decline session request");
+      const errorMessage = error instanceof Error ? error.message : "Failed to decline session request";
+      
+      if (Platform.OS === 'web') {
+        showNotification(errorMessage, 'error');
+        setTimeout(() => {
+          navigation.goBack();
+        }, 2000);
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
       navigation.goBack()
     } finally {
       setProcessing(false);
@@ -269,6 +439,12 @@ const getSelectedDateTimeData = (option: number | null) => {
   if (!sessionRequest) {
     return (
       <View className="flex-1 bg-gray-50 justify-center items-center">
+        <CustomNotification
+          visible={notification.visible}
+          message={notification.message}
+          type={notification.type}
+          onHide={hideNotification}
+        />
         <Ionicons name="alert-circle-outline" size={64} color={Colors.grey.medium} />
         <Text className="text-gray-500 text-lg mt-4">Session request not found</Text>
         <TouchableOpacity 
@@ -284,6 +460,14 @@ const getSelectedDateTimeData = (option: number | null) => {
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
+      {/* Custom Notification */}
+      <CustomNotification
+        visible={notification.visible}
+        message={notification.message}
+        type={notification.type}
+        onHide={hideNotification}
+      />
+      
       <View className="p-4">
         {/* Header */}
         <View className="flex-row items-center mb-6">
@@ -380,7 +564,7 @@ const getSelectedDateTimeData = (option: number | null) => {
               backgroundColor: processing ? Colors.grey.medium : Colors.uaGreen,
               opacity: processing ? 0.6 : 1 
             }}
-            onPress={Platform.OS === 'web' ? handleAcceptSessionRequest : confirmAcceptSessionRequest }
+            onPress={confirmAcceptSessionRequest}
             disabled={processing}
           >
             <Text className="text-white font-bold text-center text-lg">
@@ -394,7 +578,7 @@ const getSelectedDateTimeData = (option: number | null) => {
               backgroundColor: processing ? Colors.grey.medium : Colors.uaRed,
               opacity: processing ? 0.6 : 1 
             }}
-            onPress={Platform.OS === 'web' ? handleDeclineSessionRequest : confirmDeclineSessionRequest}
+            onPress={confirmDeclineSessionRequest}
             disabled={processing}
           >
             <Text className="text-white font-bold text-center text-lg">
@@ -408,3 +592,4 @@ const getSelectedDateTimeData = (option: number | null) => {
 }
 
 export default SessionRequestDetails
+

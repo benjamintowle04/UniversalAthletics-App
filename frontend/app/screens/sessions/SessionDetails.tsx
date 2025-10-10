@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../themes/colors/Colors';
 import '../../../global.css';
 import { RouteProp } from '@react-navigation/native';
+import { useUser } from '../../contexts/UserContext'
 
 interface SessionDetailsRouteParams {
   sessionId: number;
@@ -14,6 +15,9 @@ interface SessionDetailsRouteParams {
   coachFirstName?: string;
   coachLastName?: string;
   coachProfilePic?: string;
+  memberFirstName?: string;
+  memberLastName?: string;
+  memberProfilePic?: string;
 }
 
 interface SessionDetailsProps {
@@ -30,7 +34,10 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
     sessionDescription,
     coachFirstName,
     coachLastName,
-    coachProfilePic
+    coachProfilePic, 
+    memberFirstName,
+    memberLastName,
+    memberProfilePic
   } = route.params;
 
   console.log('SessionDetails Props:', {
@@ -62,7 +69,17 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const coachName = `${coachFirstName || ''} ${coachLastName || ''}`.trim() || 'Coach';
+  // Get current user type from context to decide which participant to show
+  const { userData } = useUser()
+
+  const currentUserType = userData?.userType || 'MEMBER'
+
+  // If current user is a COACH, show the member info (if provided), otherwise show coach info
+  const otherFirstName = currentUserType === 'COACH' ? route.params.memberFirstName ?? coachFirstName : coachFirstName ?? route.params.memberFirstName
+  const otherLastName = currentUserType === 'COACH' ? route.params.memberLastName ?? coachLastName : coachLastName ?? route.params.memberLastName
+  const otherProfilePic = currentUserType === 'COACH' ? route.params.memberProfilePic ?? coachProfilePic : coachProfilePic ?? route.params.memberProfilePic
+
+  const otherName = `${otherFirstName || ''} ${otherLastName || ''}`.trim() || (currentUserType === 'COACH' ? 'Member' : 'Coach')
 
   const isUpcoming = () => {
     const sessionDateTime = new Date(`${sessionDate} ${sessionTime}`);
@@ -147,11 +164,11 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
           </View>
           
           <View className="ml-14 flex-row items-center">
-            {/* Profile Picture */}
+            {/* Profile Picture of the other participant */}
             <View className="mr-4">
-              {coachProfilePic ? (
+              {otherProfilePic ? (
                 <Image 
-                  source={{ uri: coachProfilePic }}
+                  source={{ uri: otherProfilePic }}
                   className="w-12 h-12 rounded-full"
                 />
               ) : (
@@ -162,7 +179,7 @@ const SessionDetails = ({ route }: SessionDetailsProps) => {
             </View>
             
             <View className="flex-1">
-              <Text className="text-gray-900 font-semibold text-lg">{coachName}</Text>
+              <Text className="text-gray-900 font-semibold text-lg">{otherName}</Text>
             </View>
           </View>
         </View>

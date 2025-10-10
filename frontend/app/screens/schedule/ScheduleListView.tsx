@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../themes/colors/Colors';
 import '../../../global.css';
 import { RouterProps } from '../../types/RouterProps';
+import { useUser } from '../../contexts/UserContext';
 
 interface SessionEntity {
   id?: number; 
@@ -33,6 +34,9 @@ interface ScheduleListViewProps extends RouterProps {
 }
 
 const ScheduleListView = ({ sessions, loading, error, navigation }: ScheduleListViewProps) => {
+  const { userData } = useUser();
+  const currentUserType = userData?.userType || 'MEMBER'
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -53,7 +57,14 @@ const ScheduleListView = ({ sessions, loading, error, navigation }: ScheduleList
   };
 
   const isUpcoming = (sessionDate: string, sessionTime: string) => {
-    const sessionDateTime = new Date(`${sessionDate} ${sessionTime}`);
+    // Guard and normalize time formats (usually HH:MM or HH:MM:SS)
+    if (!sessionDate || !sessionTime) return false;
+    let normalizedTime = sessionTime;
+    // If time has no seconds, append :00
+    if (/^\d{1,2}:\d{2}$/.test(sessionTime)) {
+      normalizedTime = `${sessionTime}:00`;
+    }
+    const sessionDateTime = new Date(`${sessionDate}T${normalizedTime}`);
     const now = new Date();
     return sessionDateTime > now;
   };
@@ -69,6 +80,9 @@ const ScheduleListView = ({ sessions, loading, error, navigation }: ScheduleList
       coachFirstName: session.coachFirstName,
       coachLastName: session.coachLastName,
       coachProfilePic: session.coachProfilePic,
+      memberFirstName: session.memberFirstName,
+      memberLastName: session.memberLastName,
+      memberProfilePic: session.memberProfilePic,
     });
   };
 
@@ -96,7 +110,9 @@ const ScheduleListView = ({ sessions, loading, error, navigation }: ScheduleList
   };
 
   const renderSessionItem = (session: SessionEntity) => {
-    const coachName = `${session.coachFirstName || ''} ${session.coachLastName || ''}`.trim() || 'Coach';
+    const coachName = `${session.coachFirstName || ''} ${session.coachLastName || ''}`.trim()
+    const memberName = `${session.memberFirstName || ''} ${session.memberLastName || ''}`.trim()
+    const participantName = currentUserType === 'COACH' ? (memberName || 'Member') : (coachName || 'Coach')
 
     return (
       <TouchableOpacity
@@ -123,7 +139,7 @@ const ScheduleListView = ({ sessions, loading, error, navigation }: ScheduleList
             <View className="flex-row items-center mb-2">
               <Ionicons name="person-outline" size={16} color={Colors.uaBlue} />
               <Text className="ml-2 text-sm text-gray-600">
-                Coach: {coachName}
+                {currentUserType === 'COACH' ? `Member: ${participantName}` : `Coach: ${participantName}`}
               </Text>
             </View>
 

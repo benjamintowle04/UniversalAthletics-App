@@ -1,8 +1,13 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../../contexts/UserContext';
 import { createInboxHeaderWithoutBackButton } from '../headers/HeaderOptions';
 import UserSettings from '../../screens/settings/UserSettings';
+import GuestGate from '../../components/navigation/GuestGate';
+import SkillsManagement from '../../screens/settings/SkillsManagement';
+import EntryPoint from '../../screens/pre_login/EntryPoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +38,23 @@ export const SettingsStackNavigator = React.forwardRef<any, any>((props, ref) =>
     <Stack.Navigator>
       <Stack.Screen 
         name="UserSettings" 
-        component={UserSettings} 
+        options={({ navigation }) => {
+          // Store navigation reference for the root screen
+          navigationRef.current = navigation;
+          return {
+            ...createInboxHeaderWithoutBackButton({ ...headerProps, navigation }),
+          };
+        }}
+      >
+        {(props) => (
+          <GuestGate>
+            <UserSettings {...props} />
+          </GuestGate>
+        )}
+      </Stack.Screen>
+      <Stack.Screen 
+        name="SkillsManagement" 
+        component={SkillsManagement} 
         options={({ navigation }) => {
           // Store navigation reference for the root screen
           navigationRef.current = navigation;
@@ -42,7 +63,14 @@ export const SettingsStackNavigator = React.forwardRef<any, any>((props, ref) =>
           };
         }}
       />
+      <Stack.Screen
+        name="EntryPoint"
+        component={EntryPoint as React.ComponentType<any>}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
+
+    
   );
 });
 

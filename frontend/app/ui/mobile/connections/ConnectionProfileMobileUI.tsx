@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView, Image } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../../themes/colors/Colors';
 import { getIconsFromSkills } from '../../../../utils/IconLibrary';
@@ -174,6 +174,33 @@ const renderTraditionalSkills = () => {
 
         {/* Connection Button */}
         {renderConnectionButton()}
+
+        {/* Additional action buttons (visible when connected) */}
+        {isConnected && (
+          <View className="flex-row gap-4 mb-6 w-full">
+            <TouchableOpacity
+              className="py-3 px-4 rounded-full flex-1 flex-row items-center justify-center mr-2"
+              style={{ backgroundColor: Colors.uaRed }}
+              onPress={handleBookSession}
+            >
+              <Ionicons name="calendar" size={18} color="white" />
+              <Text className="text-white font-semibold ml-2 text-base">
+                {getProfileSpecificData?.bookButtonText || 'Request Session'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="py-3 px-4 rounded-full flex-1 flex-row items-center justify-center ml-2"
+              style={{ backgroundColor: Colors.uaBlue }}
+              onPress={handleMessageProfile}
+            >
+              <Ionicons name="chatbubble" size={18} color="white" />
+              <Text className="text-white font-semibold ml-2 text-base">
+                {getProfileSpecificData?.messageButtonText || 'Message'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Skills Section */}
         {renderSkillsWithLevels()}

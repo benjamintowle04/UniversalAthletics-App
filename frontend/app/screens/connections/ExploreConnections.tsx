@@ -28,13 +28,16 @@ const ExploreConnections = ({navigation}: RouterProps) => {
   }
   
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  const MAX_RETRIES = 10;
+  const RETRY_DELAY_MS = 500;
 
   const userContext = useContext(UserContext);
   if (!userContext) {
     return null;
   }
       
-  const { userData, setUserData } = userContext;
+  const { userData, setUserData, userDataVersion } = userContext as any;
 
   // Memoize user-specific data to prevent infinite re-renders
   const userSpecificData = useMemo(() => {
@@ -60,7 +63,7 @@ const ExploreConnections = ({navigation}: RouterProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!userData || !userData.location || !userSpecificData) {
+        if (!userData || !userSpecificData) {
           console.error('User data is not available or incomplete');
           return;
         }
@@ -69,7 +72,8 @@ const ExploreConnections = ({navigation}: RouterProps) => {
 
         if (userData.userType === 'MEMBER') {
           console.log('Fetching coaches for member exploration');
-          const coaches = await getAllCoaches(userData.location, userData.skills || []);
+          // location may not be populated immediately after signup; pass empty string as fallback
+          const coaches = await getAllCoaches(userData.location || '', userData.skills || []);
           fetchedConnections = (coaches || []).map((coach: any): Connection => ({
             firebaseID: coach.firebaseID || coach.firebaseId,
             id: coach.id?.toString(),
@@ -105,14 +109,22 @@ const ExploreConnections = ({navigation}: RouterProps) => {
 
     console.log("Preparing to fetch all members")
 
-    // Only fetch if we have the required data
-    if (userData?.location && userData?.userType && userSpecificData) {
+    // Start fetching as soon as we know the user's type. Location/skills may arrive shortly
+    // after signup; backend now returns a populated user row, but keep a short retry loop
+    // to be resilient to any remaining eventual consistency.
+    if (userData?.userType && userSpecificData) {
       console.log(`Fetching ${userSpecificData.connectionType} for exploration - User Type: ${userData.userType}`);
       fetchData();
     } else {
-      console.log(`Failed to fetch connections for exploration - User Type: ${userData?.userType}`);
+      console.log(`User data incomplete for exploration fetch. userData:`, userData);
+      if (retryAttempts < MAX_RETRIES) {
+        const t = setTimeout(() => setRetryAttempts((v) => v + 1), RETRY_DELAY_MS);
+        return () => clearTimeout(t);
+      } else {
+        console.warn('Max retry attempts reached for ExploreConnections.');
+      }
     }
-  }, [userData?.location, userData?.userType, userData?.skills]);
+  }, [userData?.location, userData?.userType, userData?.skills, retryAttempts, userDataVersion]);
 
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 

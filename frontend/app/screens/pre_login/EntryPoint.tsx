@@ -2,10 +2,12 @@ import { View, Image, ScrollView, Dimensions } from 'react-native';
 import React from 'react';
 import { RouterProps } from '../../types/RouterProps';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { useUser } from '../../contexts/UserContext';
 import { HeaderText } from '../../components/text/HeaderText';
 import "../../../global.css";
 import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
 import { Platform } from 'react-native';
+import { resetRootToHomeTabWithRetry } from '../../navigation/NavigationRef';
 
 const EntryPoint = ({ navigation }: RouterProps) => {
   const { width } = Dimensions.get('window');
@@ -20,6 +22,22 @@ const EntryPoint = ({ navigation }: RouterProps) => {
   const moveToSignUp = () => {
     navigation.navigate("SignUp");
     console.log("Moving to Sign Up");
+  };
+
+  const { continueAsGuest } = useUser();
+
+  const continueGuest = () => {
+    continueAsGuest();
+    // Rely on the app's conditional rendering (AppNavigator uses isGuest)
+    // to show the main tabs automatically. Avoid direct navigation to a
+    // top-level nested route from within the PreLogin stack (which triggers
+    // the 'not handled by any navigator' warning).
+    console.log('Continuing as guest; attempting root reset to HomeTab');
+    // Try to aggressively reset the root to the Home tab so navigation state
+    // transitions immediately and the user sees the main app.
+    resetRootToHomeTabWithRetry().catch(err => {
+      console.warn('Failed to reset root to HomeTab:', err);
+    });
   };
 
   if (isWeb && isLargeScreen) {
@@ -39,6 +57,9 @@ const EntryPoint = ({ navigation }: RouterProps) => {
                   <PrimaryButton title="Login" onPress={moveToLogin} />
                 </View>
                 <PrimaryButton title="Sign Up" onPress={moveToSignUp} />
+                <View className="mt-4">
+                  <PrimaryButton title="Continue as Guest" onPress={continueGuest} />
+                </View>
               </View>
             </View>
           </View>
@@ -91,6 +112,9 @@ const EntryPoint = ({ navigation }: RouterProps) => {
           <PrimaryButton title="Login" onPress={moveToLogin} />
         </View>
         <PrimaryButton title="Sign Up" onPress={moveToSignUp} />
+        <View className="mt-4">
+          <PrimaryButton title="Continue as Guest" onPress={continueGuest} />
+        </View>
       </View>
     </View>
   );

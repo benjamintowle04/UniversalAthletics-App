@@ -6,6 +6,8 @@ import { backButtonOnlyHeader } from '../headers/HeaderOptions';
 import EntryPoint from '../../screens/pre_login/EntryPoint';
 import Login from '../../screens/pre_login/Login';
 import SignUp from '../../screens/pre_login/SignUp';
+import { HomeStackNavigator } from './HomeStack';
+import {createInboxHeaderWithoutBackButton} from '../headers/HeaderOptions';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +28,11 @@ export function PreLoginStackNavigator() {
         name="SignUp" 
         component={SignUp} 
         options={backButtonOnlyHeader}
+      />
+      <Stack.Screen
+        name="HomeTab"
+        component={HomeStackNavigator as React.ComponentType<any>}
+        options={createInboxHeaderWithoutBackButton as any}
       />
     </Stack.Navigator>
   );

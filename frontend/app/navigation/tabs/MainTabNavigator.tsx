@@ -10,6 +10,7 @@ import { ConnectionsStackNavigator } from '../stacks/ConnectionsStack';
 import { SettingsStackNavigator } from '../stacks/SettingsStack';
 import { InboxStackNavigator } from '../stacks/InboxStack';
 import { SentRequestsStackNavigator } from '../stacks/SentRequestsStack';
+import { ManagementStackNavigator } from '../stacks/ManagementStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,6 +24,7 @@ export function MainTabNavigator() {
   const inboxStackRef = React.useRef<any>(null);
   const settingsStackRef = React.useRef<any>(null);
   const sentRequestsStackRef = React.useRef<any>(null);
+  const managementStackRef = React.useRef<any>(null);
   
   return (
     <Tab.Navigator
@@ -40,7 +42,9 @@ export function MainTabNavigator() {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'SettingsTab') {
             iconName = focused ? 'settings' : 'settings-outline';
-          } 
+          } else if (route.name === 'ManagementTab') {
+            iconName = focused ? 'shield-checkmark' : 'shield-checkmark-outline';
+          }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'blue',
@@ -149,6 +153,27 @@ export function MainTabNavigator() {
       >
         {() => <SettingsStackNavigator ref={settingsStackRef} />}
       </Tab.Screen>
+
+     { userType === "COACH" && 
+      <Tab.Screen 
+          name="ManagementTab"
+          options={{
+            tabBarLabel: 'Admin',
+          }}
+          listeners={{
+            tabPress: (e) => {
+              // Force reset even if not focused since this tab is hidden
+              managementStackRef.current?.resetToRoot();
+            },
+            focus: (e) => {
+              // Also reset when the tab gains focus programmatically
+              managementStackRef.current?.resetToRoot();
+            },
+          }}
+        >
+          {() => <ManagementStackNavigator ref={managementStackRef} />}
+        </Tab.Screen>
+      }
     </Tab.Navigator>
   );
 }

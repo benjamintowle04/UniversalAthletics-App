@@ -16,7 +16,7 @@ interface ProfileData {
   biography?: string;
   bioPic1?: string;
   bioPic2?: string;
-  skills: Array<{skill_id: number, title: string}>;
+  skills: Array<{ skill_id: number; title: string }>;
   // Add new field for coaches with skill levels
   skillsWithLevels?: Array<{
     skillId: number;
@@ -32,7 +32,11 @@ interface UseProfileDataProps {
   profileFirebaseId?: string;
 }
 
-export const useProfileData = ({ profileId, profileType, profileFirebaseId }: UseProfileDataProps) => {
+export const useProfileData = ({
+  profileId,
+  profileType,
+  profileFirebaseId,
+}: UseProfileDataProps) => {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,21 +54,21 @@ export const useProfileData = ({ profileId, profileType, profileFirebaseId }: Us
         setError(null);
         setIsLoading(true);
         let fetchedData;
-        console.log("Fetching profile data with firebase id of ", profileFirebaseId);
-        
+        console.log('Fetching profile data with firebase id of ', profileFirebaseId);
+
         if (profileType === 'COACH') {
           fetchedData = await getCoachByFirebaseId(profileFirebaseId);
           if (fetchedData) {
             fetchedData.userType = 'COACH';
-            
+
             // Handle backward compatibility for skills
             // If skillsWithLevels exists, use it; otherwise, use the old skills format
             if (fetchedData.skillsWithLevels && fetchedData.skillsWithLevels.length > 0) {
               // New format with skill levels - keep both for compatibility
-              console.log("Coach has skills with levels:", fetchedData.skillsWithLevels);
+              console.log('Coach has skills with levels:', fetchedData.skillsWithLevels);
             } else if (fetchedData.skills) {
               // Old format - convert to new format for consistency
-              console.log("Coach has traditional skills:", fetchedData.skills);
+              console.log('Coach has traditional skills:', fetchedData.skills);
               // Keep the old skills format as is for backward compatibility
             }
           }
@@ -74,12 +78,12 @@ export const useProfileData = ({ profileId, profileType, profileFirebaseId }: Us
             fetchedData.userType = 'MEMBER';
           }
         }
-        
+
         if (!fetchedData) {
           setError(`${profileType.toLowerCase()} profile not found.`);
           return;
         }
-        
+
         setProfileData(fetchedData);
       } catch (error) {
         console.error(`Error fetching ${profileType?.toLowerCase()} data:`, error);
@@ -88,7 +92,7 @@ export const useProfileData = ({ profileId, profileType, profileFirebaseId }: Us
         setIsLoading(false);
       }
     };
-    
+
     fetchProfileData();
   }, [profileId, profileType, profileFirebaseId]);
 
@@ -102,6 +106,6 @@ export const useProfileData = ({ profileId, profileType, profileFirebaseId }: Us
         setError(null);
         // The useEffect will handle the refetch
       }
-    }
+    },
   };
 };

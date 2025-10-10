@@ -1,6 +1,7 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { HeaderLogo, NotificationIcon, BackButton } from './HeaderComponents';
+import { Ionicons } from '@expo/vector-icons';
 
 
 interface HeaderNotificationProps {

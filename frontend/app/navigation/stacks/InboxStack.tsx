@@ -8,11 +8,13 @@ import { HeaderLogo, BackButton } from '../headers/HeaderComponents';
 
 // Screen imports
 import InboxHome from '../../screens/inbox/InboxHome';
+import GuestGate from '../../components/navigation/GuestGate';
 import SentRequests from '../../screens/inbox/SentRequests';
 import ChatScreen from '../../screens/inbox/messaging/ChatScreen';
 import SessionRequestDetails from '../../screens/sessions/SessionRequestDetails';
 import ConnectionProfile from '../../screens/connections/ConnectionProfile';
 import RequestASession from '../../screens/sessions/RequestASession';
+import EntryPoint from '../../screens/pre_login/EntryPoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,7 +50,6 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
     >
       <Stack.Screen 
         name="Inbox" 
-        component={InboxHome}
         options={({ navigation }) => {
           // Store navigation reference for the root screen
           navigationRef.current = navigation;
@@ -129,7 +130,13 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
             ),
           };
         }}
-      />
+      >
+        {(props) => (
+          <GuestGate>
+            <InboxHome {...props} />
+          </GuestGate>
+        )}
+      </Stack.Screen>
       <Stack.Screen 
         name="SentRequests" 
         component={SentRequests}
@@ -208,6 +215,13 @@ export const InboxStackNavigator = React.forwardRef<any, any>((props, ref) => {
             </View>
           )
         })}
+      />
+
+      {/* Expose EntryPoint so pre-login flow can be reached from main app */}
+      <Stack.Screen
+        name="EntryPoint"
+        component={EntryPoint as React.ComponentType<any>}
+        options={{ headerShown: false }}
       />
 
       <Stack.Screen

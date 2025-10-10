@@ -1,7 +1,6 @@
 import { View, Text, Alert, TextInput, Image, Dimensions, Platform, TouchableOpacity } from 'react-native';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { UserContext } from '../../contexts/UserContext';
-import * as Location from 'expo-location';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Ionicons } from '@expo/vector-icons';
 import "../../../global.css";
@@ -27,9 +26,8 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     const [firstName, setFirstName] = useState<string>(userData?.firstName || '');
     const [lastName, setLastName] = useState<string>(userData?.lastName || '');
-    const [biography, setBiography] = useState<string>(userData?.biography || '');
+    const [biography, setBiography] = useState<string>((userData as any)?.biography || '');
     const [location, setLocation] = useState<string>(userData?.location || '');
-    const [isGettingLocation, setIsGettingLocation] = useState<boolean>(false);
 
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [bioError, setBioError] = useState<string | null>(null);
@@ -54,63 +52,6 @@ const GenInfo = ({ navigation }: RouterProps) => {
     };
 
     const [phone, setPhone] = useState<string>(formatPhoneNumber(userData?.phone || ''));
-
-    // Function to get user's current location (mobile only)
-    const getCurrentLocation = async () => {
-        if (isWeb) {
-            Alert.alert("Location Services", "Please enter your location manually on web.");
-            return;
-        }
-
-        setIsGettingLocation(true);
-        try {
-            console.log("Requesting location permission...");
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            
-            if (status !== 'granted') {
-                Alert.alert(
-                    'Permission Denied', 
-                    'Location permission is required to get your current location. You can still enter your location manually.',
-                    [{ text: 'OK' }]
-                );
-                setIsGettingLocation(false);
-                return;
-            }
-
-            console.log("Getting current position...");
-            let locationResult = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced,
-            });
-
-            // Reverse geocode to get readable address
-            let reverseGeocode = await Location.reverseGeocodeAsync({
-                latitude: locationResult.coords.latitude,
-                longitude: locationResult.coords.longitude,
-            });
-
-            if (reverseGeocode.length > 0) {
-                const address = reverseGeocode[0];
-                const formattedLocation = `${address.city || ''}, ${address.region || ''} ${address.postalCode || ''}`.trim();
-                setLocation(formattedLocation || `${address.city || ''}, ${address.region || ''}`);
-                console.log("Location set:", formattedLocation);
-            } else {
-                // Fallback to coordinates if reverse geocoding fails
-                const coordsLocation = `${locationResult.coords.latitude.toFixed(4)}, ${locationResult.coords.longitude.toFixed(4)}`;
-                setLocation(coordsLocation);
-                console.log("Using coordinates:", coordsLocation);
-            }
-
-        } catch (error) {
-            console.error("Error getting location:", error);
-            Alert.alert(
-                'Location Error', 
-                'Unable to get your current location. Please enter your location manually.',
-                [{ text: 'OK' }]
-            );
-        } finally {
-            setIsGettingLocation(false);
-        }
-    };
 
     // Function to handle phone number input
     const handlePhoneNumberChange = (text: string) => {
@@ -159,43 +100,6 @@ const GenInfo = ({ navigation }: RouterProps) => {
             userData: userDataToPass 
         });
     };
-
-    // Location input component for reuse
-    const LocationInput = ({ isWebLayout = false }) => (
-        <View style={isWebLayout ? {} : { width: '80%' }}>
-            {isWebLayout && (
-                <Text className="text-gray-700 font-semibold mb-2">Location *</Text>
-            )}
-            <View className={`flex-row items-center border border-gray-300 rounded-lg ${isWebLayout ? 'h-12 px-4' : 'h-10 px-2 mb-3'} bg-white`}>
-                <Ionicons name="location-outline" size={20} color={Colors.uaBlue} />
-                <TextInput
-                    value={location}
-                    className={`flex-1 ml-2 ${isWebLayout ? 'text-gray-900' : 'text-gray-900'}`}
-                    placeholder="Enter your city, state"
-                    onChangeText={setLocation}
-                    returnKeyType="done"
-                />
-                {!isWeb && (
-                    <TouchableOpacity
-                        onPress={getCurrentLocation}
-                        disabled={isGettingLocation}
-                        className="ml-2 p-1"
-                    >
-                        <Ionicons 
-                            name={isGettingLocation ? "refresh" : "navigate"} 
-                            size={20} 
-                            color={isGettingLocation ? Colors.grey.medium : Colors.uaGreen}
-                        />
-                    </TouchableOpacity>
-                )}
-            </View>
-            {!isWeb && (
-                <Text className="text-gray-500 text-xs mb-3 px-2">
-                    Tap the navigation icon to use your current location
-                </Text>
-            )}
-        </View>
-    );
 
     if (isWeb && isLargeScreen) {
         // Web Desktop Layout
@@ -265,7 +169,16 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
                             {/* Location Field */}
                             <View>
-                                <LocationInput isWebLayout={true} />
+                                <Text className="text-gray-700 font-semibold mb-2">Location *</Text>
+                                <View className={`flex-row items-center border border-gray-300 rounded-lg h-12 px-4 bg-white`}>
+                                    <Ionicons name="location-outline" size={20} color={Colors.uaBlue} />
+                                    <TextInput
+                                        value={location}
+                                        className={`flex-1 ml-2  text-gray-900`}
+                                        placeholder="Enter your city, state"
+                                        onChangeText={setLocation}
+                                    />
+                                </View>
                             </View>
 
                             {/* Bio Field */}
@@ -345,8 +258,16 @@ const GenInfo = ({ navigation }: RouterProps) => {
                 />
                 {phoneError && <Text className="text-red-500 mb-3">{phoneError}</Text>}
 
-                <LocationInput />
-
+                <View className={`flex-row items-center border border-gray-300 rounded-lg h-10 px-2 mb-3 bg-white`}>
+                    <Ionicons name="location-outline" size={20} color={Colors.uaBlue} />
+                    <TextInput
+                        value={location}
+                        className={`flex-1 ml-2 text-gray-900`}
+                        placeholder="Enter your city, state"
+                        onChangeText={setLocation}
+                        returnKeyType="done"
+                    />
+                </View>
                 <TextInput
                     value={biography}
                     className="h-24 border border-gray-400 mb-3 px-2 w-4/5 rounded-md"

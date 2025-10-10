@@ -1,302 +1,78 @@
 import React from 'react';
-import { View, Text, Button, Image, ActivityIndicator, ScrollView, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
+import GagalinText from '../../../components/text/GagalinText';
+import { Colors } from '../../../themes/colors/Colors';
 
-interface HomeWebUIProps {
-  userData: any;
-  userSpecificData: any;
-  imageLoading: boolean;
-  imageError: boolean;
-  isLoggingOut: boolean;
-  isWeb: boolean;
-  handleLogout: () => void;
-  handleImageLoadStart: () => void;
-  handleImageLoadEnd: () => void;
-  handleImageError: (e: any) => void;
-  testImageUrl: () => void;
-  setImageLoading: (loading: boolean) => void;
-  setImageError: (error: boolean) => void;
-}
+import logoImg from '../../../images/logo.png';
+import home1Img from '../../../images/home1.png';
+import home2Img from '../../../images/home2.jpg';
 
-const HomeWebUI: React.FC<HomeWebUIProps> = ({
-  userData,
-  userSpecificData,
-  imageLoading,
-  imageError,
-  isLoggingOut,
-  isWeb,
-  handleLogout,
-  handleImageLoadStart,
-  handleImageLoadEnd,
-  handleImageError,
-  testImageUrl,
-  setImageLoading,
-  setImageError
-}) => {
+const HomeWebUI: React.FC<any> = (_props) => {
   return (
-    <ScrollView className="flex-1 bg-gray-100">
-      <View className="web-container py-8 px-4">
-        <View className="web-card bg-white p-8 max-w-4xl mx-auto">
-          {/* Header with Logout Button */}
-          <View className="mb-8 flex-row justify-between items-start">
-            <View className="flex-1">
-              <Text className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome, {userData.firstName}!
-              </Text>
-              <Text className="text-gray-600 text-lg">
-                {userData.userType === 'COACH' ? 'Coach Dashboard' : 'Member Dashboard'}
-              </Text>
-              <Text className="text-gray-500 text-sm mt-1">
-                Here's your profile information
-              </Text>
-            </View>
-            <View className="ml-4">
-              {isWeb ? (
-                <button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2"
-                >
-                  {isLoggingOut ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Logging out...
-                    </>
-                  ) : (
-                    'Logout'
-                  )}
-                </button>
-              ) : (
-                <Button
-                  title={isLoggingOut ? "Logging out..." : "Logout"}
-                  onPress={handleLogout}
-                  disabled={isLoggingOut}
-                  color="#EF4444"
-                />
-              )}
-            </View>
+    <ScrollView className="web-container min-h-screen flex flex-col bg-gray-50">
+      {/* Title Header */}
+      <View className="w-full py-8 px-12 bg-white flex flex-col items-center">
+        <GagalinText style={{ fontSize: 40, fontWeight: '700', color: Colors.uaBlue, marginBottom: 8 }}>
+          Universal Athletics
+        </GagalinText>
+        <GagalinText style={{ fontSize: 18, fontWeight: '600', color: Colors.uaRed }}>
+          Empowering Athletes & Coaches
+        </GagalinText>
+      </View>
+
+      {/* Section 1 */}
+      <View className="flex flex-col py-8 px-12 bg-white">
+          <GagalinText style={{ fontSize: 28, fontWeight: '700', color: Colors.uaBlue, marginBottom: 6 }}>Welcome to Universal Athletics</GagalinText>
+          <GagalinText style={{ fontSize: 16, fontWeight: '600', color: Colors.uaRed, marginBottom: 12 }}>Your journey starts here</GagalinText>
+          <View className="flex flex-row items-center justify-between">
+          <View className="flex-1 pr-12">
+            <Text className="text-lg text-gray-700">
+              At Universal Athletics, we live and breathe sports. We are a tight-knit team of coaches, mentors, and former athletes who are passionate about helping the next generation level up — on the field and in life.
+
+              We bring the energy, the expertise, and the love for the game. Many of our coaches are fresh out of college, ready to pass on everything we have learned to athletes who are just as hungry to grow. Whether it is building fundamentals, sharpening advanced skills, or training across multiple sports, we know how to push athletes to be their best while keeping the process fun and motivating.
+
+              We work with youth from mid elementary school all the way through advanced high school levels, adapting our coaching to fit every stage of development. Whether someone is picking up a new sport or chasing that varsity roster spot, we are here to guide the journey.
+
+              Our home base is the Twin Cities Metro Area, and we are growing fast across the Midwest. Wherever we go, our mission stays the same: use the power of sports to build confidence, community, and lasting impact.
+
+              🚀 Ready to get started? Reach out and book your first session for free — let us make something great happen together.
+            </Text>
           </View>
+          <Image
+            source={home1Img}
+            alt="Section 1"
+            className="w-96 h-96 object-contain rounded-xl shadow-lg"
+          />
+        </View>
+      </View>
 
-          {/* Profile Section */}
-          <View className="flex-row gap-8 mb-8 flex-wrap lg:flex-nowrap">
-            {/* Profile Picture */}
-            <View className="flex-shrink-0 items-center">
-              <Text className="text-xl font-semibold text-gray-900 mb-4">Profile Picture</Text>
-              
-              {userData.profilePic ? (
-                <View className="items-center">
-                  {imageLoading && (
-                    <View className="mb-4 items-center">
-                      <ActivityIndicator size="large" color="#3B82F6" />
-                      <Text className="text-gray-500 mt-2">Loading image...</Text>
-                    </View>
-                  )}
-                  
-                  {/* Web Image */}
-                  {isWeb ? (
-                    <img
-                      src={userData.profilePic}
-                      alt="Profile"
-                      className={`w-48 h-48 rounded-full object-cover border-4 border-gray-200 shadow-lg ${imageError ? 'hidden' : 'block'}`}
-                      onLoad={() => {
-                        console.log("Web image loaded successfully");
-                        setImageLoading(false);
-                      }}
-                      onError={(e) => {
-                        console.error("Web image failed to load:", e);
-                        setImageError(true);
-                        setImageLoading(false);
-                      }}
-                    />
-                  ) : (
-                    <Image
-                      source={{ uri: userData.profilePic }}
-                      className={`w-48 h-48 rounded-full ${imageError ? 'hidden' : 'flex'}`}
-                      resizeMode="cover"
-                      onLoadStart={handleImageLoadStart}
-                      onLoadEnd={handleImageLoadEnd}
-                      onError={handleImageError}
-                    />
-                  )}
-                  
-                  {imageError && (
-                    <View className="items-center">
-                      <Text className="text-red-500 mb-2 text-center">
-                        Failed to load profile image
-                      </Text>
-                      {isWeb ? (
-                        <img
-                          src={require('../../../images/logo.png')}
-                          alt="Default"
-                          className="w-48 h-48 rounded-full object-cover border-4 border-gray-200"
-                        />
-                      ) : (
-                        <Image
-                          source={require('../../../images/logo.png')}
-                          className="w-48 h-48 rounded-full"
-                          resizeMode="cover"
-                        />
-                      )}
-                    </View>
-                  )}
-                  
-                  {/* Debug Info */}
-                  <View className="mt-4 items-center">
-                    <Text className="text-xs text-gray-500 mb-2 text-center">
-                      URL: {userData.profilePic.substring(0, 50)}...
-                    </Text>
-                    <Button title="Test URL" onPress={testImageUrl} />
-                  </View>
-                </View>
-              ) : (
-                <View className="items-center">
-                  {isWeb ? (
-                    <img
-                      src={require('../../../images/logo.png')}
-                      alt="Default"
-                      className="w-48 h-48 rounded-full object-cover border-4 border-gray-200"
-                    />
-                  ) : (
-                    <Image
-                      source={require('../../../images/logo.png')}
-                      className="w-48 h-48 rounded-full"
-                      resizeMode="cover"
-                    />
-                  )}
-                  <Text className="text-gray-500 mt-2">No profile picture</Text>
-                </View>
-              )}
-            </View>
+      {/* Section 2 */}
+      <View className="flex flex-col py-8 px-12 bg-gray-50">
+          <GagalinText style={{ fontSize: 28, fontWeight: '700', color: Colors.uaBlue, marginBottom: 6 }}>Our Mission</GagalinText>
+          <GagalinText style={{ fontSize: 16, fontWeight: '600', color: Colors.uaRed, marginBottom: 12 }}>With your help</GagalinText>
+          <View className="flex flex-row items-center ">
+          <Image
+            source={home2Img}
+            alt="Section 2"
+            className="object-contain rounded-xl shadow-lg"
+            style={{ width: 350, height: 520, resizeMode: 'contain' }}
+          />
+          <View className="flex-1 pl-12">
+            <Text className="text-lg text-gray-700">
+              For many of us at UA, sports have been at the center of our lives from childhood through college. The practices, the games, the friendships — they shaped who we are. Stepping away from competing is not easy; you miss the adrenaline, the locker room moments, and the sense of purpose that comes with being part of a team.
 
-            {/* User Information */}
-            <View className="flex-1 min-w-0">
-              <Text className="text-xl font-semibold text-gray-900 mb-6">
-                {userData.userType === 'COACH' ? 'Coach Information' : 'Personal Information'}
-              </Text>
-              
-              <View className="space-y-4">
-                
-                <View>
-                  <Text className="font-semibold text-gray-700 mb-1">First Name:</Text>
-                  <Text className="text-gray-900 text-lg">{userData.firstName}</Text>
-                </View>
-                
-                <View>
-                  <Text className="font-semibold text-gray-700 mb-1">Last Name:</Text>
-                  <Text className="text-gray-900 text-lg">{userData.lastName}</Text>
-                </View>
-                
-                <View>
-                  <Text className="font-semibold text-gray-700 mb-1">Email:</Text>
-                  <Text className="text-gray-900 text-lg">{userData.email}</Text>
-                </View>
-                
-                <View>
-                  <Text className="font-semibold text-gray-700 mb-1">Phone:</Text>
-                  <Text className="text-gray-900 text-lg">{userData.phone}</Text>
-                </View>
-                
-                <View>
-                  <Text className="font-semibold text-gray-700 mb-1">Bio:</Text>
-                  <Text className="text-gray-900 text-lg leading-relaxed">
-                    {userSpecificData.biography}
-                  </Text>
-                </View>
+              Coaching gives us the chance to reignite that passion in a new way. Instead of chasing the next win for ourselves, we get to invest that same energy into athletes who are just beginning their next chapter.
 
-                {/* Coach-specific fields */}
-                {userData.userType === 'COACH' && (
-                  <>
-                    {userData.biography2 && userData.biography2 !== userData.biography1 && (
-                      <View>
-                        <Text className="font-semibold text-gray-700 mb-1">Additional Bio:</Text>
-                        <Text className="text-gray-900 text-lg leading-relaxed">
-                          {userData.biography2}
-                        </Text>
-                      </View>
-                    )}
-                  </>
-                )}
-
-                {/* Skills Section */}
-                {userData.skills && userData.skills.length > 0 && (
-                  <View>
-                    <Text className="font-semibold text-gray-700 mb-2">Skills:</Text>
-                    <View className="flex-row flex-wrap gap-2">
-                      {userData.skills.map((skill: any, index: number) => (
-                        <View key={index} className="bg-blue-100 px-3 py-1 rounded-full">
-                          <Text className="text-blue-800 text-sm capitalize">
-                            {skill.title || skill.name || skill}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Dashboard Stats Section */}
-          <View className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Connection Requests Section */}
-            <View className="bg-gray-50 p-6 rounded-lg">
-              <Text className="text-xl font-semibold text-gray-900 mb-4">
-                {userSpecificData.requestsLabel}
-              </Text>
-              
-              <View className="flex-row items-center gap-4 mb-4">
-                <View className="bg-ua-blue px-4 py-2 rounded-full">
-                  <Text className="text-white font-semibold">
-                    {userData.pendingConnectionRequests?.length || 0} Pending
-                  </Text>
-                </View>
-                {userData.isLoadingRequests && (
-                  <View className="flex-row items-center gap-2">
-                    <ActivityIndicator size="small" color="#6B7280" />
-                    <Text className="text-gray-500 italic">
-                      Loading connection requests...
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View className="bg-green-100 px-4 py-2 rounded-full inline-block">
-                <Text className="text-green-800 font-semibold">
-                  {userSpecificData.connectionsCount} Connected {userSpecificData.connectionsLabel}
-                </Text>
-              </View>
-            </View>
-
-            {/* Session Requests Section */}
-            <View className="bg-gray-50 p-6 rounded-lg">
-              <Text className="text-xl font-semibold text-gray-900 mb-4">
-                {userSpecificData.sessionRequestsLabel}
-              </Text>
-              
-              <View className="flex-row items-center gap-4 mb-4">
-                <View className="bg-purple-500 px-4 py-2 rounded-full">
-                  <Text className="text-white font-semibold">
-                    {userData.pendingSessionRequests?.length || 0} Pending
-                  </Text>
-                </View>
-                
-                {userData.isLoadingSessionRequests && (
-                  <View className="flex-row items-center gap-2">
-                    <ActivityIndicator size="small" color="#6B7280" />
-                    <Text className="text-gray-500 italic">
-                      Loading session requests...
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View className="bg-orange-100 px-4 py-2 rounded-full inline-block">
-                <Text className="text-orange-800 font-semibold">
-                  {userData.sentSessionRequests?.filter((req: { status: string }) => req.status === 'PENDING').length || 0} Sent Requests
-                </Text>
-              </View>
-            </View>
+              At Universal Athletics, we value teamwork, learning through fun, and building community. Our goal is to help every athlete set meaningful goals, grow with confidence, and discover the joy that keeps us coming back to the game. We hope to give others something to look forward to — the same way we once did.
+            </Text>
           </View>
         </View>
+      </View>
+
+      {/* Footer */}
+      <View className="w-full py-8 px-4 bg-gray-900 flex flex-col items-center mt-auto">
+        <Text className="text-gray-100 text-base mb-2">Contact: info@universalathletics.com</Text>
+        <Text className="text-gray-400 text-sm">© Universal Athletics. All rights reserved.</Text>
       </View>
     </ScrollView>
   );

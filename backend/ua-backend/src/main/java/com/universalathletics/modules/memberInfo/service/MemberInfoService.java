@@ -82,6 +82,46 @@ public class MemberInfoService {
         return memberInfoRepository.save(memberInfo);
     }
 
+    // -------------------------------- Update Member ----------------------------//
+    /**
+     * Updates an existing member's profile information (PUT)
+     * 
+     * @param memberInfo The MemberInfoEntity object containing updated member information
+     * @return MemberInfoEntity The updated member object
+     * @throws EntityNotFoundException if member not found
+     */
+    public MemberInfoEntity updateMember(MemberInfoEntity memberInfo) {
+        if (memberInfo == null) {
+            throw new IllegalArgumentException("Member information cannot be null");
+        }
+
+        MemberInfoEntity existingMember = memberInfoRepository.findByFirebaseID(memberInfo.getFirebaseID())
+            .orElseThrow(() -> new EntityNotFoundException("Member not found with firebaseId: " + memberInfo.getFirebaseID()));
+
+        existingMember.setFirstName(memberInfo.getFirstName());
+        existingMember.setLastName(memberInfo.getLastName());
+        existingMember.setEmail(memberInfo.getEmail());
+        existingMember.setPhone(memberInfo.getPhone());
+        existingMember.setBiography(memberInfo.getBiography());
+        existingMember.setLocation(memberInfo.getLocation());
+
+        if (memberInfo.getProfilePic() != null) {
+            existingMember.setProfilePic(memberInfo.getProfilePic());
+        }
+
+        // --- Update skills if provided ---
+        if (memberInfo.getSkills() != null) {
+            List<SkillEntity> validSkills = new ArrayList<>();
+            for (SkillEntity skill : memberInfo.getSkills()) {
+                skillRepository.findById(skill.getSkill_id())
+                    .ifPresent(validSkills::add);
+            }
+            existingMember.setSkills(validSkills);
+        }
+
+        return memberInfoRepository.save(existingMember);
+    }
+
     // -------------------------------- Get Member By ID -------------------------//
     /**
      * Retrieves a member by their ID.(GET)

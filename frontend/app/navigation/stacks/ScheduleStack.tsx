@@ -1,9 +1,13 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../../contexts/UserContext';
 import { createInboxHeaderWithoutBackButton, createInboxHeaderWithBackButton } from '../headers/HeaderOptions';
 import ScheduleContainer from '../../screens/schedule/ScheduleContainer';
+import GuestGate from '../../components/navigation/GuestGate';
 import SessionDetails from '../../screens/sessions/SessionDetails';
+import EntryPoint from '../../screens/pre_login/EntryPoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,14 +43,24 @@ export const ScheduleStackNavigator = React.forwardRef<any, any>((props, ref) =>
     >
       <Stack.Screen 
         name="ScheduleContainer" 
-        component={ScheduleContainer} 
         options={({ navigation }) => {
           // Store navigation reference for the root screen
           navigationRef.current = navigation;
           return {
-            ...createInboxHeaderWithoutBackButton({ ...headerProps, navigation }),
+            ...createInboxHeaderWithoutBackButton({ ...headerProps, navigation })
           };
         }}
+      >
+        {(props) => (
+          <GuestGate>
+            <ScheduleContainer {...props} />
+          </GuestGate>
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="EntryPoint"
+        component={EntryPoint as React.ComponentType<any>}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="SessionDetails" 

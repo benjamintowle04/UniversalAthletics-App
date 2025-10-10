@@ -16,6 +16,12 @@ interface Skill {
   title: string;
 }
 
+interface SkillWithLevel {
+  skillId: number;
+  skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | string;
+  title?: string;
+}
+
 interface ConnectionRequest {
   id: number;
   senderType: 'COACH' | 'MEMBER';
@@ -81,36 +87,44 @@ interface Connection {
 }
 
 // Coach data interface based on your database schema
-interface CoachData {
-  id: number; // Coach_ID
-  firstName: string; // First_Name
-  lastName: string; // Last_Name
-  email: string; // Email
-  phone: string; // Phone
-  biography1: string; // Biography_1
-  biography2: string; // Biography_2
-  profilePic: string; // Profile_Pic
-  bioPic1: string; // Bio_Pic_1
-  bioPic2: string; // Bio_Pic_2
-  location: string; // Location
-  firebaseId: string; // Firebase_ID
-  userType: 'COACH';
+// Shared base for both Member and Coach data
+interface UserBase {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  // optional biography fields (members have `biography`, coaches have `biography1`/`biography2`)
+  biography?: string;
+  biography1?: string;
+  biography2?: string;
+  // profile pics
+  profilePic?: string;
+  bioPic1?: string;
+  bioPic2?: string;
+  location?: string;
+  firebaseId?: string;
+  skillsWithLevels?: SkillWithLevel[];
   skills?: Skill[];
 }
 
+interface CoachData extends UserBase {
+  // Coach-specific stricter fields
+  biography1: string;
+  biography2: string;
+  profilePic: string;
+  bioPic1: string;
+  bioPic2: string;
+  firebaseId: string;
+  userType: 'COACH';
+}
+
 // Member data interface
-interface MemberData {
-  id: number; // Member_ID
-  firstName: string; // First_Name
-  lastName: string; // Last_Name
-  email: string; // Email
-  phone: string; // Phone
-  biography?: string; // Biography
-  profilePic?: string; // Profile_Pic
-  location?: string; // Location
-  firebaseId: string; // Firebase_ID
+interface MemberData extends UserBase {
+  biography?: string;
+  profilePic?: string;
+  firebaseId: string;
   userType: 'MEMBER';
-  skills?: Skill[];
 }
 
 // Union type for user data
@@ -150,6 +164,12 @@ interface UserContextType {
   userType: 'MEMBER' | 'COACH' | null;
   // Add new state for initial user type detection
   isDetectingUserType: boolean;
+  // Guest session support
+  isGuest: boolean;
+  continueAsGuest: () => void;
+  endGuestSession: () => void;
+  // Incrementing counter that updates when userData is refreshed
+  userDataVersion?: number;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -160,6 +180,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const [isDetectingUserType, setIsDetectingUserType] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [isGuest, setIsGuest] = useState(false);
+  // Incrementing counter updated whenever userData is fully refreshed/normalized
+  const [userDataVersion, setUserDataVersion] = useState(0);
 
 
   useEffect(() => {
@@ -368,6 +391,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Enhanced function to set user data with automatic user type detection
   const setUserDataWithRequests = async (data: (MemberData | CoachData) | null) => {
+    // Always set global loading while we process user data and related requests
+    setIsLoading(true);
+
     if (data) {
       console.log('Setting user data for user type:', data.userType); 
       
@@ -390,7 +416,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Fetch all data in parallel
       try {
         console.log('Fetching data for user type:', data.userType, 'with ID:', data.id); // Debug log
-                const [incomingRequests, sentRequests, incomingSessionRequests, sentSessionRequests, connections] = await Promise.all([
+        const [incomingRequests, sentRequests, incomingSessionRequests, sentSessionRequests, connections] = await Promise.all([
           fetchConnectionRequests(data.id, data.userType),
           fetchSentConnectionRequests(data.id, data.userType),
           fetchSessionRequests(data.id, data.userType),
@@ -398,7 +424,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           fetchConnections(data.id, data.userType)
         ]);
         
-        console.log('Fetched data:', {
+        console.log('Fetched data counts:', {
           incomingRequests: incomingRequests.length,
           sentRequests: sentRequests.length,
           incomingSessionRequests: incomingSessionRequests.length,
@@ -435,9 +461,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isLoadingConnections: false
           };
         });
+      } finally {
+        // Always clear the global loading flag when done
+        setIsLoading(false);
+        // bump the version to notify listeners that userData has been updated
+        setUserDataVersion(v => v + 1);
       }
     } else {
       setUserData(null);
+      setIsLoading(false);
+      setUserDataVersion(v => v + 1);
     }
   };
 
@@ -491,14 +524,48 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (detectedUserType) {
               console.log('Detected user type:', detectedUserType);
               
-              // Fetch the user data based on detected type
-              const fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
-              
+              // Fetch the user data based on detected type. Some backends have eventual
+              // consistency where related fields (skills, location, etc.) may be populated
+              // shortly after the user row is created. Retry a few times to pick up those fields
+              // without forcing a manual refresh.
+              let fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
+              const MAX_FETCH_RETRIES = 6;
+              const FETCH_RETRY_DELAY_MS = 500;
+
+              if (fetchedUserData) {
+                // If skills (or other related fields) are missing but expected to appear,
+                // perform a few quick retries to catch eventual consistency.
+                let attempts = 0;
+                const shouldRetryBecauseSkillsMissing = (data: any) => {
+                  try {
+                    // Some backends may omit the skills field until a follow-up write occurs.
+                    // Retry when skills are missing or present but empty.
+                    const skills = data?.skills || data?.skillsWithLevels;
+                    if (skills === undefined || skills === null) return true;
+                    return Array.isArray(skills) && skills.length === 0;
+                  } catch (e) {
+                    return true;
+                  }
+                };
+
+                while (attempts < MAX_FETCH_RETRIES && shouldRetryBecauseSkillsMissing(fetchedUserData)) {
+                  console.log(`Fetched user data has no skills yet; retrying fetch (${attempts + 1}/${MAX_FETCH_RETRIES})`);
+                  // small delay
+                  await new Promise((res) => setTimeout(res, FETCH_RETRY_DELAY_MS));
+                  try {
+                    fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
+                  } catch (e) {
+                    console.warn('Retry fetch failed:', e);
+                  }
+                  attempts++;
+                }
+              }
+
               if (fetchedUserData) {
                 console.log('Successfully fetched user data');
                 await setUserDataWithRequests(fetchedUserData);
               } else {
-                console.error('Failed to fetch user data for detected type:', detectedUserType);
+                console.error('Failed to fetch user data for detected type after retries:', detectedUserType);
               }
             } else {
               console.error('Could not detect user type for:', user.uid);
@@ -518,6 +585,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUserData(null);
         setIsLoading(false);
         setIsDetectingUserType(false);
+        // End any guest session if auth state becomes null (keep explicit control)
+        // However we do not force-end guest here because guest is an explicit mode
       }
     });
 
@@ -537,6 +606,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isConnectedToCoach,
     userType: userData?.userType || null,
     isDetectingUserType,
+  // expose a version so screens can reliably refetch when userData is replaced
+  userDataVersion,
+    // Guest session API
+    isGuest,
+    continueAsGuest: () => {
+      console.log('Continuing as guest');
+      setIsGuest(true);
+      // Ensure no authenticated user data is present
+      setUser(null);
+      setUserData(null);
+    },
+    endGuestSession: () => {
+      console.log('Ending guest session');
+      setIsGuest(false);
+      // leave auth state untouched; user can sign in normally
+    },
   };
 
   return (

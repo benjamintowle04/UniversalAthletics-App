@@ -156,14 +156,31 @@ const RequestASession = ({navigation, route}: RequestASessionProps) => {
   }
 
   const validateForm = () => {
-    if (!description.trim()) {
-      Alert.alert("Missing Information", "Please provide a session description.")
+    const missingFields: string[] = []
+    if (!description.trim()) missingFields.push('Description')
+    if (!location.trim()) missingFields.push('Location')
+
+    if (missingFields.length > 0) {
+      Alert.alert(
+        'Missing Information',
+        `Please provide the following required field(s): ${missingFields.join(', ')}`
+      )
       return false
     }
-    if (!location.trim()) {
-      Alert.alert("Missing Information", "Please provide a session location.")
+
+    // Check if all three session date+time combinations are identical
+    const dt1 = `${formatDateForAPI(dateTime1.date)} ${formatTimeForAPI(dateTime1.time)}`
+    const dt2 = `${formatDateForAPI(dateTime2.date)} ${formatTimeForAPI(dateTime2.time)}`
+    const dt3 = `${formatDateForAPI(dateTime3.date)} ${formatTimeForAPI(dateTime3.time)}`
+
+    if (dt1 === dt2 && dt2 === dt3) {
+      Alert.alert(
+        'Duplicate Times',
+        'All three preferred session times are the same. Please provide at least two different options.'
+      )
       return false
     }
+
     return true
   }
 

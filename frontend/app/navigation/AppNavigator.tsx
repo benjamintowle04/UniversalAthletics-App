@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from './NavigationRef';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../../firebase_config';
 import { useUser } from '../contexts/UserContext';
@@ -17,7 +18,7 @@ export function AppNavigator() {
   const [user, setUser] = useState<User | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [userType, setUserType] = useState<'MEMBER' | 'COACH' | null>(null);
-  const { userData, hasInboxNotifications, inboxNotificationCount } = useUser();
+  const { userData, hasInboxNotifications, inboxNotificationCount, isGuest } = useUser();
 
   const linking = createLinkingConfig();
 
@@ -94,6 +95,11 @@ export function AppNavigator() {
 
   function PostLoginLayout() {
     // Show loading while we determine onboarding status
+    // If guest, skip onboarding detection and show main app immediately
+    if (isGuest) {
+      return <MainAppNavigator />;
+    }
+
     if (needsOnboarding === null || userType === null) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -107,17 +113,22 @@ export function AppNavigator() {
       return <MainAppNavigator />;
     }
 
-    // Members go through onboarding if needed n
-    if (needsOnboarding) {
-      return <OnboardingStackNavigator MainAppNavigator={MainAppNavigator} />;
-    } else {
+    // Members go through onboarding if needed.
+    // If we already have userData set in context (onboarding completed), render the main app immediately.
+    if (userData) {
       return <MainAppNavigator />;
     }
+
+    if (needsOnboarding) {
+      return <OnboardingStackNavigator MainAppNavigator={MainAppNavigator} />;
+    }
+
+    return <MainAppNavigator />;
   }
 
   return (
-    <NavigationContainer linking={linking}>
-      {user ? (   
+    <NavigationContainer linking={linking} ref={navigationRef}>
+      {user || isGuest ? (
         <PostLoginLayout />
       ) : (
         <PreLoginStackNavigator />
