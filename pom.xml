@@ -83,6 +83,12 @@
     		<groupId>com.fasterxml.jackson.datatype</groupId>
     		<artifactId>jackson-datatype-hibernate5</artifactId>
 		</dependency>
+
+        <!-- Flyway for DB migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>
