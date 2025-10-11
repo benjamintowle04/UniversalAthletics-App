@@ -17,14 +17,15 @@ public class DataSourceConfig {
     // Optional environment variable provided by Heroku add-ons like JAWSDB
     @Value("${JAWSDB_URL:}")
     private String jawsdbUrl;
-
-    @Value("${SPRING_DATASOURCE_URL:}")
+    // Read the standard Spring Boot datasource properties so the bean picks up
+    // values defined in application.properties or provided via env vars.
+    @Value("${spring.datasource.url:}")
     private String springDatasourceUrl;
 
-    @Value("${SPRING_DATASOURCE_USERNAME:}")
+    @Value("${spring.datasource.username:}")
     private String springDatasourceUsername;
 
-    @Value("${SPRING_DATASOURCE_PASSWORD:}")
+    @Value("${spring.datasource.password:}")
     private String springDatasourcePassword;
 
     /**
