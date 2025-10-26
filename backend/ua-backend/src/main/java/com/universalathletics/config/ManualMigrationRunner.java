@@ -31,14 +31,10 @@ public class ManualMigrationRunner implements ApplicationRunner {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-        String env = System.getenv("FLYWAY_USE_FALLBACK");
-        if (env == null || !env.equalsIgnoreCase("true")) {
-            log.debug("FLYWAY_USE_FALLBACK not set to true — skipping manual SQL migration.");
-            return;
-        }
-
+    /**
+     * Public method to apply the manual migration. Can be invoked on-demand (e.g. via a protected HTTP endpoint).
+     */
+    public void applyManualMigration() {
         // Print guaranteed markers to stdout so Heroku log streaming reliably shows the runner activity
         System.out.println("MANUAL-MIGRATION-START: Applying db/migration/V1__init.sql");
         log.info("FLYWAY_USE_FALLBACK is enabled — applying SQL from classpath:db/migration/V1__init.sql");
@@ -66,7 +62,7 @@ public class ManualMigrationRunner implements ApplicationRunner {
                         log.info("Executed INSERT statement, affected rows={}", affected);
                         System.out.println("MANUAL-MIGRATION: INSERT executed, affected=" + affected + ", stmt=" + (stmt.length() > 200 ? stmt.substring(0, 200) + "..." : stmt));
                     } catch (Exception e) {
-                        log.warn("INSERT statement failed (continuing): {}", stmt.replaceAll("\n", " "), e);
+                        log.warn("INSERT statement failed (continuing): {}", stmt.replaceAll("\\n", " "), e);
                         System.out.println("MANUAL-MIGRATION: INSERT failed: " + e.toString() + " stmt=" + (stmt.length() > 200 ? stmt.substring(0, 200) + "..." : stmt));
                     }
                 } else {
@@ -95,5 +91,17 @@ public class ManualMigrationRunner implements ApplicationRunner {
             e.printStackTrace(System.out);
             log.error("Exception while applying manual SQL migration", e);
         }
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        String env = System.getenv("FLYWAY_USE_FALLBACK");
+        if (env == null || !env.equalsIgnoreCase("true")) {
+            log.debug("FLYWAY_USE_FALLBACK not set to true — skipping manual SQL migration.");
+            return;
+        }
+
+        // Delegate to the reusable method so it can be invoked on-demand as well
+        applyManualMigration();
     }
 }
