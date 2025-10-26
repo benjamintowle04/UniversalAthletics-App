@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
  * FLYWAY_ENABLED=false to avoid the Flyway auto-configuration path.
  */
 @Component
-@ConditionalOnProperty(name = "FLYWAY_USE_FALLBACK", havingValue = "true")
 public class ManualMigrationRunner implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ManualMigrationRunner.class);
@@ -31,6 +29,12 @@ public class ManualMigrationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        String env = System.getenv("FLYWAY_USE_FALLBACK");
+        if (env == null || !env.equalsIgnoreCase("true")) {
+            log.debug("FLYWAY_USE_FALLBACK not set to true — skipping manual SQL migration.");
+            return;
+        }
+
         log.info("FLYWAY_USE_FALLBACK is enabled — applying SQL from classpath:db/migration/V1__init.sql");
 
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
