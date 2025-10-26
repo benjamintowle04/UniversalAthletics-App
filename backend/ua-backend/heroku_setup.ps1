@@ -66,12 +66,15 @@ Write-Host "JAWSDB_URL=$jaw"
 if ($jaw -match 'mysql://([^:]+):([^@]+)@([^/:]+)(?::(\d+))?/(.+)') {
     $user = $Matches[1]; $pass = $Matches[2]; $host = $Matches[3]; $port = $Matches[4]; $db = $Matches[5]
     if (-not $port) { $port = 3306 }
-    $jdbc = "jdbc:mysql://$host`:$port/$db?useSSL=false&serverTimezone=UTC"
+    # build jdbc string without PowerShell interpolation issues (concatenate to avoid ':' parsing and '&' tokenizing)
+    $jdbc = 'jdbc:mysql://' + $host + ':' + $port + '/' + $db + '?useSSL=false&serverTimezone=UTC'
     Write-Host "Parsed: host=$host port=$port db=$db user=$user"
     Write-Host "Setting SPRING_DATASOURCE_* config vars on Heroku..."
     Exec-Heroku "config:set SPRING_DATASOURCE_URL='$jdbc' SPRING_DATASOURCE_USERNAME='$user' SPRING_DATASOURCE_PASSWORD='$pass' -a $AppName"
     Write-Host "Also setting ALLOWED_ORIGINS to allow Netlify and localhost (edit as needed)..."
     Exec-Heroku "config:set ALLOWED_ORIGINS='https://your-netlify-site.netlify.app,http://localhost:19006' -a $AppName"
+    Write-Host "Enabling Flyway migrations on the Heroku app (FLYWAY_ENABLED=true) so migrations run on startup..."
+    Exec-Heroku "config:set FLYWAY_ENABLED=true -a $AppName"
 } else {
     Write-Error "Unable to parse JAWSDB_URL: $jaw"; exit 1
 }

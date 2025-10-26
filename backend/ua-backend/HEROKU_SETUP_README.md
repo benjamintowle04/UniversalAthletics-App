@@ -32,6 +32,11 @@ Notes
 - The script sets `SPRING_DATASOURCE_*` config vars so that Spring Boot can use them in production.
 - If you'd like me to automate the SQL import as well, I can add that step, but it requires your local machine to have network access to the JawsDB host and the mysql client installed.
 
+Flyway migrations
+- This project now includes Flyway and a migration under `src/main/resources/db/migration/V1__init_schema_and_seed.sql` which creates the schema and seeds initial Coach/Skill rows.
+- The app's `application.properties` sets `spring.flyway.enabled` from the environment variable `FLYWAY_ENABLED` (default false). During Heroku setup the helper script will now set `FLYWAY_ENABLED=true` so Flyway runs automatically on app startup and applies migrations against JawsDB.
+- If you prefer applying migrations manually, you can set `FLYWAY_ENABLED=false` in Heroku config and use the `mysql` import workflow instead.
+
 Security
 - Do not commit secrets (passwords) into version control. The script stores credentials only in Heroku config vars.
 
