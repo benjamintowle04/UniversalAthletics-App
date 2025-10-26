@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import initSilenceConsole from './app/utils/silenceConsole';
 import { UserProvider } from './app/contexts/UserContext';
 import { AppNavigator } from './app/navigation/AppNavigator';
 
@@ -13,13 +12,11 @@ try {
   if (StyleSheet && typeof (StyleSheet as any).setFlag === 'function') {
     // Use 'class' strategy so dark mode is applied via a class rather than media
     (StyleSheet as any).setFlag('darkMode', 'class');
+    console.log('StyleSheet darkMode flag set to class');
   }
 } catch (err) {
   console.warn('Unable to set StyleSheet darkMode flag:', err);
 }
-
-// Initialize optional console silencing (module has side effects)
-initSilenceConsole();
 
 //   TODO:
 //      - Update onboarding location input to just use strings (Will use geolocating later) (Done by today)
