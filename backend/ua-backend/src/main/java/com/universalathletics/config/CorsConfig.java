@@ -23,7 +23,9 @@ public class CorsConfig {
         config.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:*",
             "http://192.168.*.*:*",
-            "http://127.0.0.1:*"
+            "http://127.0.0.1:*",
+            "https://universal-athletics-site.netlify.app",
+            "https://*.netlify.app"
         ));
         
         // Allow all headers
