@@ -19,20 +19,27 @@ public class CorsConfig {
         // Allow credentials (cookies, authorization headers, etc.)
         config.setAllowCredentials(true);
         
-        // Allow specific origins (add your frontend URLs)
-        config.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:*",
-            "http://192.168.*.*:*",
-            "http://127.0.0.1:*",
-            "https://universal-athletics-site.netlify.app",
-            "https://*.netlify.app"
-        ));
+        // Allow specific origins - use setAllowedOrigins for exact matches
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("http://localhost:19006");
+        config.addAllowedOrigin("http://127.0.0.1:3000");
+        config.addAllowedOrigin("http://127.0.0.1:19006");
+        config.addAllowedOrigin("https://universal-athletics-site.netlify.app");
+        
+        // Allow specific origin patterns for dynamic ports and Netlify previews
+        config.addAllowedOriginPattern("http://localhost:*");
+        config.addAllowedOriginPattern("http://127.0.0.1:*");
+        config.addAllowedOriginPattern("http://192.168.*.*:*");
+        config.addAllowedOriginPattern("https://*.netlify.app");
         
         // Allow all headers
         config.addAllowedHeader("*");
         
         // Allow all HTTP methods
         config.addAllowedMethod("*");
+        
+        // Expose headers that the frontend might need
+        config.addExposedHeader("*");
         
         // Apply CORS configuration to all endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
