@@ -1,6 +1,6 @@
 import { ApiRoutes } from '../utils/APIRoutes';
 import { Platform } from 'react-native';
-import { FIREBASE_AUTH } from '../firebase_config';
+import { getFirebaseAuthSafe } from '../firebase_config';
 
 export interface UserOnboardingData {
   firstName: string;
@@ -29,7 +29,7 @@ export const postUserOnboarding = async (userData: UserOnboardingData, profilePi
       phone: userData.phone,
       biography: userData.biography || '',
       location: userData.location || '',
-      firebaseID: FIREBASE_AUTH.currentUser?.uid || userData.firebaseId,
+  firebaseID: getFirebaseAuthSafe()?.currentUser?.uid || userData.firebaseId,
     };
 
     formData.append('memberInfoJson', JSON.stringify(memberInfoJson));
@@ -48,8 +48,8 @@ export const postUserOnboarding = async (userData: UserOnboardingData, profilePi
       console.log('Profile picture URI type:', typeof profilePicUri);
       console.log('Profile picture URI value:', profilePicUri);
 
-      // Get Firebase ID for filename
-      const firebaseId = FIREBASE_AUTH.currentUser?.uid || userData.firebaseId;
+  // Get Firebase ID for filename
+  const firebaseId = getFirebaseAuthSafe()?.currentUser?.uid || userData.firebaseId;
       const filename = `${firebaseId}.jpg`;
 
       if (Platform.OS === 'web') {

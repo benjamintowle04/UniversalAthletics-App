@@ -1,5 +1,5 @@
-import LOCAL_IP_ADDRESS from "../config/LocalMachineIPAddress";
-const BASE_URL = `http://${LOCAL_IP_ADDRESS}:8080`;
+// Production Heroku backend URL
+const BASE_URL = "https://ua-backend-app-cb2d657adc39.herokuapp.com";
 
 export const ApiRoutes = {
     GET_SKILLS_ALL: `${BASE_URL}/api/skills`,

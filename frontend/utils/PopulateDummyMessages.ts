@@ -1,9 +1,9 @@
 import { createConversation, addMessageToConversation } from '../controllers/MessageController';
-import { FIREBASE_AUTH } from '../firebase_config';
+import { getFirebaseAuthSafe } from '../firebase_config';
 
 export const populateSimpleDummyMessages = async () => {
   try {
-    const currentUser = FIREBASE_AUTH.currentUser;
+  const currentUser = getFirebaseAuthSafe()?.currentUser;
     if (!currentUser) {
       console.error('User not authenticated');
       return;

@@ -3,7 +3,7 @@ import { View, Text, Button, Image, ActivityIndicator, ScrollView, Dimensions, A
 import { updateMemberProfile, updateCoachProfile } from '../../../../controllers/ProfileUpdateController';
 import { useUser } from '../../../contexts/UserContext';
 import * as ImagePicker from "expo-image-picker";
-import { FIREBASE_AUTH } from '../../../../firebase_config';
+import { getFirebaseAuthSafe } from '../../../../firebase_config';
 import { sendPasswordResetEmail } from "firebase/auth";
 
  
@@ -145,8 +145,13 @@ const UserSettingsWebUI: React.FC<UserSettingsWebUIProps> = ({
         alert('No email found for this account.');
         return;
       }
+      const auth = getFirebaseAuthSafe();
+      if (!auth) {
+        alert('Authentication is not ready yet. Please try again in a moment.');
+        return;
+      }
       console.log("Sending password reset email to:", userData.email);
-      await sendPasswordResetEmail(FIREBASE_AUTH, userData.email);
+      await sendPasswordResetEmail(auth, userData.email);
       alert('Password reset email sent! Please check your inbox.');
     } catch (error: any) {
       console.error('Error sending password reset email:', error);

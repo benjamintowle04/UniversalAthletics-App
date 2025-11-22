@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { FIREBASE_AUTH } from "../../../firebase_config";
+import { getFirebaseAuthSafe } from "../../../firebase_config";
 import { TextInput, ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, Alert, ScrollView, Dimensions } from "react-native";
 import { createUserWithEmailAndPassword} from "firebase/auth";
 import { PrimaryButton } from "../../components/buttons/PrimaryButton";
@@ -15,7 +15,8 @@ const SignUp = () => {
     const [firstPassword, setFirstPassword] = useState("");
     const [secondPassword, setSecondPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const auth = FIREBASE_AUTH;
+    // resolve auth at runtime
+    const auth = getFirebaseAuthSafe();
     const { width, height } = Dimensions.get('window');
     const isWeb = Platform.OS === 'web';
     const isLargeScreen = width > 768;
@@ -30,7 +31,13 @@ const SignUp = () => {
     const signUp = async (email: string, password: string) => {  
         setLoading(true);
         try {
-            const response = await createUserWithEmailAndPassword(auth, email, password);
+            const runtimeAuth = getFirebaseAuthSafe();
+            if (!runtimeAuth) {
+                Alert.alert('Auth not available', 'Unable to initialize authentication. Please try again later.');
+                setLoading(false);
+                return;
+            }
+            const response = await createUserWithEmailAndPassword(runtimeAuth, email, password);
             console.log("Signed Up: ", response);
         } catch (error: any) {
             console.log(error);

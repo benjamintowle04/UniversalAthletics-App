@@ -5,7 +5,7 @@ import { useUser } from '../../../contexts/UserContext';
 import { sendMessage, getMessagesForConversation, markMessagesAsRead } from '../../../../controllers/MessageController';
 import { Colors } from '../../../themes/colors/Colors';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { FIREBASE_AUTH } from '../../../../firebase_config';
+import { getFirebaseAuthSafe } from '../../../../firebase_config';
 
 // Define the params for this screen
 type ChatScreenRouteParams = {
@@ -35,10 +35,13 @@ const ChatScreen = ({ navigation, route }: ChatScreenProps) => {
   // Mark messages as read immediately when screen loads
   useEffect(() => {
     const markAsReadImmediately = async () => {
-      if (conversationId && FIREBASE_AUTH.currentUser) {
-        console.log('Marking messages as read for conversation:', conversationId);
-        await markMessagesAsRead(conversationId, FIREBASE_AUTH.currentUser.uid);
-      }
+      if (conversationId) {
+          const uid = getFirebaseAuthSafe()?.currentUser?.uid;
+          if (uid) {
+            console.log('Marking messages as read for conversation:', conversationId);
+            await markMessagesAsRead(conversationId, uid);
+          }
+        }
     };
 
     markAsReadImmediately();
@@ -80,7 +83,7 @@ const ChatScreen = ({ navigation, route }: ChatScreenProps) => {
     }
 
     // Check if user is authenticated with Firebase
-    if (!FIREBASE_AUTH.currentUser) {
+    if (!getFirebaseAuthSafe()?.currentUser) {
       Alert.alert('Authentication Error', 'Please log in again to send messages.');
       return;
     }
@@ -92,7 +95,7 @@ const ChatScreen = ({ navigation, route }: ChatScreenProps) => {
     try {
       await sendMessage(
         conversationId,
-        FIREBASE_AUTH.currentUser.uid, // Use Firebase UID instead of userData.id
+        getFirebaseAuthSafe()?.currentUser?.uid || '', // Use Firebase UID instead of userData.id
         'MEMBER', // Assuming current user is always MEMBER for now
         `${userData.firstName} ${userData.lastName}`,
         userData.profilePic,
@@ -121,7 +124,7 @@ const ChatScreen = ({ navigation, route }: ChatScreenProps) => {
 
   const renderMessage = ({ item }: { item: any }) => {
     // Compare with Firebase UID instead of userData.id
-    const isMyMessage = item.senderId === FIREBASE_AUTH.currentUser?.uid;
+  const isMyMessage = item.senderId === getFirebaseAuthSafe()?.currentUser?.uid;
     
     return (
       <View className={`mb-3 ${isMyMessage ? 'items-end' : 'items-start'}`}>

@@ -5,7 +5,6 @@ import { useUser } from '../../contexts/UserContext';
 import SkillsManagementWebUI from '../../ui/web/settings/SkillsManagementWebUI';
 import SkillsManagementMobileUI from '../../ui/mobile/settings/SkillsManagementMobileUI';
 import { ApiRoutes } from '../../../utils/APIRoutes';
-import { FIREBASE_AUTH } from '../../../firebase_config';
 import { updateMemberSkillsWithFormData, updateCoachSkillsWithFormData} from '../../../controllers/ProfileUpdateController';
 
 import '../../../global.css';

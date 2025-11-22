@@ -1,6 +1,6 @@
 import { View, Text, ActivityIndicator, Platform, Dimensions, Alert } from 'react-native'
 import React, { useState, useCallback } from 'react'
-import { FIREBASE_AUTH } from '../../../firebase_config';
+import { getFirebaseAuthSafe } from '../../../firebase_config';
 import { RouterProps } from '../../types/RouterProps';
 import { useUser } from '../../contexts/UserContext';
 import { signOut } from 'firebase/auth';
@@ -10,7 +10,8 @@ import '../../../global.css';
 
 
 const UserSettings = ({ navigation }: RouterProps) => {    
-  const auth = FIREBASE_AUTH;
+  // resolve auth at runtime
+  const auth = getFirebaseAuthSafe();
   const { userData, setUserData, isLoading, userType, isDetectingUserType } = useUser();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -44,7 +45,14 @@ const UserSettings = ({ navigation }: RouterProps) => {
   const performLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await signOut(auth);
+      const runtimeAuth = getFirebaseAuthSafe();
+      if (!runtimeAuth) {
+        setUserData(null);
+        console.warn('performLogout: auth not available; cleared local user data');
+        setIsLoggingOut(false);
+        return;
+      }
+      await signOut(runtimeAuth);
       setUserData(null);
       console.log('User logged out successfully');
     } catch (error) {

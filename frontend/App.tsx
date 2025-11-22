@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { UserProvider } from './app/contexts/UserContext';
 import { AppNavigator } from './app/navigation/AppNavigator';
+import './global.css';
 
 // Ensure nativewind/react-native-css-interop uses the 'class' strategy for dark mode
 // to avoid runtime errors when the environment's color scheme is controlled by media queries.

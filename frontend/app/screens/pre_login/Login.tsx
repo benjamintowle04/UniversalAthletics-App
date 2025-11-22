@@ -1,6 +1,6 @@
 import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import React, { useState, useContext } from "react";
-import { FIREBASE_AUTH } from "../../../firebase_config";
+import { getFirebaseAuthSafe } from "../../../firebase_config";
 import { TextInput, Alert } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { RouterProps } from "../../types/RouterProps";
@@ -17,7 +17,8 @@ const Login = ({ navigation }: RouterProps) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const auth = FIREBASE_AUTH;
+    // resolve auth at runtime to avoid module-load failures in some web builds
+    const auth = getFirebaseAuthSafe();
     const { width, height } = Dimensions.get('window');
     const isWeb = Platform.OS === 'web';
     const isLargeScreen = width > 768;
@@ -33,7 +34,13 @@ const Login = ({ navigation }: RouterProps) => {
     const signIn = async () => {
         setLoading(true);
         try {
-            const response = await signInWithEmailAndPassword(auth, email, password);
+            const runtimeAuth = getFirebaseAuthSafe();
+            if (!runtimeAuth) {
+                Alert.alert('Auth not available', 'Unable to initialize authentication. Please try again later.');
+                setLoading(false);
+                return;
+            }
+            const response = await signInWithEmailAndPassword(runtimeAuth, email, password);
             console.log("Logged in: ", response);
             
             // After successful Firebase authentication, determine user type and fetch data

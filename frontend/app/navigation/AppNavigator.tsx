@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { navigationRef } from './NavigationRef';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH } from '../../firebase_config';
+import { User } from 'firebase/auth';
+import { getFirebaseAuthSafe } from '../../firebase_config';
 import { useUser } from '../contexts/UserContext';
 import { getMemberByFirebaseId } from '../../controllers/MemberInfoController';
 import { getCoachByFirebaseId } from '../../controllers/CoachController';
@@ -23,9 +23,49 @@ export function AppNavigator() {
   const linking = createLinkingConfig();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-      console.log('User', user);
-      setUser(user);
+    let unsub: any = undefined;
+    let mounted = true;
+
+    // Poll for auth to become available for up to 5s. Some web builds
+    // may initialize auth slightly later or throw when called eagerly.
+    const waitForAuth = async (timeoutMs = 5000): Promise<any | undefined> => {
+      const intervalMs = 200;
+      const maxTries = Math.ceil(timeoutMs / intervalMs);
+      let tries = 0;
+      return new Promise((resolve) => {
+        const t = setInterval(() => {
+          tries++;
+          const auth = getFirebaseAuthSafe();
+          if (auth) {
+            clearInterval(t);
+            resolve(auth);
+            return;
+          }
+          if (tries >= maxTries) {
+            clearInterval(t);
+            resolve(undefined);
+            return;
+          }
+        }, intervalMs);
+      });
+    };
+
+    (async () => {
+      const auth = await waitForAuth(5000);
+      if (!mounted || !auth) {
+        // couldn't obtain auth - avoid throwing so app can still render
+        console.warn('[DIAG] AppNavigator: auth not available, skipping onAuthStateChanged subscription');
+        return;
+      }
+
+      // Require the auth helper at runtime to avoid import-time issues in some bundles
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const authMod = require('firebase/auth');
+      const onAuthStateChanged = authMod.onAuthStateChanged;
+
+      unsub = onAuthStateChanged(auth, async (user: any) => {
+        console.log('User', user);
+        setUser(user);
 
       if (user) {
         try {
@@ -37,7 +77,14 @@ export function AppNavigator() {
             memberData = await getMemberByFirebaseId(user.uid);
             if (memberData && memberData.firstName) {
               setUserType('MEMBER');
-              setNeedsOnboarding(false);
+              // Check if profile is complete (has required fields filled)
+              const isProfileComplete = memberData.firstName && 
+                                       memberData.lastName && 
+                                       memberData.phone && 
+                                       memberData.location && 
+                                       memberData.skills && 
+                                       memberData.skills.length > 0;
+              setNeedsOnboarding(!isProfileComplete);
             }
           } catch (memberError) {
             console.log('Not a member, checking if coach...');
@@ -73,9 +120,15 @@ export function AppNavigator() {
         setNeedsOnboarding(null);
         setUserType(null);
       }
-    });
+      });
+    })();
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      try {
+        if (typeof unsub === 'function') unsub();
+      } catch (e) {}
+    };
   }, []);
 
   // Log inbox notification updates for debugging

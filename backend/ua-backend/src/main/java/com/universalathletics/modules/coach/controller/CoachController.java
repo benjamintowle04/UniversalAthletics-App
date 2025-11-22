@@ -216,6 +216,7 @@ public class CoachController {
     @GetMapping("/{firebaseID}")
     public ResponseEntity<CoachEntity> getCoachById(@PathVariable String firebaseID) {
         try {
+            // removed noisy debug log
             CoachEntity coach = coachservice.findCoachByFirebaseID(firebaseID);
             if (coach != null) {
                 // Handle profile picture signing

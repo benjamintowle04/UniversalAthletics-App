@@ -18,7 +18,7 @@ import { postUserOnboarding } from "../../../controllers/OnboardingController";
 import { getMemberByFirebaseId } from "../../../controllers/MemberInfoController";
 import { getCoachByFirebaseId } from "../../../controllers/CoachController";
 import { Colors } from "../../themes/colors/Colors";
-import { FIREBASE_AUTH } from "../../../firebase_config";
+import { getFirebaseAuthSafe } from "../../../firebase_config";
 
 interface AccountSummaryProps extends RouterProps {
   combinedUserData?: {
@@ -47,7 +47,8 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
   }
 
   const { userData, setUserData } = userContext;
-  const auth = FIREBASE_AUTH;
+  // Use runtime-safe getter for Auth to avoid module-load failures in some web builds
+  const auth = getFirebaseAuthSafe();
 
   // Initialize state with combined data from previous screens or existing userData
   const [firstName, setFirstName] = useState<string>(
@@ -57,7 +58,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     combinedUserData?.lastName || userData?.lastName || ''
   );
   const [email, setEmail] = useState<string>(
-    auth.currentUser?.email || ''
+    auth?.currentUser?.email || ''
   );
   const [phone, setPhone] = useState<string>(
     combinedUserData?.phone || userData?.phone || ''
@@ -219,7 +220,7 @@ const pickImage = async () => {
           const normalize = (resp: any) => {
             // prefer provided keys, fallback to common alternatives
             const id = resp.id || resp.userId || resp.memberId || resp.coachId;
-            const firebaseId = resp.firebaseId || resp.firebaseID || FIREBASE_AUTH.currentUser?.uid || '';
+            const firebaseId = resp.firebaseId || resp.firebaseID || getFirebaseAuthSafe()?.currentUser?.uid || '';
             const email = resp.email || '';
             const firstName = resp.firstName || resp.first_name || '';
             const lastName = resp.lastName || resp.last_name || '';
@@ -275,7 +276,7 @@ const pickImage = async () => {
 
           // Re-fetch authoritative user record (contains signed profilePic URL) and update context
           try {
-            const firebaseId = mapped.firebaseId || FIREBASE_AUTH.currentUser?.uid || '';
+            const firebaseId = mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
             if (firebaseId) {
               try {
                 const freshMember = await getMemberByFirebaseId(firebaseId);

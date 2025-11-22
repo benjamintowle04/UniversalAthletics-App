@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { FIREBASE_AUTH } from '../../firebase_config';
-import { onAuthStateChanged } from 'firebase/auth';
+import { getFirebaseAuthSafe } from '../../firebase_config';
 import { getMembersIncomingPendingConnectionRequests, getMembersSentPendingConnectionRequests, getCoachesIncomingPendingConnectionRequests , getCoachesSentPendingConnectionRequests} from '../../controllers/ConnectionRequestController';
 import { getMembersIncomingPendingSessionRequests, getMembersSentPendingSessionRequests, getCoachesIncomingPendingSessionRequests, getCoachesSentPendingSessionRequests } from '../../controllers/SessionRequestController';
 import { getMembersCoaches } from '../../controllers/MemberInfoController';
@@ -186,7 +185,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
   useEffect(() => {
-    if (!userData?.id || !FIREBASE_AUTH.currentUser) {
+    const auth = getFirebaseAuthSafe();
+    if (!userData?.id || !auth?.currentUser) {
       setUnreadMessageCount(0);
       return;
     }
@@ -506,92 +506,119 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Enhanced useEffect to handle user type detection on app restart
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-      console.log('Auth state changed, user:', user?.uid);
-      setUser(user);
-      
-      if (user) {
-        // If we don't have userData but we have a user, detect user type and fetch data
-        if (!userData) {
-          setIsDetectingUserType(true);
-          
-          try {
-            console.log('Detecting user type and fetching data for:', user.uid);
-            
-            // First detect the user type
-            const detectedUserType = await detectUserType(user.uid);
-            
-            if (detectedUserType) {
-              console.log('Detected user type:', detectedUserType);
-              
-              // Fetch the user data based on detected type. Some backends have eventual
-              // consistency where related fields (skills, location, etc.) may be populated
-              // shortly after the user row is created. Retry a few times to pick up those fields
-              // without forcing a manual refresh.
-              let fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
-              const MAX_FETCH_RETRIES = 6;
-              const FETCH_RETRY_DELAY_MS = 500;
+    let unsub: any = undefined;
+    let mounted = true;
 
-              if (fetchedUserData) {
-                // If skills (or other related fields) are missing but expected to appear,
-                // perform a few quick retries to catch eventual consistency.
-                let attempts = 0;
-                const shouldRetryBecauseSkillsMissing = (data: any) => {
-                  try {
-                    // Some backends may omit the skills field until a follow-up write occurs.
-                    // Retry when skills are missing or present but empty.
-                    const skills = data?.skills || data?.skillsWithLevels;
-                    if (skills === undefined || skills === null) return true;
-                    return Array.isArray(skills) && skills.length === 0;
-                  } catch (e) {
-                    return true;
-                  }
-                };
+    const waitForAuth = async (timeoutMs = 5000): Promise<any | undefined> => {
+      const intervalMs = 200;
+      const maxTries = Math.ceil(timeoutMs / intervalMs);
+      let tries = 0;
+      return new Promise((resolve) => {
+        const t = setInterval(() => {
+          tries++;
+          const auth = getFirebaseAuthSafe();
+          if (auth) {
+            clearInterval(t);
+            resolve(auth);
+            return;
+          }
+          if (tries >= maxTries) {
+            clearInterval(t);
+            resolve(undefined);
+            return;
+          }
+        }, intervalMs);
+      });
+    };
 
-                while (attempts < MAX_FETCH_RETRIES && shouldRetryBecauseSkillsMissing(fetchedUserData)) {
-                  console.log(`Fetched user data has no skills yet; retrying fetch (${attempts + 1}/${MAX_FETCH_RETRIES})`);
-                  // small delay
-                  await new Promise((res) => setTimeout(res, FETCH_RETRY_DELAY_MS));
-                  try {
-                    fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
-                  } catch (e) {
-                    console.warn('Retry fetch failed:', e);
+    (async () => {
+      const auth = await waitForAuth(5000);
+      if (!mounted || !auth) {
+        console.warn('[DIAG] UserContext: auth not available, skipping onAuthStateChanged subscription');
+        setIsLoading(false);
+        return;
+      }
+
+      // dynamically require the auth functions to avoid import-time issues
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const authMod = require('firebase/auth');
+      const onAuthStateChanged = authMod.onAuthStateChanged;
+
+      unsub = onAuthStateChanged(auth, async (user: any) => {
+        console.log('Auth state changed, user:', user?.uid);
+        setUser(user);
+
+        if (user) {
+          // If we don't have userData but we have a user, detect user type and fetch data
+          if (!userData) {
+            setIsDetectingUserType(true);
+            try {
+              console.log('Detecting user type and fetching data for:', user.uid);
+              const detectedUserType = await detectUserType(user.uid);
+              if (detectedUserType) {
+                console.log('Detected user type:', detectedUserType);
+                let fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
+                const MAX_FETCH_RETRIES = 6;
+                const FETCH_RETRY_DELAY_MS = 500;
+
+                if (fetchedUserData) {
+                  let attempts = 0;
+                  const shouldRetryBecauseSkillsMissing = (data: any) => {
+                    try {
+                      const skills = data?.skills || data?.skillsWithLevels;
+                      if (skills === undefined || skills === null) return true;
+                      return Array.isArray(skills) && skills.length === 0;
+                    } catch (e) {
+                      return true;
+                    }
+                  };
+
+                  while (attempts < MAX_FETCH_RETRIES && shouldRetryBecauseSkillsMissing(fetchedUserData)) {
+                    console.log(`Fetched user data has no skills yet; retrying fetch (${attempts + 1}/${MAX_FETCH_RETRIES})`);
+                    await new Promise((res) => setTimeout(res, FETCH_RETRY_DELAY_MS));
+                    try {
+                      fetchedUserData = await fetchUserDataByType(user.uid, detectedUserType);
+                    } catch (e) {
+                      console.warn('Retry fetch failed:', e);
+                    }
+                    attempts++;
                   }
-                  attempts++;
+                }
+
+                if (fetchedUserData) {
+                  console.log('Fetched user data, setting context');
+                  await setUserDataWithRequests(fetchedUserData as any);
+                }
+              } else {
+                console.warn('Could not determine user type for UID:', user.uid);
+                const defaultFetched = await fetchUserDataByType(user.uid, 'MEMBER');
+                if (defaultFetched) {
+                  await setUserDataWithRequests(defaultFetched as any);
                 }
               }
-
-              if (fetchedUserData) {
-                console.log('Successfully fetched user data');
-                await setUserDataWithRequests(fetchedUserData);
-              } else {
-                console.error('Failed to fetch user data for detected type after retries:', detectedUserType);
-              }
-            } else {
-              console.error('Could not detect user type for:', user.uid);
+            } catch (error) {
+              console.error('Error while detecting/fetching user data:', error);
+              setUserData(null);
+            } finally {
+              setIsDetectingUserType(false);
+              setIsLoading(false);
             }
-          } catch (error) {
-            console.error('Error during user type detection and data fetching:', error);
-          } finally {
-            setIsDetectingUserType(false);
-            setIsLoading(false);
           }
         } else {
-          // User data already exists, just ensure loading is false
+          setIsDetectingUserType(false);
+          setUserData(null);
           setIsLoading(false);
         }
-      } else {
-        // No user, clear everything
-        setUserData(null);
-        setIsLoading(false);
-        setIsDetectingUserType(false);
-        // End any guest session if auth state becomes null (keep explicit control)
-        // However we do not force-end guest here because guest is an explicit mode
-      }
-    });
+      });
+    })();
 
-    return () => unsubscribe();
-  }, []); 
+    return () => {
+      mounted = false;
+      try {
+        if (typeof unsub === 'function') unsub();
+      } catch (e) {}
+    };
+  }, []);
 
   const value: UserContextType = {
     user,

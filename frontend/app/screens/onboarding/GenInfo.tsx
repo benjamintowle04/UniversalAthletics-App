@@ -9,7 +9,6 @@ import { RouterProps } from '../../types/RouterProps';
 import { LogoImageContainer } from '../../components/image_holders/LogoImageContainer';
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Colors } from '../../themes/colors/Colors';
-import { FIREBASE_AUTH } from '../../../firebase_config';
 
 const GenInfo = ({ navigation }: RouterProps) => {
     const { width, height } = Dimensions.get('window');
@@ -31,7 +30,6 @@ const GenInfo = ({ navigation }: RouterProps) => {
 
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [bioError, setBioError] = useState<string | null>(null);
-    const auth = FIREBASE_AUTH;
 
     // Function to format phone number as (XXX) XXX-XXXX
     const formatPhoneNumber = (input: string) => {
@@ -113,6 +111,15 @@ const GenInfo = ({ navigation }: RouterProps) => {
             >
                 <View className="flex-1 justify-center items-center p-8">
                     <View className="bg-white rounded-lg p-8 w-full max-w-2xl shadow-lg">
+                        {/* Back Button */}
+                        <TouchableOpacity 
+                            onPress={() => navigation.goBack()}
+                            className="absolute top-4 left-4 z-10 flex-row items-center"
+                        >
+                            <Ionicons name="arrow-back" size={24} color={Colors.uaGreen} />
+                            <Text className="ml-2 text-ua-green font-semibold">Back</Text>
+                        </TouchableOpacity>
+
                         {/* Header Section */}
                         <View className="items-center mb-8">
                             <Image
@@ -226,6 +233,14 @@ const GenInfo = ({ navigation }: RouterProps) => {
     return (
         <KeyboardAwareScrollView className="bg-white" enableOnAndroid={true} extraScrollHeight={80} extraHeight={120}>
             <View className="flex-1 justify-center items-center p-4 bg-white">
+                {/* Back Button */}
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()}
+                    className="absolute top-4 left-4 z-10 flex-row items-center"
+                >
+                    <Ionicons name="arrow-back" size={24} color={Colors.uaGreen} />
+                </TouchableOpacity>
+
                 <LogoImageContainer />
                 <View className="w-full">
                     <HeaderText text="Tell Us About Yourself" />

@@ -84,15 +84,14 @@
     		<artifactId>jackson-datatype-hibernate5</artifactId>
 		</dependency>
 
-        <!-- Flyway for DB migrations -->
+		<!-- Flyway for DB migrations -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<!-- Pin to a Flyway 9.x release which is compatible with the
-				 MySQL server metadata exposed by the JawsDB/RDS instance.
-				 Newer Flyway 10.x introduced stricter DB detection that
-				 fails for some MySQL product strings. This is a targeted
-				 fix — we can revisit upgrading Flyway later. -->
+			<!-- Pin to 9.x to avoid Flyway 10.x stricter DB detection which
+				 rejects some MySQL product strings (e.g. 'MySQL 8.0') used
+				 by JawsDB/RDS. This is a temporary, targeted fix; revisit
+				 upgrading Flyway when the provider compatibility is resolved. -->
 			<version>9.16.3</version>
 		</dependency>
 	</dependencies>
