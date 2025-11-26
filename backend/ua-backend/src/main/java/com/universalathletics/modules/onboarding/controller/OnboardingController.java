@@ -19,7 +19,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/onboarding")
-@CrossOrigin(origins = { "http://localhost:8081", "http://192.168.0.49:8080", "http://127.0.0.1:8081" })
 public class OnboardingController {
 
     /**

@@ -25,7 +25,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/requests/connections")
-@CrossOrigin(origins = "*")
 public class ConnectionRequestController {
 
     /**

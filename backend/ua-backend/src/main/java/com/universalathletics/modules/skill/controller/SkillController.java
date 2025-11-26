@@ -22,9 +22,8 @@ import java.util.List;
  * - Process and return appropriate responses
  */
 
- @RestController
- @RequestMapping("/api/skills")
- @CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("/api/skills")
 public class SkillController {
     /**
      * Autowired instance of MemberInfoService for handling business logic.

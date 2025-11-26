@@ -43,7 +43,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/coaches")
-@CrossOrigin(origins = "*")
 public class CoachController {
 
     /**
