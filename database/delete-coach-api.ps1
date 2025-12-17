@@ -81,7 +81,7 @@ Write-Host "Deleting coach..." -ForegroundColor Yellow
 
 try {
     $deleteResponse = Invoke-WebRequest `
-        -Uri "$apiBase/api/coaches/$FirebaseID" `
+        -Uri "$apiBase/api/coaches/delete/$FirebaseID" `
         -Method DELETE `
         -UseBasicParsing
     

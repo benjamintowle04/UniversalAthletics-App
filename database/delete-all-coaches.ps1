@@ -47,7 +47,7 @@ try {
         
         try {
             $deleteResponse = Invoke-WebRequest `
-                -Uri "$apiBase/api/coaches/$($coach.firebaseID)" `
+                -Uri "$apiBase/api/coaches/delete/$($coach.firebaseID)" `
                 -Method DELETE `
                 -UseBasicParsing
             
