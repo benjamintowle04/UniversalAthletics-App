@@ -549,6 +549,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(user);
 
         if (user) {
+          // If user is mid-onboarding (has tempPassword), skip backend fetch
+          if (userData && (userData as any).tempPassword) {
+            console.log('User is mid-onboarding, skipping backend fetch in UserContext');
+            return;
+          }
+
           // If we don't have userData but we have a user, detect user type and fetch data
           if (!userData) {
             setIsDetectingUserType(true);
