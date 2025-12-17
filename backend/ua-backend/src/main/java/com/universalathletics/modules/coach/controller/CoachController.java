@@ -346,6 +346,7 @@ public class CoachController {
      * @return ResponseEntity with status 200 (OK) if successful,
      *         404 (NOT FOUND) if coach doesn't exist, or 500 (INTERNAL SERVER ERROR) on failure
      */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.DELETE, RequestMethod.OPTIONS})
     @DeleteMapping("/delete/{firebaseID}")
     public ResponseEntity<String> deleteCoach(@PathVariable String firebaseID) {
         try {
