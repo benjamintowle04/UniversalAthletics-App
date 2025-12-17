@@ -340,13 +340,13 @@ public class CoachController {
     }
 
     /**
-     * Deletes a coach from the system by Firebase ID.
+     * Deletes a coach from the system by Firebase ID (using POST as workaround).
      *
      * @param firebaseID The Firebase ID of the coach to delete
      * @return ResponseEntity with status 200 (OK) if successful,
      *         404 (NOT FOUND) if coach doesn't exist, or 500 (INTERNAL SERVER ERROR) on failure
      */
-    @RequestMapping(value = "/delete/{firebaseID}", method = org.springframework.web.bind.annotation.RequestMethod.DELETE)
+    @PostMapping("/delete/{firebaseID}")
     public ResponseEntity<String> deleteCoach(@PathVariable String firebaseID) {
         try {
             logger.info("Delete request received for coach with Firebase ID: {}", firebaseID);

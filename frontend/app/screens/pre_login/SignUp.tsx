@@ -31,14 +31,17 @@ const SignUp = () => {
     const signUp = async (email: string, password: string) => {  
         setLoading(true);
         try {
-            const runtimeAuth = getFirebaseAuthSafe();
-            if (!runtimeAuth) {
-                Alert.alert('Auth not available', 'Unable to initialize authentication. Please try again later.');
-                setLoading(false);
-                return;
-            }
-            const response = await createUserWithEmailAndPassword(runtimeAuth, email, password);
-            console.log("Signed Up: ", response);
+            // Don't create Firebase account yet - pass credentials to onboarding
+            // Firebase account will be created AFTER onboarding is complete
+            console.log("Starting onboarding flow with email:", email);
+            
+            // Store credentials in userData context temporarily
+            await setUserData({
+                email: email,
+                tempPassword: password, // Will be used to create Firebase account after onboarding
+            } as any);
+            
+            // Navigation will happen automatically via AppNavigator when userData is set
         } catch (error: any) {
             console.log(error);
             alert("Sign up failed: " + error.message);

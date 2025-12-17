@@ -58,7 +58,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     combinedUserData?.lastName || userData?.lastName || ''
   );
   const [email, setEmail] = useState<string>(
-    auth?.currentUser?.email || ''
+    userData?.email || auth?.currentUser?.email || ''
   );
   const [phone, setPhone] = useState<string>(
     combinedUserData?.phone || userData?.phone || ''
@@ -195,8 +195,32 @@ const pickImage = async () => {
     }
   
     try {
+      // Step 1: Create Firebase account if this is a new signup (tempPassword exists)
+      const tempPassword = (userData as any)?.tempPassword;
+      let firebaseUserId = userData?.firebaseId || '';
+      
+      if (tempPassword && email) {
+        console.log("Creating Firebase account for new user:", email);
+        const runtimeAuth = getFirebaseAuthSafe();
+        if (!runtimeAuth) {
+          Alert.alert('Error', 'Authentication service unavailable. Please try again.');
+          return;
+        }
+        
+        try {
+          // Import at runtime to avoid module issues
+          const { createUserWithEmailAndPassword } = await import('firebase/auth');
+          const userCredential = await createUserWithEmailAndPassword(runtimeAuth, email, tempPassword);
+          firebaseUserId = userCredential.user.uid;
+          console.log("Firebase account created successfully:", firebaseUserId);
+        } catch (firebaseError: any) {
+          console.error("Firebase account creation failed:", firebaseError);
+          Alert.alert('Signup Error', firebaseError.message || 'Failed to create account. Please try again.');
+          return;
+        }
+      }
 
-      // Prepare the complete user data for the backend
+      // Step 2: Prepare the complete user data for the backend
       const completeUserData = {
         firstName,
         lastName,
@@ -205,15 +229,16 @@ const pickImage = async () => {
         biography,
         location: combinedUserData?.location || userData?.location,
         skills: combinedUserData?.skills || [],
-        firebaseId: userData?.firebaseId || '' 
+        firebaseId: firebaseUserId
       };
 
       console.log("Complete User Data for onboarding:", completeUserData);
 
-      // Call the backend API first to get the complete user data with ID
+      // Step 3: Call the backend API to create the member record
       const response = await postUserOnboarding(completeUserData, imageUri);
       console.log("User Data response from backend:", response);
-      // If backend returned the created user, normalize the response and set it into context
+      
+      // Step 4: If backend returned the created user, normalize the response and set it into context
       try {
         if (response) {
           // Normalize backend response into the MemberData | CoachData shape expected by UserContext
@@ -270,13 +295,18 @@ const pickImage = async () => {
             };
           };
 
-          const mapped = normalize(response);
           console.log('About to set normalized user data into context:', mapped);
-          await setUserData(mapped as any);
+          
+          // Remove tempPassword from userData before setting final state
+          const finalUserData = { ...mapped };
+          delete (finalUserData as any).tempPassword;
+          
+          await setUserData(finalUserData as any);
 
           // Re-fetch authoritative user record (contains signed profilePic URL) and update context
           try {
-            const firebaseId = mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
+            const firebaseId = mapped.firebaseId || FIREBASE_AUTH.currentUser?.uid || '';
+            if (firebaseId) {= mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
             if (firebaseId) {
               try {
                 const freshMember = await getMemberByFirebaseId(firebaseId);

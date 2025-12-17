@@ -106,6 +106,12 @@ export function AppNavigator() {
       return <MainAppNavigator />;
     }
 
+    // If user has tempPassword, they're in the middle of signup (before Firebase account creation)
+    // Route them to onboarding
+    if (userData && (userData as any).tempPassword) {
+      return <OnboardingStackNavigator MainAppNavigator={MainAppNavigator} />;
+    }
+
     if (needsOnboarding === null || userType === null) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -121,7 +127,7 @@ export function AppNavigator() {
 
     // Members go through onboarding if needed.
     // If we already have userData set in context (onboarding completed), render the main app immediately.
-    if (userData) {
+    if (userData && userData.firebaseId) {
       return <MainAppNavigator />;
     }
 
@@ -134,7 +140,7 @@ export function AppNavigator() {
 
   return (
     <NavigationContainer linking={linking} ref={navigationRef}>
-      {user || isGuest ? (
+      {user || isGuest || (userData && (userData as any).tempPassword) ? (
         <PostLoginLayout />
       ) : (
         <PreLoginStackNavigator />
