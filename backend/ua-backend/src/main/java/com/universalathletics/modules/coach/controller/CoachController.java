@@ -338,4 +338,37 @@ public class CoachController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * Deletes a coach from the system by Firebase ID.
+     *
+     * @param firebaseID The Firebase ID of the coach to delete
+     * @return ResponseEntity with status 204 (NO CONTENT) if successful,
+     *         404 (NOT FOUND) if coach doesn't exist, or 500 (INTERNAL SERVER ERROR) on failure
+     */
+    @DeleteMapping("/{firebaseID}")
+    public ResponseEntity<String> deleteCoach(@PathVariable String firebaseID) {
+        try {
+            logger.info("Delete request received for coach with Firebase ID: {}", firebaseID);
+            
+            // Find coach by Firebase ID first
+            CoachEntity coach = coachservice.findCoachByFirebaseID(firebaseID);
+            if (coach == null) {
+                logger.warn("Coach not found with Firebase ID: {}", firebaseID);
+                return new ResponseEntity<>("Coach not found with Firebase ID: " + firebaseID, HttpStatus.NOT_FOUND);
+            }
+            
+            // Delete the coach using the ID
+            String result = coachservice.deleteCoach(coach.getId());
+            logger.info("Successfully deleted coach: {}", result);
+            
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            logger.error("Coach not found: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            logger.error("Error deleting coach with Firebase ID {}: {}", firebaseID, e.getMessage(), e);
+            return new ResponseEntity<>("Error deleting coach: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
