@@ -48,7 +48,7 @@ try {
         try {
             $deleteResponse = Invoke-WebRequest `
                 -Uri "$apiBase/api/coaches/delete/$($coach.firebaseID)" `
-                -Method DELETE `
+                -Method POST `
                 -UseBasicParsing
             
             Write-Host "  Deleted successfully" -ForegroundColor Green

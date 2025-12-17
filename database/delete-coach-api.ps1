@@ -82,7 +82,7 @@ Write-Host "Deleting coach..." -ForegroundColor Yellow
 try {
     $deleteResponse = Invoke-WebRequest `
         -Uri "$apiBase/api/coaches/delete/$FirebaseID" `
-        -Method DELETE `
+        -Method POST `
         -UseBasicParsing
     
     if ($deleteResponse.StatusCode -eq 204 -or $deleteResponse.StatusCode -eq 200) {
