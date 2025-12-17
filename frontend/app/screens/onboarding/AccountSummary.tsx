@@ -305,8 +305,7 @@ const pickImage = async () => {
 
           // Re-fetch authoritative user record (contains signed profilePic URL) and update context
           try {
-            const firebaseId = mapped.firebaseId || FIREBASE_AUTH.currentUser?.uid || '';
-            if (firebaseId) {= mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
+            const firebaseId = mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
             if (firebaseId) {
               try {
                 const freshMember = await getMemberByFirebaseId(firebaseId);
