@@ -31,6 +31,24 @@ const SignUp = () => {
     const signUp = async (email: string, password: string) => {  
         setLoading(true);
         try {
+            // Check if email is already in use in Firebase
+            if (auth) {
+                const { fetchSignInMethodsForEmail } = await import('firebase/auth');
+                try {
+                    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+                    if (signInMethods && signInMethods.length > 0) {
+                        alert("This email is already registered. Please use a different email or sign in.");
+                        setLoading(false);
+                        return;
+                    }
+                } catch (emailCheckError: any) {
+                    // If error is not about email format, log it
+                    if (emailCheckError.code !== 'auth/invalid-email') {
+                        console.log('Error checking email:', emailCheckError);
+                    }
+                }
+            }
+            
             // Don't create Firebase account yet - pass credentials to onboarding
             // Firebase account will be created AFTER onboarding is complete
             console.log("Starting onboarding flow with email:", email);

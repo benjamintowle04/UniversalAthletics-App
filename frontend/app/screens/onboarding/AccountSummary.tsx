@@ -295,11 +295,17 @@ const pickImage = async () => {
             };
           };
 
+          const mapped = normalize(response);
           console.log('About to set normalized user data into context:', mapped);
           
           // Remove tempPassword from userData before setting final state
           const finalUserData = { ...mapped };
           delete (finalUserData as any).tempPassword;
+          
+          // Clear onboarding flag before setting final user data
+          if (typeof window !== 'undefined' && window.sessionStorage) {
+            window.sessionStorage.removeItem('onboarding_in_progress');
+          }
           
           await setUserData(finalUserData as any);
 

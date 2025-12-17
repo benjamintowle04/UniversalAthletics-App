@@ -70,7 +70,9 @@ export function AppNavigator() {
       if (user) {
         // Check if user has tempPassword (mid-onboarding) - if so, skip backend fetch
         // The onboarding process will handle setting userData after backend creation
-        if (userData && (userData as any).tempPassword) {
+        const isOnboarding = (userData && (userData as any).tempPassword) || 
+                            (typeof window !== 'undefined' && window.sessionStorage?.getItem('onboarding_in_progress') === 'true');
+        if (isOnboarding) {
           console.log('User is mid-onboarding, skipping backend fetch');
           setUserType('MEMBER');
           setNeedsOnboarding(true);
