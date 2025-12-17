@@ -28,6 +28,8 @@ public class GoogleCloudStorageService {
     @Value("${gcp.credentials.path:}")
     private String credentialsPath;
     
+    @Value("${gcp.credentials.json:}")
+    private String credentialsJson;
 
     private Storage storage;
     private com.google.auth.oauth2.ServiceAccountCredentials serviceAccountCredentials;
@@ -35,19 +37,38 @@ public class GoogleCloudStorageService {
     @PostConstruct
     public void initialize() throws IOException {
         // If any of the required GCP properties are missing, skip initialization.
-        if (bucketName == null || bucketName.isEmpty() || projectId == null || projectId.isEmpty() || credentialsPath == null || credentialsPath.isEmpty()) {
+        if (bucketName == null || bucketName.isEmpty() || projectId == null || projectId.isEmpty()) {
             System.out.println("GCP configuration not provided; GoogleCloudStorageService will be disabled.");
             return;
         }
 
-        // If credentialsPath is set but file doesn't exist, don't crash the app — disable the service instead.
-        if (!Files.exists(Paths.get(credentialsPath))) {
-            System.out.println("GCP credentials file not found at '" + credentialsPath + "'; GoogleCloudStorageService will be disabled.");
+        com.google.auth.oauth2.GoogleCredentials creds = null;
+
+        // Try to load credentials from JSON environment variable first (for Heroku)
+        if (credentialsJson != null && !credentialsJson.isEmpty()) {
+            System.out.println("Loading GCP credentials from environment variable (JSON)");
+            try {
+                java.io.ByteArrayInputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes());
+                creds = com.google.auth.oauth2.GoogleCredentials.fromStream(credentialsStream);
+            } catch (Exception e) {
+                System.out.println("Failed to load GCP credentials from JSON: " + e.getMessage());
+                return;
+            }
+        }
+        // Fall back to file path (for local development)
+        else if (credentialsPath != null && !credentialsPath.isEmpty()) {
+            if (!Files.exists(Paths.get(credentialsPath))) {
+                System.out.println("GCP credentials file not found at '" + credentialsPath + "'; GoogleCloudStorageService will be disabled.");
+                return;
+            }
+            System.out.println("Loading GCP credentials from file: " + credentialsPath);
+            creds = com.google.auth.oauth2.GoogleCredentials.fromStream(new FileInputStream(credentialsPath));
+        } else {
+            System.out.println("No GCP credentials provided (neither gcp.credentials.json nor gcp.credentials.path); GoogleCloudStorageService will be disabled.");
             return;
         }
 
-        // Load credentials and initialize storage. Keep a reference to ServiceAccountCredentials for signing URLs.
-        com.google.auth.oauth2.GoogleCredentials creds = com.google.auth.oauth2.GoogleCredentials.fromStream(new FileInputStream(credentialsPath));
+        // Keep a reference to ServiceAccountCredentials for signing URLs
         if (creds instanceof com.google.auth.oauth2.ServiceAccountCredentials) {
             this.serviceAccountCredentials = (com.google.auth.oauth2.ServiceAccountCredentials) creds;
         } else {
@@ -59,6 +80,7 @@ public class GoogleCloudStorageService {
             .setCredentials(creds)
             .build();
         this.storage = storageOptions.getService();
+        System.out.println("GoogleCloudStorageService initialized successfully for bucket: " + bucketName);
     }
 
     public String getSignedFileUrl(String fileName) throws IOException {
