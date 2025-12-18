@@ -317,13 +317,15 @@ const pickImage = async () => {
                 const freshMember = await getMemberByFirebaseId(firebaseId);
                 if (freshMember && freshMember.firstName) {
                   console.log('Refetched member after onboarding; updating context with authoritative record');
-                  await setUserData(freshMember as any);
+                  // Preserve userType when updating with fresh data
+                  await setUserData({ ...freshMember, userType: 'MEMBER' } as any);
                 } else {
                   // try coach
                   const freshCoach = await getCoachByFirebaseId(firebaseId);
                   if (freshCoach && freshCoach.firstName) {
                     console.log('Refetched coach after onboarding; updating context with authoritative record');
-                    await setUserData(freshCoach as any);
+                    // Preserve userType when updating with fresh data
+                    await setUserData({ ...freshCoach, userType: 'COACH' } as any);
                   }
                 }
               } catch (refetchErr) {
