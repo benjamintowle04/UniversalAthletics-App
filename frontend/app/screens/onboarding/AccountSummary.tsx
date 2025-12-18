@@ -47,7 +47,6 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
   }
 
   const { userData, setUserData } = userContext;
-  // Use runtime-safe getter for Auth to avoid module-load failures in some web builds
   const auth = getFirebaseAuthSafe();
 
   // Initialize state with combined data from previous screens or existing userData
@@ -58,7 +57,7 @@ const AccountSummary = ({ navigation, route }: AccountSummaryProps) => {
     combinedUserData?.lastName || userData?.lastName || ''
   );
   const [email, setEmail] = useState<string>(
-    userData?.email || auth?.currentUser?.email || ''
+    userData?.email || auth.currentUser?.email || ''
   );
   const [phone, setPhone] = useState<string>(
     combinedUserData?.phone || userData?.phone || ''
@@ -245,7 +244,7 @@ const pickImage = async () => {
           const normalize = (resp: any) => {
             // prefer provided keys, fallback to common alternatives
             const id = resp.id || resp.userId || resp.memberId || resp.coachId;
-            const firebaseId = resp.firebaseId || resp.firebaseID || getFirebaseAuthSafe()?.currentUser?.uid || '';
+          const firebaseId = resp.firebaseId || resp.firebaseID || getFirebaseAuthSafe()?.currentUser?.uid || '';
             const email = resp.email || '';
             const firstName = resp.firstName || resp.first_name || '';
             const lastName = resp.lastName || resp.last_name || '';
@@ -302,30 +301,23 @@ const pickImage = async () => {
           const finalUserData = { ...mapped };
           delete (finalUserData as any).tempPassword;
           
-          // Clear onboarding flag before setting final user data
-          if (typeof window !== 'undefined' && window.sessionStorage) {
-            window.sessionStorage.removeItem('onboarding_in_progress');
-          }
-          
           await setUserData(finalUserData as any);
 
           // Re-fetch authoritative user record (contains signed profilePic URL) and update context
           try {
-            const firebaseId = mapped.firebaseId || getFirebaseAuthSafe()?.currentUser?.uid || '';
+            const firebaseId = mapped.firebaseId || FIREBASE_AUTH.currentUser?.uid || '';
             if (firebaseId) {
               try {
                 const freshMember = await getMemberByFirebaseId(firebaseId);
                 if (freshMember && freshMember.firstName) {
                   console.log('Refetched member after onboarding; updating context with authoritative record');
-                  // Preserve userType when updating with fresh data
-                  await setUserData({ ...freshMember, userType: 'MEMBER' } as any);
+                  await setUserData(freshMember as any);
                 } else {
                   // try coach
                   const freshCoach = await getCoachByFirebaseId(firebaseId);
                   if (freshCoach && freshCoach.firstName) {
                     console.log('Refetched coach after onboarding; updating context with authoritative record');
-                    // Preserve userType when updating with fresh data
-                    await setUserData({ ...freshCoach, userType: 'COACH' } as any);
+                    await setUserData(freshCoach as any);
                   }
                 }
               } catch (refetchErr) {

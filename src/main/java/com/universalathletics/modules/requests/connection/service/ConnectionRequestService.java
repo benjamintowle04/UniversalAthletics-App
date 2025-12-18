@@ -334,10 +334,12 @@ public class ConnectionRequestService {
         entity.setReceiverFirebaseId(dto.getReceiverFirebaseId());
         entity.setSenderFirstName(dto.getSenderFirstName());
         entity.setSenderLastName(dto.getSenderLastName());
-        entity.setSenderProfilePic(dto.getSenderProfilePic());
+        // Convert empty strings to null for profile pictures
+        entity.setSenderProfilePic(dto.getSenderProfilePic() != null && dto.getSenderProfilePic().isEmpty() ? null : dto.getSenderProfilePic());
         entity.setReceiverFirstName(dto.getReceiverFirstName());
         entity.setReceiverLastName(dto.getReceiverLastName());
-        entity.setReceiverProfilePic(dto.getReceiverProfilePic());
+        // Convert empty strings to null for profile pictures
+        entity.setReceiverProfilePic(dto.getReceiverProfilePic() != null && dto.getReceiverProfilePic().isEmpty() ? null : dto.getReceiverProfilePic());
         entity.setMessage(dto.getMessage());
         entity.setStatus(dto.getStatus());
         entity.setCreatedAt(dto.getCreatedAt());
