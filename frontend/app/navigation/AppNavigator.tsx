@@ -142,6 +142,19 @@ export function AppNavigator() {
     };
   }, []);
 
+  // Watch for userData changes and update needsOnboarding accordingly
+  useEffect(() => {
+    // If userData is set with a firebaseId and no tempPassword, user has completed onboarding
+    if (userData && userData.firebaseId && !(userData as any).tempPassword) {
+      console.log('UserData updated with firebaseId, setting needsOnboarding to false');
+      setNeedsOnboarding(false);
+      // Set userType from userData if available
+      if (userData.userType) {
+        setUserType(userData.userType.toUpperCase() as 'MEMBER' | 'COACH');
+      }
+    }
+  }, [userData]);
+
   // Log inbox notification updates for debugging
   useEffect(() => {
     if (userData) {
