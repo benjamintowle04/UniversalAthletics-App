@@ -202,4 +202,38 @@ public class MemberInfoController {
         }
     }
 
+    /**
+     * Deletes a member from the system by Firebase ID (using POST as workaround).
+     *
+     * @param firebaseId The Firebase ID of the member to delete
+     * @return ResponseEntity with status 200 (OK) if successful,
+     *         404 (NOT FOUND) if member doesn't exist, or 500 (INTERNAL SERVER ERROR) on failure
+     */
+    @PostMapping("/delete/{firebaseId}")
+    public ResponseEntity<String> deleteMember(@PathVariable String firebaseId) {
+        try {
+            System.out.println("Delete request received for member with Firebase ID: " + firebaseId);
+            
+            // Find member by Firebase ID first
+            MemberInfoEntity member = memberInfoService.findMemberByFirebaseId(firebaseId);
+            if (member == null) {
+                System.err.println("Member not found with Firebase ID: " + firebaseId);
+                return new ResponseEntity<>("Member not found with Firebase ID: " + firebaseId, HttpStatus.NOT_FOUND);
+            }
+            
+            // Delete the member using the ID
+            String result = memberInfoService.deleteMember(member.getId());
+            System.out.println("Successfully deleted member: " + result);
+            
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            System.err.println("Member not found: " + e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.err.println("Error deleting member with Firebase ID " + firebaseId + ": " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>("Error deleting member: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
