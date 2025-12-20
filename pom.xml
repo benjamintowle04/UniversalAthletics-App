@@ -94,6 +94,13 @@
 				 pinned version. This is a temporary, targeted fix. -->
 			<version>9.16.3</version>
 		</dependency>
+
+		<!-- Firebase Admin SDK for managing Firebase Authentication users -->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
