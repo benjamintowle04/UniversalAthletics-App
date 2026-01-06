@@ -71,8 +71,23 @@ public class CoachService {
             throw new IllegalArgumentException("Coach information cannot be null");
         }
 
-        // Save the coach first (without skills for now)
+        // Save the coach first to get an ID
         CoachEntity savedCoach = coachRepository.save(coach);
+
+        // Now handle skills if provided
+        if (coach.getSkillsWithLevels() != null && !coach.getSkillsWithLevels().isEmpty()) {
+            for (CoachSkillDTO skillDTO : coach.getSkillsWithLevels()) {
+                SkillEntity skill = skillRepository.findById(skillDTO.getSkillId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Skill not found with id: " + skillDTO.getSkillId()));
+
+                CoachSkillEntity coachSkill = new CoachSkillEntity();
+                coachSkill.setCoach(savedCoach);
+                coachSkill.setSkill(skill);
+                coachSkill.setSkillLevel(skillDTO.getSkillLevel());
+                coachSkillRepository.save(coachSkill);
+            }
+        }
 
         return savedCoach;
     }
