@@ -80,6 +80,24 @@ public class CoachService {
         // Save the coach first (without skills for now)
         CoachEntity savedCoach = coachRepository.save(coach);
 
+        // If skillsWithLevels were provided on create, persist them now
+        if (coach.getSkillsWithLevels() != null && !coach.getSkillsWithLevels().isEmpty()) {
+            for (CoachSkillDTO skillDTO : coach.getSkillsWithLevels()) {
+                try {
+                    SkillEntity skill = skillRepository.findById(skillDTO.getSkillId())
+                            .orElseThrow(() -> new EntityNotFoundException("Skill not found with id: " + skillDTO.getSkillId()));
+
+                    CoachSkillEntity newCoachSkill = new CoachSkillEntity(savedCoach, skill, skillDTO.getSkillLevel());
+                    coachSkillRepository.save(newCoachSkill);
+                } catch (Exception e) {
+                    logger.warn("Failed to persist coach skill on create for coachId={} skillId={} : {}", savedCoach.getId(), skillDTO.getSkillId(), e.getMessage());
+                }
+            }
+        }
+
+        // Populate transient skillsWithLevels before returning
+        populateSkillsWithLevels(savedCoach);
+
         return savedCoach;
     }
 
