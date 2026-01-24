@@ -4,6 +4,12 @@
   publish = "frontend/web-build"
 
 [[redirects]]
+  from = "/api/*"
+  to = "https://ua-backend-app-cb2d657adc39.herokuapp.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
