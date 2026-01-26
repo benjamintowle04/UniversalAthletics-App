@@ -367,4 +367,13 @@ public class CoachController {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Temporary GET wrapper for the admin clear-all endpoint.
+     * Some clients (or deployment setups) may not allow POST; expose a guarded GET for emergency use.
+     */
+    @GetMapping("/admin/clear-all")
+    public ResponseEntity<String> clearAllCoachesGet(@RequestParam("token") String token) {
+        return clearAllCoaches(token);
+    }
 }
