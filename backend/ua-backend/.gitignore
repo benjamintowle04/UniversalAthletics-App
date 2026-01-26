@@ -72,4 +72,3 @@ build/
 
 # Springboot configurations
 **/application.properties
-node_modules

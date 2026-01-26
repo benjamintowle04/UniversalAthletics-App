@@ -17,6 +17,7 @@ const Login = ({ navigation }: RouterProps) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    // resolve auth at runtime to avoid module-load failures in some web builds
     const auth = getFirebaseAuthSafe();
     const { width, height } = Dimensions.get('window');
     const isWeb = Platform.OS === 'web';
@@ -33,11 +34,13 @@ const Login = ({ navigation }: RouterProps) => {
     const signIn = async () => {
         setLoading(true);
         try {
-            if (!auth) {
-                alert('Authentication not ready. Please try again shortly.');
+            const runtimeAuth = getFirebaseAuthSafe();
+            if (!runtimeAuth) {
+                Alert.alert('Auth not available', 'Unable to initialize authentication. Please try again later.');
+                setLoading(false);
                 return;
             }
-            const response = await signInWithEmailAndPassword(auth, email, password);
+            const response = await signInWithEmailAndPassword(runtimeAuth, email, password);
             console.log("Logged in: ", response);
             
             // After successful Firebase authentication, determine user type and fetch data

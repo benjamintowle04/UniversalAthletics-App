@@ -25,7 +25,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/requests/sessions")
-@CrossOrigin(origins = "*")
 public class SessionRequestController {
 
     /**

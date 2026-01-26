@@ -1,0 +1,9 @@
+[build]
+  base = "."
+  command = "cd frontend && npm ci --legacy-peer-deps && npm run build"
+  publish = "frontend/web-build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

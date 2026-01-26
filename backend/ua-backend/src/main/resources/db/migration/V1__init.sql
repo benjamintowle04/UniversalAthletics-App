@@ -339,7 +339,7 @@ CREATE TABLE IF NOT EXISTS Member_Skill(
 CREATE TABLE IF NOT EXISTS Coach_Skill(
     Coach_ID INT(11) NOT NULL,
     Skill_ID INT(11) NOT NULL,
-    Skill_Level ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED') NOT NULL DEFAULT 'INTERMEDIATE',
+    Skill_Level ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT') NOT NULL DEFAULT 'INTERMEDIATE',
     PRIMARY KEY (Coach_ID, Skill_ID),
     CONSTRAINT fk_CS_Coach FOREIGN KEY (Coach_ID) REFERENCES Coach(Coach_ID) ON DELETE CASCADE,
     CONSTRAINT fk_CS_Skill FOREIGN KEY (Skill_ID) REFERENCES Skill(Skill_ID) ON DELETE CASCADE
@@ -371,6 +371,9 @@ INSERT INTO Coach_Skill (Coach_ID, Skill_ID, Skill_Level) VALUES
     (7, 12, 'ADVANCED'),
     (8, 12, 'ADVANCED'),
     (8, 9, 'ADVANCED');
+
+-- Ensure existing DB enum includes EXPERT (idempotent MODIFY)
+ALTER TABLE Coach_Skill MODIFY Skill_Level ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT') NOT NULL DEFAULT 'INTERMEDIATE';
 
 
 -- Populate hibernate sequence for request_id

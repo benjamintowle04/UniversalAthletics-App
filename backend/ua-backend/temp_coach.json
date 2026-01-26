@@ -1,0 +1,14 @@
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test+copilot@example.com",
+  "phone": "",
+  "biography1": "",
+  "biography2": "",
+  "profilePic": null,
+  "bioPic1": null,
+  "bioPic2": null,
+  "location": "",
+  "firebaseID": "test-fb-12345",
+  "skillsWithLevels": [ { "skillId": 1, "skillLevel": "EXPERT" } ]
+}

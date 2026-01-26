@@ -11,7 +11,7 @@ import {
   setDoc,
   Timestamp 
 } from 'firebase/firestore';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../firebase_config';
+import { FIREBASE_DB, getFirebaseAuthSafe } from '../firebase_config';
 import { Conversation } from '../app/types/MessageTypes';
 
 // Send a new message
@@ -63,8 +63,8 @@ export const sendMessage = async (
 export const getConversationsForUser = (
   callback: (conversations: Conversation[]) => void
 ) => {
-  const firebaseUid = FIREBASE_AUTH.currentUser?.uid;
-  
+  const firebaseUid = getFirebaseAuthSafe()?.currentUser?.uid;
+
   if (!firebaseUid) {
     console.error('User not authenticated');
     callback([]);
@@ -305,8 +305,8 @@ export const addMessageToConversation = async (
 export const getConversationsWithLiveUnreadCounts = (
   callback: (conversations: Conversation[]) => void
 ) => {
-  const firebaseUid = FIREBASE_AUTH.currentUser?.uid;
-  
+  const firebaseUid = getFirebaseAuthSafe()?.currentUser?.uid;
+
   if (!firebaseUid) {
     console.error('User not authenticated');
     callback([]);

@@ -43,6 +43,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/coaches")
+@CrossOrigin(origins = "*")
 public class CoachController {
 
     /**
@@ -215,7 +216,6 @@ public class CoachController {
     @GetMapping("/{firebaseID}")
     public ResponseEntity<CoachEntity> getCoachById(@PathVariable String firebaseID) {
         try {
-            // removed noisy debug log
             CoachEntity coach = coachservice.findCoachByFirebaseID(firebaseID);
             if (coach != null) {
                 // Handle profile picture signing
@@ -340,35 +340,31 @@ public class CoachController {
     }
 
     /**
-     * Deletes a coach from the system by Firebase ID (using POST as workaround).
-     *
-     * @param firebaseID The Firebase ID of the coach to delete
-     * @return ResponseEntity with status 200 (OK) if successful,
-     *         404 (NOT FOUND) if coach doesn't exist, or 500 (INTERNAL SERVER ERROR) on failure
+     * Administrative endpoint to delete all coaches. Protected by an env token.
+     * Use with caution.
      */
-    @PostMapping("/delete/{firebaseID}")
-    public ResponseEntity<String> deleteCoach(@PathVariable String firebaseID) {
+    @PostMapping("/admin/clear-all")
+    public ResponseEntity<String> clearAllCoaches(@RequestParam("token") String token) {
+        String expected = System.getenv("ADMIN_API_TOKEN");
+        if (expected == null || !expected.equals(token)) {
+            return new ResponseEntity<>("Forbidden", HttpStatus.FORBIDDEN);
+        }
+
         try {
-            logger.info("Delete request received for coach with Firebase ID: {}", firebaseID);
-            
-            // Find coach by Firebase ID first
-            CoachEntity coach = coachservice.findCoachByFirebaseID(firebaseID);
-            if (coach == null) {
-                logger.warn("Coach not found with Firebase ID: {}", firebaseID);
-                return new ResponseEntity<>("Coach not found with Firebase ID: " + firebaseID, HttpStatus.NOT_FOUND);
+            List<CoachEntity> coaches = coachservice.findAllCoaches();
+            int deleted = 0;
+            for (CoachEntity c : coaches) {
+                try {
+                    coachservice.deleteCoach(c.getId());
+                    deleted++;
+                } catch (Exception e) {
+                    logger.warn("Failed to delete coach {}: {}", c.getId(), e.getMessage());
+                }
             }
-            
-            // Delete the coach using the ID
-            String result = coachservice.deleteCoach(coach.getId());
-            logger.info("Successfully deleted coach: {}", result);
-            
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
-            logger.error("Coach not found: {}", e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Deleted " + deleted + " coaches", HttpStatus.OK);
         } catch (Exception e) {
-            logger.error("Error deleting coach with Firebase ID {}: {}", firebaseID, e.getMessage(), e);
-            return new ResponseEntity<>("Error deleting coach: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error clearing all coaches: {}", e.getMessage(), e);
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

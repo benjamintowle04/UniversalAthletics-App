@@ -145,12 +145,12 @@ const UserSettingsWebUI: React.FC<UserSettingsWebUIProps> = ({
         alert('No email found for this account.');
         return;
       }
-      console.log("Sending password reset email to:", userData.email);
       const auth = getFirebaseAuthSafe();
       if (!auth) {
         alert('Authentication is not ready yet. Please try again in a moment.');
         return;
       }
+      console.log("Sending password reset email to:", userData.email);
       await sendPasswordResetEmail(auth, userData.email);
       alert('Password reset email sent! Please check your inbox.');
     } catch (error: any) {

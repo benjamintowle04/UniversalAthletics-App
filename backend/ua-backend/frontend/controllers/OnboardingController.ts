@@ -48,7 +48,7 @@ export const postUserOnboarding = async (userData: UserOnboardingData, profilePi
       console.log('Profile picture URI type:', typeof profilePicUri);
       console.log('Profile picture URI value:', profilePicUri);
 
-      // Get Firebase ID for filename
+  // Get Firebase ID for filename
   const firebaseId = getFirebaseAuthSafe()?.currentUser?.uid || userData.firebaseId;
       const filename = `${firebaseId}.jpg`;
 

@@ -40,7 +40,18 @@ public class ManualMigrationRunner implements ApplicationRunner {
         log.info("FLYWAY_USE_FALLBACK is enabled — applying SQL from classpath:db/migration/V1__init.sql");
 
         try {
-            // Read the SQL script from classpath
+            // First: if an idempotent seed-only script exists on the classpath, apply it (this contains guarded INSERTs).
+            ClassPathResource seedResource = new ClassPathResource("db/migration/seed_production_inserts.sql");
+            if (seedResource.exists()) {
+                System.out.println("MANUAL-MIGRATION: Found seed_production_inserts.sql on classpath; executing via ResourceDatabasePopulator");
+                ResourceDatabasePopulator seedPop = new ResourceDatabasePopulator();
+                seedPop.setContinueOnError(true);
+                seedPop.addScript(seedResource);
+                seedPop.execute(dataSource);
+                System.out.println("MANUAL-MIGRATION: seed_production_inserts.sql executed");
+            }
+
+            // Read the main SQL script from classpath
             ClassPathResource resource = new ClassPathResource("db/migration/V1__init.sql");
             String sql = StreamUtils.copyToString(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8);
 

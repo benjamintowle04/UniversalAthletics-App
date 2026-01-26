@@ -25,8 +25,7 @@ import {
   where
 } from 'firebase/firestore';
 
-import { getFirebaseAuthSafe } from '../../../firebase_config'
-import { FIREBASE_DB } from '../../../firebase_config';
+import { getFirebaseAuthSafe, FIREBASE_DB } from '../../../firebase_config';
 import { getMembersCoaches } from '../../../controllers/MemberInfoController'
 import { getCoachesMembers } from '../../../controllers/CoachController'
 
@@ -209,7 +208,7 @@ const InboxHome = ({navigation}: RouterProps) => {
     setCreatingConversation(true);
     
     try {
-  const currentUserFirebaseId = getFirebaseAuthSafe()?.currentUser?.uid;
+      const currentUserFirebaseId = getFirebaseAuthSafe()?.currentUser?.uid;
       if (!currentUserFirebaseId) {
         Alert.alert("Error", "User not authenticated");
         setCreatingConversation(false);
@@ -486,7 +485,7 @@ const InboxHome = ({navigation}: RouterProps) => {
   };
 
   const renderRegularMessage = (conversation: any, index: number) => {
-    const currentUserFirebaseId = FIREBASE_AUTH.currentUser?.uid;
+    const currentUserFirebaseId = getFirebaseAuthSafe()?.currentUser?.uid;
     const otherParticipant = conversation.participants?.find(
       (p: any) => p.firebaseId !== currentUserFirebaseId
     );

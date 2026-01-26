@@ -3,8 +3,6 @@ package com.universalathletics.modules.coach.service;
 //------------------------------- imports ------------------------------------//
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.universalathletics.modules.coach.entity.CoachEntity;
 import com.universalathletics.modules.coach.repository.CoachRepository;
@@ -47,10 +45,6 @@ public class CoachService {
     @Autowired
     private CoachRepository coachRepository;
 
-    // JdbcTemplate diagnostic removed; keep repository/native-fallback
-
-    private static final Logger logger = LoggerFactory.getLogger(CoachService.class);
-
     /**
      * Autowired instance of SkillRepository for database operations.
      */
@@ -77,26 +71,23 @@ public class CoachService {
             throw new IllegalArgumentException("Coach information cannot be null");
         }
 
-        // Save the coach first (without skills for now)
+        // Save the coach first to get an ID
         CoachEntity savedCoach = coachRepository.save(coach);
 
-        // If skillsWithLevels were provided on create, persist them now
+        // Now handle skills if provided
         if (coach.getSkillsWithLevels() != null && !coach.getSkillsWithLevels().isEmpty()) {
             for (CoachSkillDTO skillDTO : coach.getSkillsWithLevels()) {
-                try {
-                    SkillEntity skill = skillRepository.findById(skillDTO.getSkillId())
-                            .orElseThrow(() -> new EntityNotFoundException("Skill not found with id: " + skillDTO.getSkillId()));
+                SkillEntity skill = skillRepository.findById(skillDTO.getSkillId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Skill not found with id: " + skillDTO.getSkillId()));
 
-                    CoachSkillEntity newCoachSkill = new CoachSkillEntity(savedCoach, skill, skillDTO.getSkillLevel());
-                    coachSkillRepository.save(newCoachSkill);
-                } catch (Exception e) {
-                    logger.warn("Failed to persist coach skill on create for coachId={} skillId={} : {}", savedCoach.getId(), skillDTO.getSkillId(), e.getMessage());
-                }
+                CoachSkillEntity coachSkill = new CoachSkillEntity();
+                coachSkill.setCoach(savedCoach);
+                coachSkill.setSkill(skill);
+                coachSkill.setSkillLevel(skillDTO.getSkillLevel());
+                coachSkillRepository.save(coachSkill);
             }
         }
-
-        // Populate transient skillsWithLevels before returning
-        populateSkillsWithLevels(savedCoach);
 
         return savedCoach;
     }
@@ -356,32 +347,10 @@ public class CoachService {
      * @throws EntityNotFoundException if coach not found
      */
     public CoachEntity findCoachByFirebaseID(String firebaseID) {
-        // Diagnostic: log repository lookup and fallback to raw JDBC query when empty.
-        logger.debug("findCoachByFirebaseID called with '{}'. Invoking repository...", firebaseID);
-        java.util.Optional<CoachEntity> opt = coachRepository.findByFirebaseID(firebaseID);
-        if (opt.isPresent()) {
-            logger.debug("CoachRepository returned a match for firebaseID='{}' (id={})", firebaseID, opt.get().getId());
-            CoachEntity coach = opt.get();
-            populateSkillsWithLevels(coach);
-            return coach;
-        }
-
-        // Repository returned empty — try native-query repository fallback before failing
-        try {
-            java.util.Optional<CoachEntity> nativeOpt = coachRepository.findByFirebaseIDNative(firebaseID);
-            if (nativeOpt.isPresent()) {
-                logger.info("Native repository query found a match for firebaseID='{}'. Returning mapped entity (id={})", firebaseID, nativeOpt.get().getId());
-                CoachEntity coach = nativeOpt.get();
-                populateSkillsWithLevels(coach);
-                return coach;
-            } else {
-                logger.info("Native repository query also returned empty for firebaseID='{}'. Will throw EntityNotFoundException.", firebaseID);
-            }
-        } catch (Exception e) {
-            logger.error("Native repository diagnostic query failed for firebaseID='{}': {}", firebaseID, e.toString());
-        }
-
-        throw new EntityNotFoundException("Coach not found with Firebase ID: " + firebaseID);
+        CoachEntity coach = coachRepository.findByFirebaseID(firebaseID)
+                .orElseThrow(() -> new EntityNotFoundException("Coach not found with Firebase ID: " + firebaseID));
+        populateSkillsWithLevels(coach);
+        return coach;
     }
 
     // ----------------------- Coach Skill Level Queries ---------------------//

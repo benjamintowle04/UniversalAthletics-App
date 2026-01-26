@@ -9,7 +9,7 @@ import {
   getDocs,
   Timestamp 
 } from 'firebase/firestore';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../../../firebase_config';
+import { FIREBASE_DB, getFirebaseAuthSafe } from '../../../firebase_config';
 import { acceptConnectionRequest, declineConnectionRequest } from '../../../controllers/ConnectionRequestController';
 import { getMembersCoaches } from '../../../controllers/MemberInfoController';
 import { getCoachesMembers } from '../../../controllers/CoachController';
@@ -193,7 +193,7 @@ export const useConnection = ({
     console.log("Handling Message Profile with target:", targetProfile);
 
     try {
-      const currentUserFirebaseId = FIREBASE_AUTH.currentUser?.uid;
+  const currentUserFirebaseId = getFirebaseAuthSafe()?.currentUser?.uid;
       if (!currentUserFirebaseId) {
         Alert.alert("Error", "User not authenticated");
         return;

@@ -22,8 +22,9 @@ import java.util.List;
  * - Process and return appropriate responses
  */
 
-@RestController
-@RequestMapping("/api/skills")
+ @RestController
+ @RequestMapping("/api/skills")
+ @CrossOrigin(origins = "*")
 public class SkillController {
     /**
      * Autowired instance of MemberInfoService for handling business logic.
@@ -43,5 +44,26 @@ public class SkillController {
     public ResponseEntity<List<SkillEntity>> getAllSkills() {
         List<SkillEntity> skills = skillService.getAllSkills();
         return new ResponseEntity<>(skills, HttpStatus.OK);
+    }
+
+    // -------------------------- Create Skill Endpoint -----------------------//
+    /**
+     * Creates a new skill in the system.
+     *
+     * @param skill The skill information to be saved
+     * @return ResponseEntity<SkillEntity> with status 201 (CREATED) and the created skill
+     */
+    @PostMapping
+    public ResponseEntity<SkillEntity> createSkill(@RequestBody SkillEntity skill) {
+        try {
+            SkillEntity createdSkill = skillService.saveSkill(skill);
+            return new ResponseEntity<>(createdSkill, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.err.println("Error creating skill: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

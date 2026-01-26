@@ -1,6 +1,8 @@
 package com.universalathletics.modules.coach.repository;
 
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 //------------------------------- imports ------------------------------------//
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +28,8 @@ public interface CoachRepository extends JpaRepository<CoachEntity, Integer> {
    * Find a member by their firebaseID
    */
   Optional<CoachEntity> findByFirebaseID(String firebaseID);
+
+  // Native-query fallback in case derived query/mapping fails at runtime.
+  @Query(value = "SELECT * FROM Coach WHERE Firebase_ID = :firebaseID", nativeQuery = true)
+  Optional<CoachEntity> findByFirebaseIDNative(@Param("firebaseID") String firebaseID);
 }

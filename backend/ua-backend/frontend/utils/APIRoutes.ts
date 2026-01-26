@@ -1,5 +1,5 @@
-import LOCAL_IP_ADDRESS from "../config/LocalMachineIPAddress";
-const BASE_URL = `http://${LOCAL_IP_ADDRESS}:8080`;
+// Use relative API paths so Netlify can proxy /api/* to backend (avoids CORS)
+const BASE_URL = "";
 
 export const ApiRoutes = {
     GET_SKILLS_ALL: `${BASE_URL}/api/skills`,

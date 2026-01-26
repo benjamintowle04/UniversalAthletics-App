@@ -134,36 +134,40 @@ public abstract class RequestEntity {
     /**
      * The member entity when sender is a member.
      * This is a conditional relationship based on senderType.
+     * Foreign key disabled as this is a polymorphic relationship.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Sender_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "Sender_ID", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @JsonIgnore
     private MemberInfoEntity senderMember;
 
     /**
      * The coach entity when sender is a coach.
      * This is a conditional relationship based on senderType.
+     * Foreign key disabled as this is a polymorphic relationship.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Sender_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "Sender_ID", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @JsonIgnore
     private CoachEntity senderCoach;
 
     /**
      * The member entity when receiver is a member.
      * This is a conditional relationship based on receiverType.
+     * Foreign key disabled as this is a polymorphic relationship.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @JsonIgnore
     private MemberInfoEntity receiverMember;
 
     /**
      * The coach entity when receiver is a coach.
      * This is a conditional relationship based on receiverType.
+     * Foreign key disabled as this is a polymorphic relationship.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "Receiver_ID", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @JsonIgnore
     private CoachEntity receiverCoach;
 

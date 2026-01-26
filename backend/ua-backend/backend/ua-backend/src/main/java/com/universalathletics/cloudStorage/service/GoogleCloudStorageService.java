@@ -3,8 +3,6 @@ package com.universalathletics.cloudStorage.service;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +11,8 @@ import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -28,23 +28,59 @@ public class GoogleCloudStorageService {
     @Value("${gcp.credentials.path:}")
     private String credentialsPath;
     
+    @Value("${gcp.credentials.json:}")
+    private String credentialsJson;
 
     private Storage storage;
+    private com.google.auth.oauth2.ServiceAccountCredentials serviceAccountCredentials;
 
     @PostConstruct
     public void initialize() throws IOException {
         // If any of the required GCP properties are missing, skip initialization.
-        if (bucketName == null || bucketName.isEmpty() || projectId == null || projectId.isEmpty() || credentialsPath == null || credentialsPath.isEmpty()) {
-            // don't initialize storage; the service will operate in no-op mode
+        if (bucketName == null || bucketName.isEmpty() || projectId == null || projectId.isEmpty()) {
             System.out.println("GCP configuration not provided; GoogleCloudStorageService will be disabled.");
             return;
         }
 
+        com.google.auth.oauth2.GoogleCredentials creds = null;
+
+        // Try to load credentials from JSON environment variable first (for Heroku)
+        if (credentialsJson != null && !credentialsJson.isEmpty()) {
+            System.out.println("Loading GCP credentials from environment variable (JSON)");
+            try {
+                java.io.ByteArrayInputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes());
+                creds = com.google.auth.oauth2.GoogleCredentials.fromStream(credentialsStream);
+            } catch (Exception e) {
+                System.out.println("Failed to load GCP credentials from JSON: " + e.getMessage());
+                return;
+            }
+        }
+        // Fall back to file path (for local development)
+        else if (credentialsPath != null && !credentialsPath.isEmpty()) {
+            if (!Files.exists(Paths.get(credentialsPath))) {
+                System.out.println("GCP credentials file not found at '" + credentialsPath + "'; GoogleCloudStorageService will be disabled.");
+                return;
+            }
+            System.out.println("Loading GCP credentials from file: " + credentialsPath);
+            creds = com.google.auth.oauth2.GoogleCredentials.fromStream(new FileInputStream(credentialsPath));
+        } else {
+            System.out.println("No GCP credentials provided (neither gcp.credentials.json nor gcp.credentials.path); GoogleCloudStorageService will be disabled.");
+            return;
+        }
+
+        // Keep a reference to ServiceAccountCredentials for signing URLs
+        if (creds instanceof com.google.auth.oauth2.ServiceAccountCredentials) {
+            this.serviceAccountCredentials = (com.google.auth.oauth2.ServiceAccountCredentials) creds;
+        } else {
+            System.out.println("GCP credentials are not a service account; signed URLs may be unavailable.");
+        }
+
         StorageOptions storageOptions = StorageOptions.newBuilder()
             .setProjectId(projectId)
-            .setCredentials(GoogleCredentials.fromStream(new FileInputStream(credentialsPath)))
+            .setCredentials(creds)
             .build();
         this.storage = storageOptions.getService();
+        System.out.println("GoogleCloudStorageService initialized successfully for bucket: " + bucketName);
     }
 
     public String getSignedFileUrl(String fileName) throws IOException {
@@ -69,8 +105,11 @@ public class GoogleCloudStorageService {
         
         // Otherwise, we just get the signed URL as normal
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fileName).build();
-        URL signedUrl = storage.signUrl(blobInfo, 24, TimeUnit.HOURS, Storage.SignUrlOption.signWith(
-            ServiceAccountCredentials.fromStream(new FileInputStream(credentialsPath))));
+        if (this.serviceAccountCredentials == null) {
+            throw new IllegalStateException("ServiceAccountCredentials missing; cannot generate signed URL.");
+        }
+
+        URL signedUrl = storage.signUrl(blobInfo, 24, TimeUnit.HOURS, Storage.SignUrlOption.signWith(this.serviceAccountCredentials));
         return signedUrl.toString();
     }
     

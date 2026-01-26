@@ -90,9 +90,16 @@
 			<artifactId>flyway-core</artifactId>
 			<!-- Pin to 9.x to avoid Flyway 10.x stricter DB detection which
 				 rejects some MySQL product strings (e.g. 'MySQL 8.0') used
-				 by JawsDB/RDS. This is a temporary, targeted fix; revisit
-				 upgrading Flyway when the provider compatibility is resolved. -->
+				 by JawsDB/RDS. See backend/ua-backend/pom.xml for the same
+				 pinned version. This is a temporary, targeted fix. -->
 			<version>9.16.3</version>
+		</dependency>
+
+		<!-- Firebase Admin SDK for managing Firebase Authentication users -->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.2.0</version>
 		</dependency>
 	</dependencies>
 

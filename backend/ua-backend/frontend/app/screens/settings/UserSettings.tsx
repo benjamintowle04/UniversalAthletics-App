@@ -10,6 +10,7 @@ import '../../../global.css';
 
 
 const UserSettings = ({ navigation }: RouterProps) => {    
+  // resolve auth at runtime
   const auth = getFirebaseAuthSafe();
   const { userData, setUserData, isLoading, userType, isDetectingUserType } = useUser();
   const [imageLoading, setImageLoading] = useState(true);
@@ -44,12 +45,14 @@ const UserSettings = ({ navigation }: RouterProps) => {
   const performLogout = async () => {
     try {
       setIsLoggingOut(true);
-      if (!auth) {
-        if (isWeb) alert('Authentication not ready. Please try again shortly.');
-        else Alert.alert('Error', 'Authentication not ready. Please try again shortly.');
+      const runtimeAuth = getFirebaseAuthSafe();
+      if (!runtimeAuth) {
+        setUserData(null);
+        console.warn('performLogout: auth not available; cleared local user data');
+        setIsLoggingOut(false);
         return;
       }
-      await signOut(auth);
+      await signOut(runtimeAuth);
       setUserData(null);
       console.log('User logged out successfully');
     } catch (error) {

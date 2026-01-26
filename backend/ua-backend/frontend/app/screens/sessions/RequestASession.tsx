@@ -28,8 +28,8 @@ interface RequestASessionProps {
 const RequestASession = ({navigation, route}: RequestASessionProps) => {
   const { userData, updateUserData } = useUser()
   const [processing, setProcessing] = useState(false)
-  // For fetching the firebase Id of the sender
-  const auth = getFirebaseAuthSafe();
+  // For fetching the firebase Id of the sender at runtime
+  // (do not access auth at module-load time)
   
   
   // Form state
@@ -193,11 +193,11 @@ const RequestASession = ({navigation, route}: RequestASessionProps) => {
     console.log()
 
     try {
-      console.log("Sender's firebase ID:", auth.currentUser?.uid); // Debug log
+      console.log("Sender's firebase ID:", getFirebaseAuthSafe()?.currentUser?.uid); // Debug log
       const sessionRequestData = {
         senderType: userData.userType === "MEMBER" ? 'MEMBER': 'COACH',
         senderId: userData.id,
-        senderFirebaseId: auth.currentUser?.uid || '', 
+        senderFirebaseId: getFirebaseAuthSafe()?.currentUser?.uid || '', 
         senderFirstName: userData.firstName,
         senderLastName: userData.lastName,
         senderProfilePic: getUnsignedUrl(userData.profilePic),
@@ -234,7 +234,7 @@ const RequestASession = ({navigation, route}: RequestASessionProps) => {
         id: response.id,
         senderType: (userData.userType === "MEMBER" ? "MEMBER": "COACH") as "COACH" | "MEMBER",
         senderId: userData.id,
-        senderFirebaseId: auth.currentUser?.uid || '',
+  senderFirebaseId: getFirebaseAuthSafe()?.currentUser?.uid || '',
         receiverType: recipientType.toUpperCase() as "COACH" | "MEMBER",
         receiverId: recipientId,
         receiverFirebaseId: recipientFirebaseId,
