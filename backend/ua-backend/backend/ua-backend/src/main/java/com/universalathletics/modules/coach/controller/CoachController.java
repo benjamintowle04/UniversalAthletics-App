@@ -377,10 +377,26 @@ public class CoachController {
      */
     @GetMapping("/admin/clear-all")
     public ResponseEntity<String> clearAllCoachesGet(@RequestParam("token") String token) {
+        String expected = System.getenv("ADMIN_API_TOKEN");
+        if (expected == null || !expected.equals(token)) {
+            return new ResponseEntity<>("Forbidden", HttpStatus.FORBIDDEN);
+        }
+
         try {
-            return clearAllCoaches(token);
-        } catch (NoSuchMethodError | Exception e) {
-            return new ResponseEntity<>("Admin clear-all not available in this build", HttpStatus.NOT_FOUND);
+            List<CoachEntity> coaches = coachservice.findAllCoaches();
+            int deleted = 0;
+            for (CoachEntity c : coaches) {
+                try {
+                    coachservice.deleteCoach(c.getId());
+                    deleted++;
+                } catch (Exception e) {
+                    logger.warn("Failed to delete coach {}: {}", c.getId(), e.getMessage());
+                }
+            }
+            return new ResponseEntity<>("Deleted " + deleted + " coaches", HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error clearing all coaches: {}", e.getMessage(), e);
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
