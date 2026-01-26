@@ -338,4 +338,16 @@ public class CoachController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * Temporary GET wrapper for the admin clear-all endpoint.
+     */
+    @GetMapping("/admin/clear-all")
+    public ResponseEntity<String> clearAllCoachesGet(@RequestParam("token") String token) {
+        try {
+            return clearAllCoaches(token);
+        } catch (NoSuchMethodError | Exception e) {
+            return new ResponseEntity<>("Admin clear-all not available in this build", HttpStatus.NOT_FOUND);
+        }
+    }
 }
