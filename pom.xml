@@ -59,6 +59,20 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Embedded H2 database for tests -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Firebase admin SDK on test classpath so tests that load controllers compile in CI/local test runs -->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.1.1</version>
+		</dependency>
 		<!-- Spring Security test dependencies commented out for development
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -93,13 +107,6 @@
 				 by JawsDB/RDS. See backend/ua-backend/pom.xml for the same
 				 pinned version. This is a temporary, targeted fix. -->
 			<version>9.16.3</version>
-		</dependency>
-
-		<!-- Firebase Admin SDK for managing Firebase Authentication users -->
-		<dependency>
-			<groupId>com.google.firebase</groupId>
-			<artifactId>firebase-admin</artifactId>
-			<version>9.2.0</version>
 		</dependency>
 	</dependencies>
 

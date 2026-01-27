@@ -3,6 +3,9 @@ package com.universalathletics.modules.coach.service;
 //------------------------------- imports ------------------------------------//
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import com.universalathletics.modules.coach.entity.CoachEntity;
 import com.universalathletics.modules.coach.repository.CoachRepository;
@@ -57,6 +60,9 @@ public class CoachService {
      */
     @Autowired
     private CoachSkillRepository coachSkillRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // -------------------------------- Create Coach ----------------------------//
     /**
@@ -328,15 +334,52 @@ public class CoachService {
             throw new EntityNotFoundException("Coach not found with id: " + id);
         }
 
-        // Delete all coach-skill relationships first (cascade should handle this, but
-        // being explicit)
-        List<CoachSkillEntity> coachSkills = coachSkillRepository.findByCoachId(id);
-        coachSkillRepository.deleteAll(coachSkills);
+        // Run deletes in a safe order to avoid FK constraint violations.
+        // Use native queries to ensure we remove DB rows that reference the coach.
+        performSafeCoachDeletion(id);
 
-        // Delete the coach
-        coachRepository.deleteById(id);
         return "Coach with ID: " + id + " has been successfully deleted";
     }
+
+        @Transactional
+        protected void performSafeCoachDeletion(Integer id) {
+        // Delete member-coach relationships
+        entityManager.createNativeQuery("DELETE FROM Member_Coach WHERE Coach_ID = :id")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Delete coach job titles (if present)
+        entityManager.createNativeQuery("DELETE FROM Coach_Job_Title WHERE Coach_ID = :id")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Delete sessions referencing this coach
+        entityManager.createNativeQuery("DELETE FROM Session WHERE Coach_ID = :id")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Delete session requests where coach is sender or receiver
+        entityManager.createNativeQuery(
+                "DELETE FROM Session_Request WHERE (Sender_Type='COACH' AND Sender_ID = :id) OR (Receiver_Type='COACH' AND Receiver_ID = :id)")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Delete connection requests where coach is sender or receiver
+        entityManager.createNativeQuery(
+                "DELETE FROM Connection_Request WHERE (Sender_Type='COACH' AND Sender_ID = :id) OR (Receiver_Type='COACH' AND Receiver_ID = :id)")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Delete coach-skill relationships
+        entityManager.createNativeQuery("DELETE FROM Coach_Skill WHERE Coach_ID = :id")
+            .setParameter("id", id)
+            .executeUpdate();
+
+        // Finally delete the coach
+        entityManager.createNativeQuery("DELETE FROM Coach WHERE Coach_ID = :id")
+            .setParameter("id", id)
+            .executeUpdate();
+        }
 
     // -----------------------Get Coach By Firebase ID---------------------//
     /**
