@@ -8,9 +8,7 @@ import { createInboxHeaderWithoutBackButton, createInboxHeaderWithBackButton } f
 import Home from '../../screens/home/Home';
 import ContactScreen from '../../screens/misc/ContactScreen';
 import HelpScreen from '../../screens/misc/HelpScreen';
-// Pre-login screens (exposed here so main-app GuestGate can navigate to them)
-import Login from '../../screens/pre_login/Login';
-import SignUp from '../../screens/pre_login/SignUp';
+// Pre-login screens removed - guest-only flow enforced
 import HeaderTopTabs from '../headers/HeaderTopTabs';
 import ConnectionProfile from '../../screens/connections/ConnectionProfile';
 import RequestASession from '../../screens/sessions/RequestASession';
@@ -52,17 +50,7 @@ export const HomeStackNavigator = React.forwardRef<any, any>((props, ref) => {
           headerTitle: () => <HeaderTopTabs />,
         })}
       />
-      {/* Allow navigating to pre-login flows from inside the main app (e.g., GuestGate) */}
-      <Stack.Screen
-        name="Login"
-        component={Login as React.ComponentType<any>}
-        options={{ headerShown: true }}
-      />
-      <Stack.Screen
-        name="SignUp"
-        component={SignUp as React.ComponentType<any>}
-        options={{ headerShown: true }}
-      />
+      {/* Login/SignUp routes removed to restrict to guest-only access */}
       <Stack.Screen
         name="EntryPoint"
         component={require('../../screens/pre_login/EntryPoint').default as React.ComponentType<any>}

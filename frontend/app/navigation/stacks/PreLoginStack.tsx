@@ -4,8 +4,6 @@ import { backButtonOnlyHeader } from '../headers/HeaderOptions';
 
 // Screen imports
 import EntryPoint from '../../screens/pre_login/EntryPoint';
-import Login from '../../screens/pre_login/Login';
-import SignUp from '../../screens/pre_login/SignUp';
 import { HomeStackNavigator } from './HomeStack';
 import {createInboxHeaderWithoutBackButton} from '../headers/HeaderOptions';
 
@@ -19,16 +17,7 @@ export function PreLoginStackNavigator() {
         component={EntryPoint} 
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="Login" 
-        component={Login}
-        options={backButtonOnlyHeader}
-      />
-      <Stack.Screen 
-        name="SignUp" 
-        component={SignUp} 
-        options={backButtonOnlyHeader}
-      />
+      {/* Login/SignUp removed — guest-only access */}
       <Stack.Screen
         name="HomeTab"
         component={HomeStackNavigator as React.ComponentType<any>}
