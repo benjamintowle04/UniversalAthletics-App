@@ -25,23 +25,8 @@ export const createInboxHeaderWithBackButton = ({
   headerBackTitleVisible: true,
   headerBackVisible: true,
   headerLeft: () => <HeaderLogo />,
-  headerRight: () => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-      <NotificationIcon
-        iconName="send-outline"
-        onPress={() => navigation.navigate('SentRequestsTab')}
-        hasNotifications={hasSentNotifications}
-        notificationCount={sentNotificationCount}
-        marginRight={15}
-      />
-      <NotificationIcon
-        iconName="mail-outline"
-        onPress={() => navigation.navigate('InboxTab')}
-        hasNotifications={hasNotifications}
-        notificationCount={notificationCount}
-      />
-    </View>
-  ),
+  // Removed inbox and sent icons per simplified UI requirement
+  headerRight: () => null,
 });
 
 export const createInboxHeaderWithoutBackButton = ({
@@ -57,23 +42,8 @@ export const createInboxHeaderWithoutBackButton = ({
   headerBackTitleVisible: false,
   headerBackVisible: false,
   headerLeft: () => <HeaderLogo />,
-  headerRight: () => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-      <NotificationIcon
-        iconName="send-outline"
-        onPress={() => navigation.navigate('SentRequestsTab')}
-        hasNotifications={hasSentNotifications}
-        notificationCount={sentNotificationCount}
-        marginRight={15}
-      />
-      <NotificationIcon
-        iconName="mail-outline"
-        onPress={() => navigation.navigate('InboxTab')}
-        hasNotifications={hasNotifications}
-        notificationCount={notificationCount}
-      />
-    </View>
-  ),
+  // Removed inbox and sent icons per simplified UI requirement
+  headerRight: () => null,
 });
 
 export const backButtonOnlyHeader = {
