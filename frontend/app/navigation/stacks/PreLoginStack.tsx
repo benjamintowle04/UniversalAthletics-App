@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator();
 
 export function PreLoginStackNavigator() {
   return (
-    <Stack.Navigator initialRouteName='EntryPoint'>
+    <Stack.Navigator initialRouteName='HomeTab'>
       <Stack.Screen 
         name="EntryPoint" 
         component={EntryPoint} 
