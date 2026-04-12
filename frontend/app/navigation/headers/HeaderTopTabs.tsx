@@ -15,8 +15,9 @@ const HeaderTopTabs: React.FC = () => {
       <TouchableOpacity onPress={() => (navigation as any).navigate('Contact')} style={{ marginRight: 16 }}>
         <GagalinText style={{ color: Colors.uaRed, fontSize: 16, fontWeight: '600' }}>Contact</GagalinText>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => (navigation as any).navigate('Help')}>
-        <GagalinText style={{ color: Colors.uaBlue, fontSize: 16, fontWeight: '600' }}>Help</GagalinText>
+      {/* Replaced Help with Coaches - navigates to ExploreConnections for now */}
+      <TouchableOpacity onPress={() => (navigation as any).navigate('ExploreConnections')}>
+        <GagalinText style={{ color: Colors.uaBlue, fontSize: 16, fontWeight: '600' }}>Coaches</GagalinText>
       </TouchableOpacity>
     </View>
   );
